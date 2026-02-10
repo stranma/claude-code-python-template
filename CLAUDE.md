@@ -4,11 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Security
 
-<!-- Add project-specific security notes here. For example:
-- Which packages are private vs public
-- What should NOT be published or exposed
-- API key handling policies
--->
+- **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, pickle deserialization, XSS, and os.system() usage
+- **Secrets handling**: Never commit API keys, tokens, passwords, or private keys -- use environment variables or `.env` files (which are gitignored)
+- **Unsafe operations**: Avoid `eval`, `exec`, `pickle.loads`, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
+- **Code review**: The code-reviewer agent (PCC step 9) checks for logic-level security issues (authorization bypass, TOCTOU, data exposure) that static pattern matching cannot catch
 
 ---
 

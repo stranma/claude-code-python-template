@@ -15,6 +15,7 @@ import argparse
 import os
 import re
 import shutil
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -419,7 +420,31 @@ def main() -> None:
         os.system('git commit -m "Initial project setup from Claude Code Python Template"')
         print("  Git repository initialized with initial commit")
 
-    # Step 6: Self-delete unless --keep-setup
+    # Step 6: Install Claude Code plugins
+    print("\nInstalling Claude Code plugins...")
+    if shutil.which("claude"):
+        try:
+            result = subprocess.run(
+                ["claude", "plugin", "install", "security-guidance", "--scope", "project"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                print("  Installed security-guidance plugin")
+            else:
+                print("  Warning: Failed to install security-guidance plugin")
+                if result.stderr:
+                    print(f"  Error: {result.stderr.strip()}")
+                print("  Run manually: claude plugin install security-guidance --scope project")
+        except subprocess.TimeoutExpired:
+            print("  Warning: Plugin installation timed out")
+            print("  Run manually: claude plugin install security-guidance --scope project")
+    else:
+        print("  Claude CLI not found -- install plugins after installing Claude Code:")
+        print("  claude plugin install security-guidance --scope project")
+
+    # Step 7: Self-delete unless --keep-setup
     if not getattr(args, "keep_setup", False):
         print(f"\nRemoving setup script ({Path(__file__).name})...")
         print("  Run: rm setup_project.py")
