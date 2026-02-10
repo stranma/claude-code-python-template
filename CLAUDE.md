@@ -340,6 +340,23 @@ If a step fails, follow this decision tree:
 
 ## Planning Requirement
 
+### Consistency Check -- MANDATORY
+
+Before proposing any implementation approach, scan for conflicts with prior decisions:
+
+1. Read `docs/IMPLEMENTATION_PLAN.md` -- check Decisions & Trade-offs tables for entries that contradict the current request
+2. Read `docs/CHANGELOG.md` -- check if prior releases already addressed the request differently
+3. Review relevant sections of `CLAUDE.md` -- check for constraints or conventions that conflict with the proposed approach
+
+If a conflict is found, present it to the user before proceeding:
+- Quote the specific prior decision or constraint
+- Explain the contradiction
+- Ask whether to proceed with the new direction (updating docs to reflect the change) or adjust the approach to align with the existing decision
+
+Do NOT silently override a documented decision. Deliberate pivots are fine -- undocumented ones are not.
+
+### Phase Completion Steps
+
 When creating implementation plans (in plan mode), ALWAYS include a "Phase Completion Steps" section that explicitly states:
 
 > After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (`.claude/agents/code-quality-validator.md` + `.claude/agents/test-coverage-validator.md` + `.claude/agents/acceptance-criteria-validator.md` -- all invoked via `subagent_type: "general-purpose"`), Plan agent or `.claude/agents/implementation-tracker.md` for implementation check, `.claude/agents/docs-updater.md` for documentation + changelog, create PR with `.claude/agents/pr-writer.md`, verify CI, code review with `.claude/agents/code-reviewer.md` (NOT `feature-dev:code-reviewer`) or `.claude/agents/review-responder.md`, phase handoff note. Consult the Failure & Rollback Protocol if any step fails. See the Agent Reference table in the PCC section for exact invocation details.
