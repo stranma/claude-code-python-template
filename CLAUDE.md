@@ -259,6 +259,7 @@ Spawn the following **three agents in parallel**. Gate on ALL completing success
 - Verify all phase deliverables are actually complete
 
 ### 5. Documentation Verification Agent (`.claude/agents/docs-updater.md`) -- CRITICAL
+
 **This step is often missed. Invoke via Task tool: `subagent_type: "general-purpose"` with the docs-updater system prompt.**
 
 Since documentation should be written during implementation (TDD step 4), this step **verifies and finalizes** rather than creating from scratch:
@@ -378,14 +379,16 @@ If a step fails, follow this decision tree:
 Changelog entries must describe **user impact**, not just name the change.
 
 **Good entries** (describe what users can now do or what changed for them):
-```
+
+```markdown
 - Users can now filter search results by date range using the `--since` and `--until` flags
 - API responses now include a `total_count` field for paginated endpoints
 - Fixed: login no longer fails silently when the session cookie expires
 ```
 
 **Bad entries** (just name the feature or describe implementation):
-```
+
+```markdown
 - Added date filter
 - Added total_count to response
 - Fixed login bug
