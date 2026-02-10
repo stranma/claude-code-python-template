@@ -3,7 +3,7 @@
     "allow": [
       "Bash(pytest:*)", "Bash(uv run pytest:*)", "Bash(python -m pytest:*)",
       "Bash(uv run ruff:*)", "Bash(uv sync:*)", "Bash(uv --version:*)",
-      "Bash(uv run pyright:*)", "Bash(uv run python:*)",
+      "Bash(uv run pyright:*)",
       "Bash(uv add:*)", "Bash(uv pip:*)", "Bash(uv venv:*)",
       "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)",
       "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git rebase:*)",
@@ -25,7 +25,7 @@
     ],
     "deny": ["Bash(gh secret:*)"],
     "ask": [
-      "Bash(python:*)", "Bash(uv run:*)",
+      "Bash(python:*)", "Bash(uv run python:*)", "Bash(uv run:*)",
       "Bash(docker:*)", "Bash(docker-compose:*)", "Bash(terraform:*)",
       "Bash(gh pr merge:*)", "Bash(gh workflow run:*)"
     ]
