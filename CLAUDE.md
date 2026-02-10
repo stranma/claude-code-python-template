@@ -158,6 +158,28 @@ This ensures continuity and prevents duplicated or missed work.
 **After completing EACH implementation phase, run ALL checks in order.**
 **Do NOT skip steps. Do NOT defer them. Do NOT batch to the end.**
 
+### Agent Reference -- CRITICAL
+
+The PCC uses custom agents defined in `.claude/agents/`. These are NOT built-in `subagent_type` values.
+To invoke a custom agent, use the `Task` tool with `subagent_type: "general-purpose"` and copy the agent's
+full system prompt (the markdown body from its `.md` file) into the `prompt` parameter. Alternatively,
+ask Claude to "use the [agent-name] agent" and it will delegate automatically.
+
+**Do NOT use `feature-dev:code-reviewer`** -- always use the custom `.claude/agents/code-reviewer.md`.
+
+| PCC Step | Agent File | Task subagent_type | Purpose |
+|----------|-----------|---------------------|---------|
+| 3a | `.claude/agents/code-quality-validator.md` | `general-purpose` | Lint, format, type check (auto-fixes) |
+| 3b | `.claude/agents/test-coverage-validator.md` | `general-purpose` | Run tests, check coverage |
+| 3c | `.claude/agents/acceptance-criteria-validator.md` | `general-purpose` | Verify acceptance criteria |
+| 4 | Built-in `Plan` agent | `Plan` | Check implementation plan accuracy |
+| 5 | `.claude/agents/docs-updater.md` | `general-purpose` | Update IMPLEMENTATION_PLAN.md, CHANGELOG.md |
+| 7 | `.claude/agents/pr-writer.md` | `general-purpose` | Generate PR description |
+| 9 | `.claude/agents/code-reviewer.md` | `general-purpose` | Independent code review |
+| 9 | `.claude/agents/review-responder.md` | `general-purpose` | Respond to automated reviewer comments |
+| -- | `.claude/agents/implementation-tracker.md` | `general-purpose` | Verify plan matches reality |
+| -- | `.claude/agents/agent-auditor.md` | `general-purpose` | Audit agent definitions against best practices |
+
 ---
 
 ### 0. Sync with Remote
@@ -181,33 +203,32 @@ Before committing, verify the working tree is clean of development artifacts:
 
 Spawn the following **three agents in parallel**. Gate on ALL completing successfully.
 
-#### 3a. Code Quality Agent
-- Use the `code-quality-validator` agent to run:
-  - Linting (`ruff check`)
-  - Formatting verification (`ruff format --check`)
-  - Type checking (`pyright`)
-- Fix any issues, amend the commit, and re-push if needed
+#### 3a. Code Quality Agent (`.claude/agents/code-quality-validator.md`)
+- Invoke via Task tool: `subagent_type: "general-purpose"` with the agent's system prompt
+- Runs linting (`ruff check`), formatting (`ruff format --check`), type checking (`pyright`)
+- Auto-fixes issues where possible
+- Fix any remaining issues, amend the commit, and re-push if needed
 
-#### 3b. Test Agent
-- Use the `test-coverage-validator` agent to verify:
-  - All tests pass
-  - Code coverage is adequate
-  - No regressions introduced
+#### 3b. Test Agent (`.claude/agents/test-coverage-validator.md`)
+- Invoke via Task tool: `subagent_type: "general-purpose"` with the agent's system prompt
+- Verifies all tests pass, code coverage is adequate, no regressions introduced
 
-#### 3c. Acceptance Criteria Agent
+#### 3c. Acceptance Criteria Agent (`.claude/agents/acceptance-criteria-validator.md`)
+- Invoke via Task tool: `subagent_type: "general-purpose"` with the agent's system prompt
 - Verify ALL acceptance criteria from the **current phase AND all previous phases** (cumulative)
 - For automatable criteria, run **actual checks** -- do not rely on self-assessment alone
 - For non-automatable criteria, document how each was verified
 - Document any failing criteria -- these MUST be fixed before proceeding
 
-### 4. Implementation Plan Check Agent
-- Use the `Plan` agent to verify `IMPLEMENTATION_PLAN.md`:
-  - Check documented status matches actual implementation
-  - Update plan document if discrepancies found
-  - Verify all phase deliverables are actually complete
+### 4. Implementation Plan Check Agent (built-in `Plan` or `.claude/agents/implementation-tracker.md`)
+- Use the built-in `Plan` agent (`subagent_type: "Plan"`) to verify `IMPLEMENTATION_PLAN.md`
+- Alternatively, use `.claude/agents/implementation-tracker.md` via `subagent_type: "general-purpose"`
+- Check documented status matches actual implementation
+- Update plan document if discrepancies found
+- Verify all phase deliverables are actually complete
 
-### 5. Documentation Update Agent -- CRITICAL
-**This step is often missed. Use the `docs-updater` agent to automate it.**
+### 5. Documentation Update Agent (`.claude/agents/docs-updater.md`) -- CRITICAL
+**This step is often missed. Invoke via Task tool: `subagent_type: "general-purpose"` with the docs-updater system prompt.**
 
 The agent should update:
 
@@ -227,9 +248,9 @@ The agent should update:
 - Consolidate running changelog entries
 - Add: Breaking changes, Migration notes, Upgrade instructions
 
-### 7. Create Pull Request
+### 7. Create Pull Request (`.claude/agents/pr-writer.md`)
+- Use the pr-writer agent (`subagent_type: "general-purpose"` with the agent's system prompt) to generate the PR description
 - Create a PR from the feature branch to the base branch using `gh pr create`
-- Use the `pr-writer` agent to generate the PR description
 - Verify the PR has no merge conflicts before proceeding
 - If working directly on the base branch, skip this step
 
@@ -238,14 +259,15 @@ The agent should update:
 - If any checks fail, fix the issues, push, and re-check
 - Do not proceed until all checks are green
 
-### 9. Code Review
+### 9. Code Review (`.claude/agents/code-reviewer.md` or `.claude/agents/review-responder.md`)
 - If an automated reviewer (e.g., CodeRabbit) is configured:
-  - Use the `review-responder` agent to triage and handle comments
+  - Invoke `.claude/agents/review-responder.md` via Task tool (`subagent_type: "general-purpose"`) to triage and handle comments
   - Apply straightforward fixes automatically
   - Flag architectural concerns for human review
   - Push fixes and wait for re-review
 - If no automated reviewer is configured:
-  - Use the custom `code-reviewer` agent (from `.claude/agents/`, NOT the built-in `feature-dev:code-reviewer`) to perform an independent review of the phase's changes
+  - Invoke `.claude/agents/code-reviewer.md` via Task tool (`subagent_type: "general-purpose"` with the code-reviewer system prompt)
+  - Do NOT use the built-in `feature-dev:code-reviewer` -- always use the custom `.claude/agents/code-reviewer.md`
   - Fix any Critical issues before proceeding
   - Address Warnings if straightforward; otherwise document as known debt
   - Suggestions are optional -- apply at your discretion
@@ -322,6 +344,6 @@ If a step fails, follow this decision tree:
 
 When creating implementation plans (in plan mode), ALWAYS include a "Phase Completion Steps" section that explicitly states:
 
-> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, code review (custom `.claude/agents/code-reviewer` or review-responder agent -- NOT `feature-dev:code-reviewer`), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (`.claude/agents/code-quality-validator.md` + `.claude/agents/test-coverage-validator.md` + `.claude/agents/acceptance-criteria-validator.md` -- all invoked via `subagent_type: "general-purpose"`), Plan agent or `.claude/agents/implementation-tracker.md` for implementation check, `.claude/agents/docs-updater.md` for documentation + changelog, create PR with `.claude/agents/pr-writer.md`, verify CI, code review with `.claude/agents/code-reviewer.md` (NOT `feature-dev:code-reviewer`) or `.claude/agents/review-responder.md`, phase handoff note. Consult the Failure & Rollback Protocol if any step fails. See the Agent Reference table in the PCC section for exact invocation details.
 
 This ensures the checklist is visible in the plan and not forgotten during execution.
