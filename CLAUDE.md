@@ -1,0 +1,323 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Security
+
+<!-- Add project-specific security notes here. For example:
+- Which packages are private vs public
+- What should NOT be published or exposed
+- API key handling policies
+-->
+
+---
+
+## Repository Structure
+
+This is a **monorepo** using uv workspaces:
+
+```
+{{project_name}}/
+├── apps/                    # Executable applications (entry points)
+│   └── server/              # Example server application
+├── libs/                    # Reusable libraries (imported, not executed)
+│   └── core/                # Core library
+├── tests/                   # Root-level tests
+├── scripts/                 # Development & maintenance scripts
+├── docs/                    # Documentation
+│   ├── CHANGELOG.md         # Running changelog (Keep a Changelog format)
+│   └── IMPLEMENTATION_PLAN.md  # Phase tracking
+└── pyproject.toml           # Root workspace config (uv, ruff, pyright, pytest)
+```
+
+### Packages
+
+| Package | Path | Purpose |
+|---------|------|---------|
+| **core** | `libs/core/` | Core library |
+| **server** | `apps/server/` | Server application |
+
+---
+
+## Development Commands
+
+### Dependencies
+
+- Create virtual environment: `uv venv`
+- Install all dependencies: `uv sync --group dev`
+
+### Code Quality
+
+- Lint and format: `uv run ruff check --fix . && uv run ruff format .`
+- Type check: `uv run pyright`
+- Run all tests: `uv run pytest`
+- Run package tests: `uv run pytest libs/core/ -v` or `uv run pytest apps/server/ -v`
+
+### Running Commands
+
+Use `uv run` from the repo root for all commands:
+
+```bash
+uv run pytest                           # All tests
+uv run pytest libs/core/ -v             # Core tests only
+uv run pytest apps/server/ -v           # Server tests only
+uv run ruff check .                     # Lint
+uv run ruff format .                    # Format
+uv run pyright                          # Type check
+```
+
+---
+
+## Allowed Operations
+
+**Read-only commands are always allowed without explicit permission:**
+- `git status`, `git log`, `git diff`, `git branch`
+- `ls`, `cat`, `head`, `tail`, `grep`, `find`
+- `pytest` (running tests)
+- `ruff check` (linting without --fix)
+- Any command that only reads and does not modify files
+
+---
+
+## Code Style
+
+Configuration lives in root `pyproject.toml`:
+
+- **Formatter/Linter**: ruff (line-length: 120)
+- **Type checker**: pyright (standard mode)
+- **Docstrings**: reStructuredText format, PEP 257
+- **No special Unicode characters** in code or output -- use plain ASCII (`[x]`, `[OK]`, `PASS`, `FAIL`)
+- Use types everywhere possible
+- No obvious inline comments
+
+---
+
+## Testing
+
+- **Framework**: pytest
+- **Test locations**: `tests/` (root), `libs/*/tests/`, `apps/*/tests/`
+- **Markers**: `slow`, `integration`, `production`
+- **Coverage**: `uv run pytest --cov --cov-report=term-missing`
+
+---
+
+## Version Management
+
+All packages should maintain synchronized MAJOR.MINOR versions. Patch versions can differ.
+
+```bash
+# Check versions across packages
+python scripts/check_versions.py
+```
+
+| Client | Server | Compatible? |
+|--------|--------|-------------|
+| 1.2.3  | 1.2.7  | YES |
+| 1.2.3  | 1.3.0  | NO |
+
+---
+
+## Context Recovery Rule -- CRITICAL
+
+**After auto-compact or session continuation, ALWAYS read the relevant documentation files before continuing work:**
+
+1. Read `docs/IMPLEMENTATION_PLAN.md` for current progress
+2. Read `docs/CHANGELOG.md` for recent changes
+3. Read any package-specific documentation relevant to the task
+
+This ensures continuity and prevents duplicated or missed work.
+
+---
+
+## Development Methodology
+
+**Test-Driven Development Process** -- MANDATORY for all new development:
+
+1. **Create code structure** -- Define classes, functions, constants with proper type annotations
+2. **Write unit tests** -- Test the interface and expected behavior before implementation
+3. **Write implementation** -- Implement the actual functionality to pass tests
+4. **Iterate** -- If not finished, return to step 2 for next increment
+5. **Run integration tests** -- Validate complete workflow after unit tests pass
+6. **Run Phase Completion Checklist** -- See below. This is NOT optional.
+
+**Key Principles:**
+- Structure first, tests second, implementation third
+- All tests must pass before moving to next increment
+- Integration tests validate the complete workflow
+
+**CRITICAL -- Phase Completion Checklist Integration:**
+- Every implementation plan MUST explicitly include the Phase Completion Checklist steps as part of each phase's deliverables
+- When writing plans (in plan mode), the "Phase Completion Steps" section MUST reference the checklist by name and list all 11 steps (0-10)
+- When executing a phase, the checklist MUST be run IN FULL before proceeding to the next phase -- do NOT batch them all to the end
+- If a plan does not mention the Phase Completion Checklist, the plan is INCOMPLETE and must be revised
+
+---
+
+## Phase Completion Checklist (PCC) -- MANDATORY
+
+**After completing EACH implementation phase, run ALL checks in order.**
+**Do NOT skip steps. Do NOT defer them. Do NOT batch to the end.**
+
+---
+
+### 0. Sync with Remote
+- Run `git fetch origin` and check for divergence from the base branch
+- If behind, pull or rebase before proceeding
+- **If rebase introduces conflicts: STOP. Resolve all conflicts before continuing.**
+
+### 1. Pre-Commit Hygiene
+Before committing, verify the working tree is clean of development artifacts:
+- No leftover `TODO`, `FIXME`, `HACK`, or `XXX` markers that shouldn't ship
+- No debug prints, `console.log`, `breakpoint()`, or commented-out code blocks
+- No hardcoded test values, secrets, or localhost URLs
+- If any are found, fix them before proceeding
+
+### 2. Commit & Push
+- Commit all changes with a descriptive message
+- Push to remote repository
+- Never leave uncommitted work at end of phase
+
+### 3. Parallel Validation (run as concurrent sub-agents)
+
+Spawn the following **three agents in parallel**. Gate on ALL completing successfully.
+
+#### 3a. Code Quality Agent
+- Use the `code-quality-validator` agent to run:
+  - Linting (`ruff check`)
+  - Formatting verification (`ruff format --check`)
+  - Type checking (`pyright`)
+- Fix any issues, amend the commit, and re-push if needed
+
+#### 3b. Test Agent
+- Use the `test-coverage-validator` agent to verify:
+  - All tests pass
+  - Code coverage is adequate
+  - No regressions introduced
+
+#### 3c. Acceptance Criteria Agent
+- Verify ALL acceptance criteria from the **current phase AND all previous phases** (cumulative)
+- For automatable criteria, run **actual checks** -- do not rely on self-assessment alone
+- For non-automatable criteria, document how each was verified
+- Document any failing criteria -- these MUST be fixed before proceeding
+
+### 4. Implementation Plan Check Agent
+- Use the `Plan` agent to verify `IMPLEMENTATION_PLAN.md`:
+  - Check documented status matches actual implementation
+  - Update plan document if discrepancies found
+  - Verify all phase deliverables are actually complete
+
+### 5. Documentation Update Agent -- CRITICAL
+**This step is often missed. Use the `docs-updater` agent to automate it.**
+
+The agent should update:
+
+- **`docs/IMPLEMENTATION_PLAN.md`**:
+  - Change phase status from "In Progress" to "Complete"
+  - Update status summary table
+  - Mark all task checkboxes as `[x]`
+- **`docs/CHANGELOG.md`** (running draft):
+  - Append user-facing changes for this phase
+  - Use [Keep a Changelog](https://keepachangelog.com/) format
+  - Focus on: Added features, Changed behavior, Bug fixes
+
+**After the agent runs, review its output for accuracy BEFORE committing doc updates.**
+
+### 6. Version Bump Changelog (if applicable)
+**When bumping MINOR or MAJOR versions, finalize changelogs:**
+- Consolidate running changelog entries
+- Add: Breaking changes, Migration notes, Upgrade instructions
+
+### 7. Create Pull Request
+- Create a PR from the feature branch to the base branch using `gh pr create`
+- Use the `pr-writer` agent to generate the PR description
+- Verify the PR has no merge conflicts before proceeding
+- If working directly on the base branch, skip this step
+
+### 8. Verify CI Pipeline
+- Check that all CI checks pass on the PR using `gh pr checks <pr-number>`
+- If any checks fail, fix the issues, push, and re-check
+- Do not proceed until all checks are green
+
+### 9. Address Code Review (Optional)
+- If an automated reviewer (e.g., CodeRabbit) is configured:
+  - Use the `review-responder` agent to triage and handle comments
+  - Apply straightforward fixes automatically
+  - Flag architectural concerns for human review
+  - Push fixes and wait for re-review
+- If no automated reviewer is configured, skip this step
+
+### 10. Phase Handoff Note
+Write a brief (2-5 sentence) handoff summary:
+- What was completed and any deviations from the plan
+- Open questions or known risks for the next phase
+- Dependencies or prerequisites the next phase should be aware of
+- Any technical debt introduced intentionally (and why)
+
+---
+
+## Failure & Rollback Protocol
+
+If a step fails, follow this decision tree:
+
+| Failure | Action |
+|---|---|
+| **Steps 3a/3b/3c fail on current phase's code** | Fix the issue, amend commit, re-run from Step 2 |
+| **Step 3c reveals a previous phase's criteria now failing** | File as a separate bug/issue. Fix in current phase only if it's a direct regression |
+| **Step 8 (CI) fails on pre-existing issue** | Document the issue, file separately, do NOT block the current phase |
+| **Step 8 (CI) fails on current phase's code** | Fix, push, re-run from Step 8 |
+| **Step 9 flags an architectural concern** | Pause. Evaluate whether it requires rework (go back to Step 2) or can be addressed as follow-up |
+| **Multiple steps fail repeatedly** | Stop. Reassess the phase scope -- it may need to be split into smaller increments |
+
+---
+
+## Changelog Maintenance -- MANDATORY
+
+**Changelogs must be updated for every MINOR or MAJOR version bump.**
+
+### When to Update
+
+| Version Change | Changelog Required? |
+|----------------|---------------------|
+| Patch (1.0.0 -> 1.0.1) | Optional (bug fixes) |
+| Minor (1.0.0 -> 1.1.0) | **YES** |
+| Major (1.0.0 -> 2.0.0) | **YES** |
+
+### Format (Keep a Changelog)
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- New features (describe user benefit, not implementation)
+
+### Changed
+- Changes to existing functionality
+
+### Deprecated
+- Features to be removed in future
+
+### Removed
+- Features removed in this release
+
+### Fixed
+- Bug fixes
+
+### Migration
+- Required code changes for users upgrading
+```
+
+### What to Include
+
+**DO include:** New API fields/parameters, changed defaults, performance improvements, breaking changes with migration steps, new features.
+
+**DON'T include:** Internal refactoring, CI/CD changes, infrastructure updates (unless they affect API), test improvements.
+
+---
+
+## Planning Requirement
+
+When creating implementation plans (in plan mode), ALWAYS include a "Phase Completion Steps" section that explicitly states:
+
+> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+
+This ensures the checklist is visible in the plan and not forgotten during execution.

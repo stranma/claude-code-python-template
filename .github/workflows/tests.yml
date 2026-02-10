@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  push:
+    branches: ["{{base_branch}}"]
+  pull_request:
+    branches: ["{{base_branch}}"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ">=0.5.0"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: uv sync --group dev
+      - name: Check formatting
+        run: uv run ruff format --check .
+      - name: Check linting
+        run: uv run ruff check .
+
+  test-core:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ">=0.5.0"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: uv sync --group dev
+      - name: Run core tests
+        run: uv run pytest libs/core/ -v --tb=short
+      - name: Run root tests
+        run: uv run pytest tests/ -v --tb=short
+
+  test-server:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ">=0.5.0"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: uv sync --group dev
+      - name: Run server tests
+        run: uv run pytest apps/server/ -v --tb=short
+
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ">=0.5.0"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: uv sync --group dev
+      - name: Run type checks
+        run: uv run pyright
