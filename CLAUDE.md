@@ -245,7 +245,7 @@ The agent should update:
   - Flag architectural concerns for human review
   - Push fixes and wait for re-review
 - If no automated reviewer is configured:
-  - Use the `code-reviewer` agent to perform an independent review of the phase's changes
+  - Use the custom `code-reviewer` agent (from `.claude/agents/`, NOT the built-in `feature-dev:code-reviewer`) to perform an independent review of the phase's changes
   - Fix any Critical issues before proceeding
   - Address Warnings if straightforward; otherwise document as known debt
   - Suggestions are optional -- apply at your discretion
@@ -322,6 +322,6 @@ If a step fails, follow this decision tree:
 
 When creating implementation plans (in plan mode), ALWAYS include a "Phase Completion Steps" section that explicitly states:
 
-> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, code review (code-reviewer or review-responder agent), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, code review (custom `.claude/agents/code-reviewer` or review-responder agent -- NOT `feature-dev:code-reviewer`), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
 
 This ensures the checklist is visible in the plan and not forgotten during execution.
