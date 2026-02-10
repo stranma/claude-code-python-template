@@ -27,8 +27,16 @@
 - [ ] Task 2
 - [ ] Task 3
 
+**Decisions & Trade-offs:**
+<!-- Record non-trivial choices made during this phase. Only add entries for
+     decisions that actually required deliberation -- do not fabricate entries. -->
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
+| _Example: Use SQLite for local storage_ | _PostgreSQL, flat files_ | _No server needed, sufficient for expected data volume, stdlib support_ |
+
 **Phase Completion Steps:**
-> After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation verification + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
 
 ---
 
@@ -41,6 +49,11 @@
 
 **Tasks:**
 - [ ] Task 1
+
+**Decisions & Trade-offs:**
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
 
 **Phase Completion Steps:**
 > (Same as Phase 1)
@@ -57,6 +70,11 @@
 **Tasks:**
 - [ ] Task 1
 
+**Decisions & Trade-offs:**
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
+
 **Phase Completion Steps:**
 > (Same as Phase 1)
 
@@ -64,4 +82,5 @@
 
 ## Implementation Notes
 
-<!-- Add architectural decisions, trade-offs, and learnings here as the project progresses -->
+<!-- Record architectural insights and learnings as the project progresses.
+     For specific decisions, use the per-phase "Decisions & Trade-offs" tables above. -->

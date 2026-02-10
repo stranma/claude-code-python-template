@@ -92,6 +92,37 @@ Configuration lives in root `pyproject.toml`:
 
 ---
 
+## Documentation Requirements
+
+Documentation is part of the implementation, not an afterthought. Write docs as you code, not after.
+
+### When Documentation Is Required
+
+| What | Required Documentation |
+|------|----------------------|
+| Public API functions/classes | Docstring with parameter descriptions and return type |
+| Non-obvious algorithmic decisions | Inline comment explaining WHY, not WHAT |
+| Significant trade-offs | Decision record in IMPLEMENTATION_PLAN.md (see template) |
+| Changed behavior | CHANGELOG entry describing user impact |
+
+### Decision Records
+
+When making a non-trivial architectural or design choice, record it in the current phase's "Decisions & Trade-offs" section of `docs/IMPLEMENTATION_PLAN.md`:
+
+- **What was decided** -- the choice made
+- **Alternatives considered** -- what else was evaluated (at least one)
+- **Why this option** -- the reasoning, constraints, or trade-offs that drove the decision
+
+This captures rationale that would otherwise be lost. Do NOT retroactively fabricate decisions -- only record choices that actually required deliberation.
+
+### What Does NOT Need Documentation
+
+- Self-explanatory code (clear variable names, obvious logic)
+- Internal helper functions with obvious purpose
+- Standard patterns already documented elsewhere in the codebase
+
+---
+
 ## Testing
 
 - **Framework**: pytest
@@ -136,9 +167,10 @@ This ensures continuity and prevents duplicated or missed work.
 1. **Create code structure** -- Define classes, functions, constants with proper type annotations
 2. **Write unit tests** -- Test the interface and expected behavior before implementation
 3. **Write implementation** -- Implement the actual functionality to pass tests
-4. **Iterate** -- If not finished, return to step 2 for next increment
-5. **Run integration tests** -- Validate complete workflow after unit tests pass
-6. **Run Phase Completion Checklist** -- See below. This is NOT optional.
+4. **Document as you go** -- Add docstrings to public APIs, inline comments for non-obvious logic, decision records for trade-offs (see Documentation Requirements)
+5. **Iterate** -- If not finished, return to step 2 for next increment
+6. **Run integration tests** -- Validate complete workflow after unit tests pass
+7. **Run Phase Completion Checklist** -- See below. This is NOT optional.
 
 **Key Principles:**
 - Structure first, tests second, implementation third
@@ -226,19 +258,23 @@ Spawn the following **three agents in parallel**. Gate on ALL completing success
 - Update plan document if discrepancies found
 - Verify all phase deliverables are actually complete
 
-### 5. Documentation Update Agent (`.claude/agents/docs-updater.md`) -- CRITICAL
+### 5. Documentation Verification Agent (`.claude/agents/docs-updater.md`) -- CRITICAL
 **This step is often missed. Invoke via Task tool: `subagent_type: "general-purpose"` with the docs-updater system prompt.**
 
-The agent should update:
+Since documentation should be written during implementation (TDD step 4), this step **verifies and finalizes** rather than creating from scratch:
 
 - **`docs/IMPLEMENTATION_PLAN.md`**:
   - Change phase status from "In Progress" to "Complete"
   - Update status summary table
   - Mark all task checkboxes as `[x]`
+  - Verify "Decisions & Trade-offs" section has entries (if trade-offs were made)
 - **`docs/CHANGELOG.md`** (running draft):
-  - Append user-facing changes for this phase
+  - Verify changelog entries exist for user-facing changes
+  - Check entries describe user impact, not just name features
   - Use [Keep a Changelog](https://keepachangelog.com/) format
-  - Focus on: Added features, Changed behavior, Bug fixes
+- **Docstrings and inline docs**:
+  - Spot-check that public API functions have docstrings
+  - Flag any non-obvious logic missing a rationale comment
 
 **After the agent runs, review its output for accuracy BEFORE committing doc updates.**
 
@@ -336,6 +372,24 @@ If a step fails, follow this decision tree:
 **DO include:** New API fields/parameters, changed defaults, performance improvements, breaking changes with migration steps, new features.
 
 **DON'T include:** Internal refactoring, CI/CD changes, infrastructure updates (unless they affect API), test improvements.
+
+### Entry Quality
+
+Changelog entries must describe **user impact**, not just name the change.
+
+**Good entries** (describe what users can now do or what changed for them):
+```
+- Users can now filter search results by date range using the `--since` and `--until` flags
+- API responses now include a `total_count` field for paginated endpoints
+- Fixed: login no longer fails silently when the session cookie expires
+```
+
+**Bad entries** (just name the feature or describe implementation):
+```
+- Added date filter
+- Added total_count to response
+- Fixed login bug
+```
 
 ---
 
