@@ -2,6 +2,8 @@
 name: test-coverage-validator
 description: Use this agent when:\n\n1. A development phase or increment has been completed\n2. New functionality has been implemented following the TDD process\n3. Code changes have been committed or are ready for review\n4. Before moving to the next phase of development\n5. When validating adherence to the project's test-driven development methodology\n\n**Examples:**\n\n<example>\nContext: User has just completed implementing a new feature following TDD methodology.\n\nuser: "I've finished implementing the new data processing module"\n\nassistant: "Let me use the test-coverage-validator agent to verify the implementation is sufficiently tested."\n\n<uses Task tool to launch test-coverage-validator agent>\n</example>\n\n<example>\nContext: User has completed a development phase.\n\nuser: "Phase 1 is done"\n\nassistant: "I'll use the test-coverage-validator agent to ensure Phase 1 meets our testing standards."\n\n<uses Task tool to launch test-coverage-validator agent>\n</example>
 model: sonnet
+tools: Read, Glob, Grep, Bash
+permissionMode: dontAsk
 color: yellow
 ---
 
