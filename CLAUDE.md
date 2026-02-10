@@ -238,13 +238,17 @@ The agent should update:
 - If any checks fail, fix the issues, push, and re-check
 - Do not proceed until all checks are green
 
-### 9. Address Code Review (Optional)
+### 9. Code Review
 - If an automated reviewer (e.g., CodeRabbit) is configured:
   - Use the `review-responder` agent to triage and handle comments
   - Apply straightforward fixes automatically
   - Flag architectural concerns for human review
   - Push fixes and wait for re-review
-- If no automated reviewer is configured, skip this step
+- If no automated reviewer is configured:
+  - Use the `code-reviewer` agent to perform an independent review of the phase's changes
+  - Fix any Critical issues before proceeding
+  - Address Warnings if straightforward; otherwise document as known debt
+  - Suggestions are optional -- apply at your discretion
 
 ### 10. Phase Handoff Note
 Write a brief (2-5 sentence) handoff summary:
@@ -265,7 +269,7 @@ If a step fails, follow this decision tree:
 | **Step 3c reveals a previous phase's criteria now failing** | File as a separate bug/issue. Fix in current phase only if it's a direct regression |
 | **Step 8 (CI) fails on pre-existing issue** | Document the issue, file separately, do NOT block the current phase |
 | **Step 8 (CI) fails on current phase's code** | Fix, push, re-run from Step 8 |
-| **Step 9 flags an architectural concern** | Pause. Evaluate whether it requires rework (go back to Step 2) or can be addressed as follow-up |
+| **Step 9 (code review) flags an architectural concern** | Pause. Evaluate whether it requires rework (go back to Step 2) or can be addressed as follow-up |
 | **Multiple steps fail repeatedly** | Stop. Reassess the phase scope -- it may need to be split into smaller increments |
 
 ---
@@ -318,6 +322,6 @@ If a step fails, follow this decision tree:
 
 When creating implementation plans (in plan mode), ALWAYS include a "Phase Completion Steps" section that explicitly states:
 
-> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After each phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation + changelog, create PR with pr-writer agent, verify CI, code review (code-reviewer or review-responder agent), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
 
 This ensures the checklist is visible in the plan and not forgotten during execution.
