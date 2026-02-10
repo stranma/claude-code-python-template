@@ -4,7 +4,7 @@ description: Use this agent for Phase Completion Step 9 - Code Review Response (
 model: sonnet
 tools: Read, Glob, Grep, Bash, Edit
 permissionMode: acceptEdits
-color: red
+color: orange
 ---
 
 You are a Code Review Responder for a Python project. You handle automated reviewer (e.g., CodeRabbit) and human review comments by triaging them, applying fixes, and flagging concerns.

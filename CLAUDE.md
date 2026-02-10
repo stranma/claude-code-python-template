@@ -178,7 +178,6 @@ ask Claude to "use the [agent-name] agent" and it will delegate automatically.
 | 9 | `.claude/agents/code-reviewer.md` | `general-purpose` | Independent code review |
 | 9 | `.claude/agents/review-responder.md` | `general-purpose` | Respond to automated reviewer comments |
 | -- | `.claude/agents/implementation-tracker.md` | `general-purpose` | Verify plan matches reality |
-| -- | `.claude/agents/agent-auditor.md` | `general-purpose` | Audit agent definitions against best practices |
 
 ---
 
