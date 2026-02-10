@@ -67,7 +67,15 @@ python setup_project.py \
 uv sync --group dev
 ```
 
-### 4. Verify
+### 4. Install Claude Code Plugins
+
+The setup script attempts this automatically. If Claude Code wasn't installed at setup time:
+
+```bash
+claude plugin install security-guidance --scope project
+```
+
+### 5. Verify
 
 ```bash
 uv run pytest
@@ -75,7 +83,7 @@ uv run ruff check .
 uv run pyright
 ```
 
-### 5. Remove Setup Script
+### 6. Remove Setup Script
 
 ```bash
 rm setup_project.py
