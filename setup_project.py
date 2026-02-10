@@ -423,15 +423,22 @@ def main() -> None:
     # Step 6: Install Claude Code plugins
     print("\nInstalling Claude Code plugins...")
     if shutil.which("claude"):
-        result = subprocess.run(
-            ["claude", "plugin", "install", "security-guidance", "--scope", "project"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            print("  Installed security-guidance plugin")
-        else:
-            print("  Warning: Failed to install security-guidance plugin")
+        try:
+            result = subprocess.run(
+                ["claude", "plugin", "install", "security-guidance", "--scope", "project"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                print("  Installed security-guidance plugin")
+            else:
+                print("  Warning: Failed to install security-guidance plugin")
+                if result.stderr:
+                    print(f"  Error: {result.stderr.strip()}")
+                print("  Run manually: claude plugin install security-guidance --scope project")
+        except subprocess.TimeoutExpired:
+            print("  Warning: Plugin installation timed out")
             print("  Run manually: claude plugin install security-guidance --scope project")
     else:
         print("  Claude CLI not found -- install plugins after installing Claude Code:")
