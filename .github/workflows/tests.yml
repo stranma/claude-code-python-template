@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --all-packages --group dev
       - name: Check formatting
         run: uv run ruff format --check .
       - name: Check linting
@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --all-packages --group dev
       - name: Run core tests
         run: uv run pytest libs/core/ -v --tb=short
       - name: Run root tests
@@ -54,7 +54,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --all-packages --group dev
       - name: Run server tests
         run: uv run pytest apps/server/ -v --tb=short
 
@@ -70,6 +70,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --all-packages --group dev
       - name: Run type checks
         run: uv run pyright

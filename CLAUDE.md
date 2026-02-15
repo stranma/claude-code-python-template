@@ -43,7 +43,7 @@ This is a **monorepo** using uv workspaces:
 ### Dependencies
 
 - Create virtual environment: `uv venv`
-- Install all dependencies: `uv sync --group dev`
+- Install all dependencies: `uv sync --all-packages --group dev`
 
 ### Code Quality
 
@@ -211,6 +211,12 @@ ask Claude to "use the [agent-name] agent" and it will delegate automatically.
 | -- | `.claude/agents/implementation-tracker.md` | `general-purpose` | Verify plan matches reality |
 
 ---
+
+### -1. Create Feature Branch
+- Always create a dedicated branch before starting implementation
+- Never commit directly to the main/master branch
+- Branch naming: `fix/...`, `feat/...`, `refactor/...` matching the change type
+- If a branch already exists for this work, skip this step
 
 ### 0. Sync with Remote
 - Run `git fetch origin` and check for divergence from the base branch
