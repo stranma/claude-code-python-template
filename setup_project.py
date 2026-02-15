@@ -287,7 +287,7 @@ def interactive_setup() -> dict[str, str]:
     config["author_name"] = get_input("Author name")
     config["author_email"] = get_input("Author email")
     config["python_version"] = get_input("Python version", "3.11")
-    config["base_branch"] = get_input("Base branch name", "main")
+    config["base_branch"] = get_input("Base branch name", "master")
 
     print("\nProject type:")
     print("  1. Monorepo (apps/ + libs/ with uv workspaces)")
@@ -313,7 +313,7 @@ def main() -> None:
     parser.add_argument("--author", default="", help="Author name")
     parser.add_argument("--email", default="", help="Author email")
     parser.add_argument("--python-version", default="3.11", help="Python version (default: 3.11)")
-    parser.add_argument("--base-branch", default="main", help="Base branch (default: main)")
+    parser.add_argument("--base-branch", default="master", help="Base branch (default: master)")
     parser.add_argument("--type", choices=["mono", "single"], default="mono", help="Project type")
     parser.add_argument("--packages", default="core,server", help="Package names (comma-separated)")
     parser.add_argument("--git-init", action="store_true", help="Initialize git and make initial commit")
@@ -350,7 +350,7 @@ def main() -> None:
         "{{author_name}}": config.get("author_name", ""),
         "{{author_email}}": config.get("author_email", ""),
         "{{python_version}}": config.get("python_version", "3.11"),
-        "{{base_branch}}": config.get("base_branch", "main"),
+        "{{base_branch}}": config.get("base_branch", "master"),
         "{{year}}": str(datetime.now().year),
     }
     namespace = replacements["{{namespace}}"]
@@ -358,7 +358,7 @@ def main() -> None:
     print(f"\nSetting up project: {config['project_name']}")
     print(f"  Namespace: {namespace}")
     print(f"  Type: {config.get('type', 'mono')}")
-    print(f"  Base branch: {config.get('base_branch', 'main')}")
+    print(f"  Base branch: {config.get('base_branch', 'master')}")
 
     # Step 1: Rename {{namespace}} directories
     print("\nRenaming namespace directories...")
