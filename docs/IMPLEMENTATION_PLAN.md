@@ -1,82 +1,48 @@
 # Implementation Plan
 
-> **Status**: Phase 1 - In Progress
-> **Last Updated**: YYYY-MM-DD
+> **Status**: Phase 1 - Complete
+> **Last Updated**: 2026-02-15
 
 ## Quick Status Summary
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Phase name] | In Progress |
-| 2 | [Phase name] | Pending |
-| 3 | [Phase name] | Pending |
+| 1 | Fix 5 Template Bugs | Complete |
 
 ---
 
-## Phase 1: [Phase Name]
+## Phase 1: Fix 5 Template Bugs
 
-**Goal:** [1-2 sentence description of what this phase delivers]
+**Goal:** Fix critical setup script bugs preventing correct package customization and workspace builds.
 
 **Acceptance Criteria:**
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+- [x] Bug 1: rename_packages() updates pyproject.toml package names after directory renames
+- [x] Bug 2: rename_packages() updates __init__.py docstrings after directory renames
+- [x] Bug 3: Additional packages use -name pattern to avoid false matches (e.g., "core" substring)
+- [x] Bug 4: Root pyproject.toml does not include [build-system] section in workspace mode
+- [x] Bug 5: Template packages include tests/ directories so pytest discovers package tests
+- [x] All documentation uses uv sync --all-packages flag for workspace installs
+- [x] PCC includes Step -1 for mandatory feature branch creation
+- [x] settings.json allows uv run execution
 
 **Tasks:**
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+- [x] Add _update_package_contents() helper to update renamed package internals
+- [x] Call _update_package_contents() in rename_packages() after directory moves
+- [x] Change additional package creation to use -name pattern replacements
+- [x] Remove [build-system] from root pyproject.toml template
+- [x] Add tests/ directory creation to rename_packages() for new packages
+- [x] Update CLAUDE.md, README.md, and tests.yml to use --all-packages flag
+- [x] Add PCC Step -1 documentation for feature branch requirement
+- [x] Add settings.json with Claude Code server uv run permissions
 
 **Decisions & Trade-offs:**
-<!-- Record non-trivial choices made during this phase. Only add entries for
-     decisions that actually required deliberation -- do not fabricate entries. -->
 
 | Decision | Alternatives Considered | Why This Option |
 |----------|------------------------|-----------------|
-| _Example: Use SQLite for local storage_ | _PostgreSQL, flat files_ | _No server needed, sufficient for expected data volume, stdlib support_ |
+| Use -name pattern for package name replacements | Bare name replacement (e.g., "core" -> "engine") | Avoids false matches on substrings like "core" appearing in "pyproject" or other unrelated strings; more robust and predictable |
 
 **Phase Completion Steps:**
 > After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation verification + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
-
----
-
-## Phase 2: [Phase Name]
-
-**Goal:** [1-2 sentence description]
-
-**Acceptance Criteria:**
-- [ ] Criterion 1
-
-**Tasks:**
-- [ ] Task 1
-
-**Decisions & Trade-offs:**
-
-| Decision | Alternatives Considered | Why This Option |
-|----------|------------------------|-----------------|
-
-**Phase Completion Steps:**
-> (Same as Phase 1)
-
----
-
-## Phase 3: [Phase Name]
-
-**Goal:** [1-2 sentence description]
-
-**Acceptance Criteria:**
-- [ ] Criterion 1
-
-**Tasks:**
-- [ ] Task 1
-
-**Decisions & Trade-offs:**
-
-| Decision | Alternatives Considered | Why This Option |
-|----------|------------------------|-----------------|
-
-**Phase Completion Steps:**
-> (Same as Phase 1)
 
 ---
 

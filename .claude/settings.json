@@ -25,7 +25,7 @@
     ],
     "deny": ["Bash(gh secret:*)"],
     "ask": [
-      "Bash(python:*)", "Bash(uv run python:*)", "Bash(uv run:*)",
+      "Bash(python:*)", "Bash(uv run python:*)",
       "Bash(docker:*)", "Bash(docker-compose:*)", "Bash(terraform:*)",
       "Bash(gh pr merge:*)", "Bash(gh workflow run:*)"
     ]

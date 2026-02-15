@@ -164,7 +164,7 @@ def flatten_to_single_package(root: Path, namespace: str) -> list[str]:
             "        with:\n"
             '          python-version: "3.11"\n'
             "      - name: Install dependencies\n"
-            "        run: uv sync --group dev\n"
+            "        run: uv sync --all-packages --group dev\n"
             "      - name: Run tests\n"
             "        run: uv run pytest -v --tb=short\n\n",
             content,
@@ -184,18 +184,50 @@ def flatten_to_single_package(root: Path, namespace: str) -> list[str]:
     return actions
 
 
+def _update_package_contents(pkg_path: Path, namespace: str, old_name: str, new_name: str) -> None:
+    """Update pyproject.toml and __init__.py contents after a package directory rename.
+
+    Uses the ``-{name}`` pattern for pyproject.toml replacements to avoid false matches
+    (e.g. ``-core`` -> ``-engine`` is safe; bare ``core`` could match unrelated strings).
+
+    :param pkg_path: path to the renamed package directory (e.g. ``root/libs/engine``)
+    :param namespace: python namespace (e.g. ``vizier``)
+    :param old_name: original package name (e.g. ``core``)
+    :param new_name: new package name (e.g. ``engine``)
+    """
+    toml_path = pkg_path / "pyproject.toml"
+    if toml_path.exists():
+        content = toml_path.read_text(encoding="utf-8")
+        content = content.replace(f"-{old_name}", f"-{new_name}")
+        content = content.replace(old_name.title(), new_name.title())
+        toml_path.write_text(content, encoding="utf-8")
+
+    init_path = pkg_path / namespace / new_name / "__init__.py"
+    if init_path.exists():
+        content = init_path.read_text(encoding="utf-8")
+        content = content.replace(old_name, new_name)
+        init_path.write_text(content, encoding="utf-8")
+
+
 def rename_packages(root: Path, namespace: str, packages: list[str]) -> list[str]:
-    """Rename example packages (core, server) to user-specified names."""
+    """Rename example packages (core, server) to user-specified names.
+
+    After directory renames, updates pyproject.toml names/descriptions and __init__.py
+    docstrings. Also updates cross-references (e.g. app dependencies on renamed libs).
+
+    :param root: project root directory
+    :param namespace: python namespace (e.g. ``vizier``)
+    :param packages: list of package names, optionally prefixed with ``lib:`` or ``app:``
+    :return: list of action descriptions
+    """
     actions = []
 
     # Map default packages to user packages
     default_libs = ["core"]
     default_apps = ["server"]
-    user_libs = []
-    user_apps = []
+    user_libs: list[str] = []
+    user_apps: list[str] = []
 
-    # Simple heuristic: first package is a lib, rest are apps
-    # Or user can specify with lib: and app: prefixes
     for pkg in packages:
         pkg = pkg.strip()
         if pkg.startswith("lib:"):
@@ -203,11 +235,13 @@ def rename_packages(root: Path, namespace: str, packages: list[str]) -> list[str
         elif pkg.startswith("app:"):
             user_apps.append(pkg[4:])
         else:
-            # Default: first goes to libs, rest to apps
             if not user_libs:
                 user_libs.append(pkg)
             else:
                 user_apps.append(pkg)
+
+    # Track lib renames for cross-reference updates
+    lib_renames: list[tuple[str, str]] = []
 
     # Rename lib packages
     for old, new in zip(default_libs, user_libs, strict=False):
@@ -215,11 +249,12 @@ def rename_packages(root: Path, namespace: str, packages: list[str]) -> list[str
         new_path = root / "libs" / new
         if old_path.exists() and old != new:
             shutil.move(str(old_path), str(new_path))
-            # Rename inner namespace dir
             old_inner = new_path / namespace / old
             new_inner = new_path / namespace / new
             if old_inner.exists():
                 shutil.move(str(old_inner), str(new_inner))
+            _update_package_contents(new_path, namespace, old, new)
+            lib_renames.append((old, new))
             actions.append(f"  libs/{old} -> libs/{new}")
 
     # Rename app packages
@@ -232,34 +267,56 @@ def rename_packages(root: Path, namespace: str, packages: list[str]) -> list[str
             new_inner = new_path / namespace / new
             if old_inner.exists():
                 shutil.move(str(old_inner), str(new_inner))
+            _update_package_contents(new_path, namespace, old, new)
             actions.append(f"  apps/{old} -> apps/{new}")
 
-    # Create additional packages if more than defaults
+    # Update cross-references: app pyproject.toml files referencing renamed libs
+    if lib_renames:
+        apps_dir = root / "apps"
+        if apps_dir.exists():
+            for app_dir in apps_dir.iterdir():
+                if not app_dir.is_dir():
+                    continue
+                toml_path = app_dir / "pyproject.toml"
+                if toml_path.exists():
+                    content = toml_path.read_text(encoding="utf-8")
+                    for old_lib, new_lib in lib_renames:
+                        content = content.replace(f"-{old_lib}", f"-{new_lib}")
+                    toml_path.write_text(content, encoding="utf-8")
+
+    # Create additional lib packages beyond the defaults
     for lib in user_libs[len(default_libs) :]:
         lib_path = root / "libs" / lib
         pkg_path = lib_path / namespace / lib
         pkg_path.mkdir(parents=True, exist_ok=True)
         (pkg_path / "__init__.py").write_text(f'"""{lib} library."""\n\n__version__ = "0.1.0"\n')
-        # Create pyproject.toml from core template
         core_toml = root / "libs" / (user_libs[0] if user_libs else "core") / "pyproject.toml"
         if core_toml.exists():
             content = core_toml.read_text(encoding="utf-8")
-            content = content.replace(user_libs[0], lib)
+            content = content.replace(f"-{user_libs[0]}", f"-{lib}")
+            content = content.replace(user_libs[0].title(), lib.title())
             (lib_path / "pyproject.toml").write_text(content, encoding="utf-8")
+        tests_dir = lib_path / "tests"
+        tests_dir.mkdir(exist_ok=True)
+        (tests_dir / "__init__.py").write_text("")
         actions.append(f"  Created libs/{lib}/")
 
+    # Create additional app packages beyond the defaults
     for app in user_apps[len(default_apps) :]:
         app_path = root / "apps" / app
         pkg_path = app_path / namespace / app
         pkg_path.mkdir(parents=True, exist_ok=True)
         (pkg_path / "__init__.py").write_text(f'"""{app} application."""\n\n__version__ = "0.1.0"\n')
-        # Create pyproject.toml from server template
         first_app = user_apps[0] if user_apps else "server"
         server_toml = root / "apps" / first_app / "pyproject.toml"
         if server_toml.exists():
             content = server_toml.read_text(encoding="utf-8")
-            content = content.replace(first_app, app)
+            content = content.replace(f"-{first_app}", f"-{app}")
+            content = content.replace(first_app.title(), app.title())
             (app_path / "pyproject.toml").write_text(content, encoding="utf-8")
+        tests_dir = app_path / "tests"
+        tests_dir.mkdir(exist_ok=True)
+        (tests_dir / "__init__.py").write_text("")
         actions.append(f"  Created apps/{app}/")
 
     return actions
@@ -306,6 +363,7 @@ def interactive_setup() -> dict[str, str]:
 
 
 def main() -> None:
+    """Run the setup script."""
     parser = argparse.ArgumentParser(description="Setup Claude Code Python Template")
     parser.add_argument("--name", help="Project name (e.g., my-project)")
     parser.add_argument("--namespace", help="Python namespace (e.g., my_project)")
@@ -415,9 +473,9 @@ def main() -> None:
     # Step 5: Git init if requested
     if getattr(args, "git_init", False):
         print("\nInitializing git repository...")
-        os.system("git init")
-        os.system("git add -A")
-        os.system('git commit -m "Initial project setup from Claude Code Python Template"')
+        subprocess.run(["git", "init"], check=False)
+        subprocess.run(["git", "add", "-A"], check=False)
+        subprocess.run(["git", "commit", "-m", "Initial project setup from Claude Code Python Template"], check=False)
         print("  Git repository initialized with initial commit")
 
     # Step 6: Install Claude Code plugins
@@ -452,7 +510,7 @@ def main() -> None:
     print("\n=== Setup complete! ===")
     print("\nNext steps:")
     print(f"  1. cd {TEMPLATE_DIR}")
-    print("  2. uv sync --group dev")
+    print("  2. uv sync --all-packages --group dev")
     print("  3. uv run pytest")
     print("  4. Start coding!")
 

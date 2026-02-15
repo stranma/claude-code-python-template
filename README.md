@@ -64,7 +64,7 @@ python setup_project.py \
 ### 3. Install Dependencies
 
 ```bash
-uv sync --group dev
+uv sync --all-packages --group dev
 ```
 
 ### 4. Install Claude Code Plugins
