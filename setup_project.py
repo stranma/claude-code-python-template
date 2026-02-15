@@ -471,12 +471,11 @@ def main() -> None:
         claude_md.write_text(content, encoding="utf-8")
 
     # Step 5: Git init if requested
-    # Note: os.system used with static arguments only (no user-controlled input)
     if getattr(args, "git_init", False):
         print("\nInitializing git repository...")
-        os.system("git init")
-        os.system("git add -A")
-        os.system('git commit -m "Initial project setup from Claude Code Python Template"')
+        subprocess.run(["git", "init"], check=False)
+        subprocess.run(["git", "add", "-A"], check=False)
+        subprocess.run(["git", "commit", "-m", "Initial project setup from Claude Code Python Template"], check=False)
         print("  Git repository initialized with initial commit")
 
     # Step 6: Install Claude Code plugins
