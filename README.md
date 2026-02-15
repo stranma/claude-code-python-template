@@ -48,7 +48,7 @@ python setup_project.py \
   --description "My awesome project" \
   --author "Your Name" \
   --email "you@example.com" \
-  --base-branch main \
+  --base-branch master \
   --type mono \
   --packages "core,api,worker"
 ```
@@ -110,7 +110,7 @@ my-project/
 │   ├── CHANGELOG.md
 │   └── IMPLEMENTATION_PLAN.md
 ├── .claude/                      # Claude Code config
-│   ├── settings.local.json       # Tool permissions
+│   ├── settings.json             # Tool permissions & plugin config
 │   └── agents/                   # 7 custom agents
 ├── .github/                      # CI/CD
 │   ├── workflows/
@@ -175,7 +175,7 @@ After each development phase, 11 mandatory steps run in order:
 | `--author` | "" | Author name |
 | `--email` | "" | Author email |
 | `--python-version` | "3.11" | Python version requirement |
-| `--base-branch` | "main" | Git base branch |
+| `--base-branch` | "master" | Git base branch |
 | `--type` | "mono" | `mono` or `single` |
 | `--packages` | "core,server" | Comma-separated package names |
 | `--git-init` | false | Init git + initial commit |

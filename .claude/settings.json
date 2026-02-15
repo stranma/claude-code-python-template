@@ -31,6 +31,6 @@
     ]
   },
   "enabledPlugins": {
-    "security-guidance": true
+    "security-guidance@claude-code-plugins": true
   }
 }
