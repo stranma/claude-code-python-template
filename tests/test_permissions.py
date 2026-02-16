@@ -350,10 +350,14 @@ class TestEvaluationOrder:
         assert evaluate("Bash(python -m pytest tests/)", settings) == "ask"
         assert evaluate("Bash(python script.py)", settings) == "ask"
 
-    def test_web_tools_are_allowed(self, settings: dict[str, Any]) -> None:
+    def test_web_search_is_allowed(self, settings: dict[str, Any]) -> None:
         assert evaluate("WebSearch", settings) == "allow"
-        assert evaluate("WebFetch", settings) == "allow"
         assert evaluate("WebSearch(some query)", settings) == "allow"
+
+    def test_web_fetch_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        """WebFetch in ask prevents data exfiltration via query string URLs."""
+        assert evaluate("WebFetch", settings) == "ask"
+        assert evaluate("WebFetch(https://example.com)", settings) == "ask"
 
     def test_chained_commands_fall_through(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(cd /foo && ls)", settings) == "none"
