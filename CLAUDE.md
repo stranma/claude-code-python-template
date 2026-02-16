@@ -78,6 +78,20 @@ uv run pyright                          # Type check
 
 ---
 
+## Shell Command Style
+
+- **Always use absolute paths** instead of `cd /path && command` chains
+  - `ls /full/path` instead of `cd /path && ls`
+  - `grep pattern /full/path/file` instead of `cd /path && grep pattern file`
+  - `pytest /full/path/tests/` instead of `cd /path && pytest tests/`
+- **Use `TaskOutput` tool** to read background task results instead of `tail`/`cat` on task output files
+  - The `TaskOutput` tool does not require file path permissions
+  - Avoids Read permission prompts for temp directory paths outside the project
+- **Do not use `git -C <path>`** -- run git commands directly from the working directory, since `git -C path commit` does not match the `Bash(git commit *)` permission pattern
+- Reason: Claude Code's shell-operator protection blocks chained `&&` commands from matching individual permission rules, `git -C` breaks permission pattern matching, and task output files live outside the project directory -- all cause unnecessary approval prompts
+
+---
+
 ## Code Style
 
 Configuration lives in root `pyproject.toml`:
@@ -319,6 +333,8 @@ Write a brief (2-5 sentence) handoff summary:
 - Open questions or known risks for the next phase
 - Dependencies or prerequisites the next phase should be aware of
 - Any technical debt introduced intentionally (and why)
+
+**After completing all PCC steps, print the PR URL so the user can review it.**
 
 ---
 

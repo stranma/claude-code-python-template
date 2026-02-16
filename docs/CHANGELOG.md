@@ -8,12 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Automated permission tests (53 tests) validate settings.json structure, pattern syntax, matching semantics, conflict detection, security invariants, and deny > ask > allow evaluation order -- catches misconfigurations before they cause unexpected prompts or weaken security
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
 - Phase Completion Checklist now includes Step -1 requiring feature branch creation before starting work
 - Added settings.json to enable uv run execution in Claude Code server environment
+- New `/edit-permissions` skill for managing Claude Code permission rules in settings.json -- invocable via slash command, includes pattern syntax reference, shell operator protection warnings, and safety guardrails
 
 ### Changed
 
+- Permission patterns in settings.json migrated from deprecated `:*` syntax to ` *` -- no behavior change, follows current Claude Code documentation
+- CLAUDE.md now instructs Claude to use absolute paths instead of `cd /path && command` chains, to use `TaskOutput` instead of reading temp files directly, and to avoid `git -C <path>` which breaks permission pattern matching -- eliminates unnecessary permission prompts
 - All documentation and CI workflows now use `uv sync --all-packages --group dev` to correctly install all workspace members
 
 - Default base branch from "main" to "master" -- new projects created from this template will use "master" as the default branch name
