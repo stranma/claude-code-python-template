@@ -78,6 +78,20 @@ uv run pyright                          # Type check
 
 ---
 
+## Shell Command Style
+
+- **Never use `&&` to chain shell commands** -- each command should be a separate Bash tool call, or use absolute paths to avoid needing `cd`
+- **Always use absolute paths** instead of `cd /path && command` chains
+  - `ls /full/path` instead of `cd /path && ls`
+  - `grep pattern /full/path/file` instead of `cd /path && grep pattern file`
+  - `pytest /full/path/tests/` instead of `cd /path && pytest tests/`
+- **Use `TaskOutput` tool** to read background task results instead of `tail`/`cat` on task output files
+  - The `TaskOutput` tool does not require file path permissions
+  - Avoids Read permission prompts for temp directory paths outside the project
+- Reason: Claude Code's shell-operator protection blocks chained `&&` commands from matching individual permission rules, and task output files live outside the project directory -- both cause unnecessary approval prompts
+
+---
+
 ## Code Style
 
 Configuration lives in root `pyproject.toml`:

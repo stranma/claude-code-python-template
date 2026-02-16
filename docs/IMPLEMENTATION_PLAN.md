@@ -1,13 +1,14 @@
 # Implementation Plan
 
-> **Status**: Phase 1 - Complete
-> **Last Updated**: 2026-02-15
+> **Status**: Phase 2 - Complete
+> **Last Updated**: 2026-02-16
 
 ## Quick Status Summary
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Fix 5 Template Bugs | Complete |
+| 2 | Permissions Modernization | Complete |
 
 ---
 
@@ -43,6 +44,36 @@
 
 **Phase Completion Steps:**
 > After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation verification + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+
+---
+
+## Phase 2: Permissions Modernization
+
+**Goal:** Eliminate unnecessary permission prompts and migrate deprecated syntax.
+
+**Acceptance Criteria:**
+- [x] CLAUDE.md instructs Claude to use absolute paths instead of `cd /path && command` chains
+- [x] CLAUDE.md instructs Claude to use `TaskOutput` tool instead of `tail`/`cat` on task output files
+- [x] All `:*` patterns in settings.json replaced with ` *` (deprecated syntax migration)
+- [x] settings.json remains valid JSON
+- [x] IMPLEMENTATION_PLAN.md updated with Phase 2
+- [x] CHANGELOG.md updated with user-facing changes
+
+**Tasks:**
+- [x] Add "Shell Command Style" section to CLAUDE.md with absolute-path and TaskOutput rules
+- [x] Replace all `:*` patterns with ` *` in .claude/settings.json
+- [x] Update IMPLEMENTATION_PLAN.md with Phase 2 entry
+- [x] Update CHANGELOG.md with user-facing changes
+
+**Decisions & Trade-offs:**
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
+| Instruct absolute paths in CLAUDE.md instead of adding `Bash(cd *)` | Adding `Bash(cd *)` to allow list; Using PreToolUse hooks to parse chained commands | `Bash(cd *)` doesn't solve the problem (shell operator protection still blocks `cd && cmd`). Hooks add complexity. Absolute paths are simpler, already supported by existing permission patterns, and align with Claude Code's own system prompt guidance |
+| Instruct `TaskOutput` tool usage instead of adding `Read` allow rule for temp dir | Adding `Read(//c/Users/*/AppData/Local/Temp/claude/**)` to settings.json | The temp path is OS-specific and user-specific, making it non-portable for a template. `TaskOutput` is the dedicated built-in tool for this purpose and needs no file permissions |
+
+**Phase Completion Steps:**
+> After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (`.claude/agents/code-quality-validator.md` + `.claude/agents/test-coverage-validator.md` + `.claude/agents/acceptance-criteria-validator.md` -- all invoked via `subagent_type: "general-purpose"`), Plan agent or `.claude/agents/implementation-tracker.md` for implementation check, `.claude/agents/docs-updater.md` for documentation + changelog, create PR with `.claude/agents/pr-writer.md`, verify CI, code review with `.claude/agents/code-reviewer.md` (NOT `feature-dev:code-reviewer`) or `.claude/agents/review-responder.md`, phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
 
 ---
 
