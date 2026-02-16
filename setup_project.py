@@ -476,7 +476,11 @@ def main() -> None:
         try:
             subprocess.run(["git", "init"], check=True, timeout=30)
             subprocess.run(["git", "add", "-A"], check=True, timeout=30)
-            subprocess.run(["git", "commit", "-m", "Initial project setup from Claude Code Python Template"], check=True, timeout=30)
+            subprocess.run(
+                ["git", "commit", "-m", "Initial project setup from Claude Code Python Template"],
+                check=True,
+                timeout=30,
+            )
             print("  Git repository initialized with initial commit")
         except subprocess.CalledProcessError as e:
             print(f"  Warning: Git operation failed (exit code {e.returncode})")
