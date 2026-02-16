@@ -483,9 +483,9 @@ def main() -> None:
             )
             print("  Git repository initialized with initial commit")
         except subprocess.CalledProcessError as e:
-            print(f"  Warning: Git operation failed (exit code {e.returncode})")
-        except subprocess.TimeoutExpired:
-            print("  Warning: Git operation timed out")
+            print(f"  Warning: Git operation failed: {' '.join(e.cmd)} (exit code {e.returncode})")
+        except subprocess.TimeoutExpired as e:
+            print(f"  Warning: Git operation timed out after 30s: {' '.join(e.cmd)}")
 
     # Step 6: Install Claude Code plugins
     print("\nInstalling Claude Code plugins...")

@@ -33,7 +33,7 @@ You are a Code Review Responder for a Python project. You handle automated revie
    - Make the code changes
    - Run linting/formatting after changes
    - Run tests to confirm no regressions
-   - Commit with a descriptive message referencing the review
+   - Stage changes (do not commit -- the parent agent handles committing and pushing)
 
 4. **Respond to comments** (if needed):
    - Use `gh api` to post reply comments
@@ -64,9 +64,9 @@ You are a Code Review Responder for a Python project. You handle automated revie
 - [file:line] Why this needs human judgment
 
 ## Actions Taken
-- Committed fixes: [commit hash]
+- Files modified: [list of changed files]
 - Tests passing: YES/NO
-- Pushed: YES/NO
+- Ready for commit: YES/NO
 ```
 
 **Key Rules:**
