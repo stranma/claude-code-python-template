@@ -281,6 +281,27 @@ class TestSecurityInvariants:
         assert evaluate("Bash(gh secret list)", settings) == "deny"
         assert evaluate("Bash(gh secret set TOKEN)", settings) == "deny"
 
+    def test_gh_auth_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh auth login)", settings) == "deny"
+        assert evaluate("Bash(gh auth status)", settings) == "deny"
+
+    def test_gh_ssh_key_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh ssh-key add key.pub)", settings) == "deny"
+
+    def test_gh_gpg_key_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh gpg-key add key.gpg)", settings) == "deny"
+
+    def test_git_clean_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git clean -fd)", settings) == "deny"
+        assert evaluate("Bash(git clean -xfd)", settings) == "deny"
+
+    def test_git_config_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git config user.email foo@bar.com)", settings) == "deny"
+        assert evaluate("Bash(git config --global core.editor vim)", settings) == "deny"
+
+    def test_uv_self_is_denied(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(uv self update)", settings) == "deny"
+
     def test_rm_rf_is_not_allowed(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(rm -rf /)", settings) != "allow"
 
@@ -307,6 +328,44 @@ class TestSecurityInvariants:
     def test_workflow_run_requires_confirmation(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(gh workflow run deploy.yml)", settings) == "ask"
 
+    def test_git_reset_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git reset --hard HEAD~1)", settings) == "ask"
+        assert evaluate("Bash(git reset HEAD file.py)", settings) == "ask"
+
+    def test_git_destructive_operations_require_confirmation(self, settings: dict[str, Any]) -> None:
+        for cmd in ["git init", "git clone https://github.com/repo", "git rm file.py", "git mv a.py b.py"]:
+            assert evaluate(f"Bash({cmd})", settings) == "ask", f"{cmd} should require confirmation"
+
+    def test_git_restore_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git restore file.py)", settings) == "ask"
+        assert evaluate("Bash(git restore --staged file.py)", settings) == "ask"
+
+    def test_gh_issue_mutations_require_confirmation(self, settings: dict[str, Any]) -> None:
+        for cmd in ["gh issue create --title bug", "gh issue comment 5 --body fix", "gh issue close 5", "gh issue edit 5"]:
+            assert evaluate(f"Bash({cmd})", settings) == "ask", f"{cmd} should require confirmation"
+
+    def test_gh_pr_reopen_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh pr reopen 42)", settings) == "ask"
+
+    def test_gh_pr_merge_auto_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh pr merge --auto 42)", settings) == "ask"
+
+    def test_gh_workflow_enable_disable_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(gh workflow enable deploy.yml)", settings) == "ask"
+        assert evaluate("Bash(gh workflow disable deploy.yml)", settings) == "ask"
+
+    def test_git_worktree_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git worktree add ../feature)", settings) == "ask"
+
+    def test_uv_init_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(uv init my-project)", settings) == "ask"
+
+    def test_uv_remove_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(uv remove requests)", settings) == "ask"
+
+    def test_uv_cache_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(uv cache clean)", settings) == "ask"
+
 
 # ---------------------------------------------------------------------------
 # 6. Evaluation Order (end-to-end)
@@ -329,7 +388,11 @@ class TestEvaluationOrder:
         assert evaluate("Bash(curl https://example.com)", settings) == "none"
 
     def test_git_read_operations_are_allowed(self, settings: dict[str, Any]) -> None:
-        for cmd in ["git status", "git log --oneline", "git diff HEAD"]:
+        for cmd in [
+            "git status", "git log --oneline", "git diff HEAD",
+            "git blame src/main.py", "git reflog", "git ls-files",
+            "git describe --tags", "git shortlog -sn", "git rev-list HEAD",
+        ]:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
 
     def test_git_write_operations_are_allowed(self, settings: dict[str, Any]) -> None:
@@ -364,3 +427,19 @@ class TestEvaluationOrder:
 
     def test_gh_api_is_allowed(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(gh api repos/owner/repo/pulls)", settings) == "allow"
+
+    def test_gh_pr_review_operations_require_confirmation(self, settings: dict[str, Any]) -> None:
+        """PR comment/review/ready are state-changing and have data exfiltration risk."""
+        for cmd in ["gh pr comment 5 --body lgtm", "gh pr review 5 --approve", "gh pr ready 5"]:
+            assert evaluate(f"Bash({cmd})", settings) == "ask", f"{cmd} should require confirmation"
+
+    def test_gh_read_only_operations_are_allowed(self, settings: dict[str, Any]) -> None:
+        for cmd in [
+            "gh repo view", "gh release list", "gh release view v1.0",
+            "gh label list", "gh browse", "gh search repos python",
+        ]:
+            assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
+
+    def test_uv_read_operations_are_allowed(self, settings: dict[str, Any]) -> None:
+        for cmd in ["uv lock", "uv tree", "uv export --format requirements-txt"]:
+            assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"

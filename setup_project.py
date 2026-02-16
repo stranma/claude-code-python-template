@@ -473,10 +473,19 @@ def main() -> None:
     # Step 5: Git init if requested
     if getattr(args, "git_init", False):
         print("\nInitializing git repository...")
-        subprocess.run(["git", "init"], check=False)
-        subprocess.run(["git", "add", "-A"], check=False)
-        subprocess.run(["git", "commit", "-m", "Initial project setup from Claude Code Python Template"], check=False)
-        print("  Git repository initialized with initial commit")
+        try:
+            subprocess.run(["git", "init"], check=True, timeout=30)
+            subprocess.run(["git", "add", "-A"], check=True, timeout=30)
+            subprocess.run(
+                ["git", "commit", "-m", "Initial project setup from Claude Code Python Template"],
+                check=True,
+                timeout=30,
+            )
+            print("  Git repository initialized with initial commit")
+        except subprocess.CalledProcessError as e:
+            print(f"  Warning: Git operation failed: {' '.join(e.cmd)} (exit code {e.returncode})")
+        except subprocess.TimeoutExpired as e:
+            print(f"  Warning: Git operation timed out after 30s: {' '.join(e.cmd)}")
 
     # Step 6: Install Claude Code plugins
     print("\nInstalling Claude Code plugins...")
@@ -492,8 +501,6 @@ def main() -> None:
                 print("  Installed security-guidance plugin")
             else:
                 print("  Warning: Failed to install security-guidance plugin")
-                if result.stderr:
-                    print(f"  Error: {result.stderr.strip()}")
                 print("  Run manually: claude plugin install security-guidance --scope project")
         except subprocess.TimeoutExpired:
             print("  Warning: Plugin installation timed out")
