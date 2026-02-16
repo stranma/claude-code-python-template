@@ -87,7 +87,8 @@ uv run pyright                          # Type check
 - **Use `TaskOutput` tool** to read background task results instead of `tail`/`cat` on task output files
   - The `TaskOutput` tool does not require file path permissions
   - Avoids Read permission prompts for temp directory paths outside the project
-- Reason: Claude Code's shell-operator protection blocks chained `&&` commands from matching individual permission rules, and task output files live outside the project directory -- both cause unnecessary approval prompts
+- **Do not use `git -C <path>`** -- run git commands directly from the working directory, since `git -C path commit` does not match the `Bash(git commit *)` permission pattern
+- Reason: Claude Code's shell-operator protection blocks chained `&&` commands from matching individual permission rules, `git -C` breaks permission pattern matching, and task output files live outside the project directory -- all cause unnecessary approval prompts
 
 ---
 
