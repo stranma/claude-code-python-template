@@ -80,7 +80,6 @@ uv run pyright                          # Type check
 
 ## Shell Command Style
 
-- **Never use `&&` to chain shell commands** -- each command should be a separate Bash tool call, or use absolute paths to avoid needing `cd`
 - **Always use absolute paths** instead of `cd /path && command` chains
   - `ls /full/path` instead of `cd /path && ls`
   - `grep pattern /full/path/file` instead of `cd /path && grep pattern file`
@@ -333,6 +332,8 @@ Write a brief (2-5 sentence) handoff summary:
 - Open questions or known risks for the next phase
 - Dependencies or prerequisites the next phase should be aware of
 - Any technical debt introduced intentionally (and why)
+
+**After completing all PCC steps, print the PR URL so the user can review it.**
 
 ---
 

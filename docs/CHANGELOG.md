@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
 - Phase Completion Checklist now includes Step -1 requiring feature branch creation before starting work
 - Added settings.json to enable uv run execution in Claude Code server environment
+- New `/edit-permissions` skill for managing Claude Code permission rules in settings.json -- invocable via slash command, includes pattern syntax reference, shell operator protection warnings, and safety guardrails
 
 ### Changed
 
