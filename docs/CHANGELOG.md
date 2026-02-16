@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Automated permission tests (53 tests) validate settings.json structure, pattern syntax, matching semantics, conflict detection, security invariants, and deny > ask > allow evaluation order -- catches misconfigurations before they cause unexpected prompts or weaken security
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
 - Phase Completion Checklist now includes Step -1 requiring feature branch creation before starting work
 - Added settings.json to enable uv run execution in Claude Code server environment

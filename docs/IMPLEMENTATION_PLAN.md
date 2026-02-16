@@ -66,6 +66,7 @@
 - [x] Modernize settings.json -- replace all `:*` patterns with ` *`
 - [x] Create `.claude/skills/edit-permissions/SKILL.md` with permission management instructions
 - [x] Update documentation (IMPLEMENTATION_PLAN.md and CHANGELOG.md)
+- [x] Add automated permission tests (tests/test_permissions.py) validating structure, syntax, matching, conflicts, security, and evaluation order
 
 **Decisions & Trade-offs:**
 

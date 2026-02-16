@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pytest *)", "Bash(uv run pytest *)", "Bash(python -m pytest *)",
+      "Bash(pytest *)", "Bash(uv run pytest *)",
       "Bash(uv run ruff *)", "Bash(uv sync *)", "Bash(uv --version *)",
       "Bash(uv run pyright *)",
       "Bash(uv add *)", "Bash(uv pip *)", "Bash(uv venv *)",
@@ -21,13 +21,14 @@
       "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(tree *)",
       "Bash(pwd *)", "Bash(which *)", "Bash(echo *)", "Bash(dir *)",
       "Bash(sleep *)", "Bash(sort *)", "Bash(uniq *)", "Bash(diff *)",
-      "WebSearch", "WebFetch"
+      "WebSearch"
     ],
     "deny": ["Bash(gh secret *)"],
     "ask": [
       "Bash(python *)", "Bash(uv run python *)",
       "Bash(docker *)", "Bash(docker-compose *)", "Bash(terraform *)",
-      "Bash(gh pr merge *)", "Bash(gh workflow run *)"
+      "Bash(gh pr merge *)", "Bash(gh workflow run *)",
+      "WebFetch"
     ]
   },
   "enabledPlugins": {
