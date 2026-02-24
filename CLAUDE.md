@@ -25,6 +25,7 @@ This is a **monorepo** using uv workspaces:
 ├── scripts/                 # Development & maintenance scripts
 ├── docs/                    # Documentation
 │   ├── CHANGELOG.md         # Running changelog (Keep a Changelog format)
+│   ├── DECISIONS.md          # Decision log (feature requests + user decisions)
 │   └── IMPLEMENTATION_PLAN.md  # Phase tracking
 └── pyproject.toml           # Root workspace config (uv, ruff, pyright, pytest)
 ```
@@ -142,7 +143,7 @@ If the fix fails twice or reveals unexpected complexity, promote to **S**.
 4. Write docstrings for public APIs; record non-trivial decisions in `docs/IMPLEMENTATION_PLAN.md`
 5. Iterate (back to step 2 if needed)
 
-**S.5 Validate** -- run all three in parallel via agents:
+**S.5 Validate** -- run both in parallel via agents:
 
 | Agent | File | What it does |
 |-------|------|-------------|

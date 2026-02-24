@@ -20,9 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Permission patterns in settings.json migrated from deprecated `:*` syntax to ` *` -- no behavior change, follows current Claude Code documentation
 - CLAUDE.md restructured from monolithic Phase Completion Checklist to three-path development process tree (Quick/Standard/Project) -- task complexity now determines process depth, reducing overhead for small changes while maintaining rigor for large projects
 - All documentation and CI workflows now use `uv sync --all-packages --group dev` to correctly install all workspace members
-
 - Default base branch from "main" to "master" -- new projects created from this template will use "master" as the default branch name
 - Claude Code permissions moved from settings.local.json to settings.json -- projects created from this template will automatically inherit tool permissions at the project level, reducing approval prompts
+
+### Removed
+
+- Shell Command Style and Allowed Operations sections from CLAUDE.md -- absolute path preferences and read-only command lists are now handled by settings.json permission rules rather than prose instructions
 
 ### Fixed
 
