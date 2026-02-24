@@ -9,10 +9,11 @@ A production-ready Python project template designed for use with [Claude Code](h
   - Three-path development process (Quick / Standard / Project)
   - TDD workflow with parallel agent validation
   - Context Recovery Rule
-- **7 Claude Code agents** automating quality gates:
+- **8 Claude Code agents** automating quality gates:
   - `code-quality-validator` (haiku) -- linting, formatting, type checks
   - `test-coverage-validator` (sonnet) -- TDD validation & coverage
   - `acceptance-criteria-validator` (sonnet) -- cumulative criteria verification
+  - `code-reviewer` (sonnet) -- independent code review
   - `implementation-tracker` (sonnet) -- plan vs reality sync
   - `docs-updater` (sonnet) -- auto-update docs & changelog
   - `pr-writer` (sonnet) -- structured PR descriptions

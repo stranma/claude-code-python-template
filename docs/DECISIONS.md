@@ -6,14 +6,14 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 
 ---
 
-### 2026-02-14: Fix 5 Template Bugs
+## 2026-02-14: Fix 5 Template Bugs
 
 **Request**: Fix critical setup script bugs preventing correct package customization and workspace builds.
 
 **Decisions**:
 - Use `-name` pattern for package name replacements instead of bare name replacement (avoids false substring matches like "core" in "pyproject")
 
-### 2026-02-16: Permissions Modernization
+## 2026-02-16: Permissions Modernization
 
 **Request**: Eliminate unnecessary permission prompts, migrate deprecated syntax, add permissions management skill.
 
@@ -22,7 +22,7 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - `TaskOutput` tool instead of Read allow rule for temp dirs -- temp path is OS-specific and non-portable for a template
 - Custom `.claude/skills/` skill instead of community `@otrebu/claude-permissions` -- community skill is for claude.ai web (ZIP upload), not Claude Code CLI
 
-### 2026-02-24: CLAUDE.md Three-Path Restructuring
+## 2026-02-24: CLAUDE.md Three-Path Restructuring
 
 **Request**: Replace monolithic Phase Completion Checklist with complexity-aware development process.
 
@@ -32,7 +32,7 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Shell Command Style and Allowed Operations sections removed -- redundant with settings.json
 - "PCC now" shorthand preserved -- triggers S.5 Validate + S.6 Ship + S.7 Document
 
-### 2026-02-24: Decision Log
+## 2026-02-24: Decision Log
 
 **Request**: Create persistent decision log tracking every feature request and user decision.
 

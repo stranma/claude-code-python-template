@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `docs/DECISIONS.md` decision log tracks feature requests and user decisions across sessions -- automatically maintained during Standard and Project development paths, consistency-checked during Project analysis
+- Architectural decisions and feature requests are now captured in `docs/DECISIONS.md`, so trade-offs are never lost between sessions (maintained during Standard/Project paths, consistency-checked during Project analysis)
 - Automated permission tests (53 tests) validate settings.json structure, pattern syntax, matching semantics, conflict detection, security invariants, and deny > ask > allow evaluation order -- catches misconfigurations before they cause unexpected prompts or weaken security
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
 - Phase Completion Checklist now includes Step -1 requiring feature branch creation before starting work
