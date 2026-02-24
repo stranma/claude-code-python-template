@@ -1,6 +1,6 @@
 ---
 name: pr-writer
-description: Use this agent for Phase Completion Step 7 - PR Description generation.\n\nGenerates structured PR descriptions from git diff, implementation plan, and changelog.\n\n**Examples:**\n\n<example>\nContext: Creating a PR for a completed phase.\n\nuser: "Create a PR for the feature branch"\n\nassistant: "I'll use the pr-writer agent to generate a comprehensive PR description."\n\n<uses Task tool to launch pr-writer agent>\n</example>\n\n<example>\nContext: Feature branch ready for review.\n\nuser: "Write the PR description for this branch"\n\nassistant: "Let me use the pr-writer agent to analyze the diff and generate the PR body."\n\n<uses Task tool to launch pr-writer agent>\n</example>
+description: Use this agent for Step S.6.2 - PR Description generation.\n\nGenerates structured PR descriptions from git diff, implementation plan, and changelog.\n\n**Examples:**\n\n<example>\nContext: Creating a PR for a completed phase.\n\nuser: "Create a PR for the feature branch"\n\nassistant: "I'll use the pr-writer agent to generate a comprehensive PR description."\n\n<uses Task tool to launch pr-writer agent>\n</example>\n\n<example>\nContext: Feature branch ready for review.\n\nuser: "Write the PR description for this branch"\n\nassistant: "Let me use the pr-writer agent to analyze the diff and generate the PR body."\n\n<uses Task tool to launch pr-writer agent>\n</example>
 model: sonnet
 tools: Read, Glob, Grep, Bash
 permissionMode: dontAsk

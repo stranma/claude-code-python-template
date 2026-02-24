@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Architectural decisions and feature requests are now captured in `docs/DECISIONS.md`, so trade-offs are never lost between sessions (maintained during Standard/Project paths, consistency-checked during Project analysis)
 - Automated permission tests (53 tests) validate settings.json structure, pattern syntax, matching semantics, conflict detection, security invariants, and deny > ask > allow evaluation order -- catches misconfigurations before they cause unexpected prompts or weaken security
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
 - Phase Completion Checklist now includes Step -1 requiring feature branch creation before starting work
@@ -17,11 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Permission patterns in settings.json migrated from deprecated `:*` syntax to ` *` -- no behavior change, follows current Claude Code documentation
-- CLAUDE.md now instructs Claude to use absolute paths instead of `cd /path && command` chains, to use `TaskOutput` instead of reading temp files directly, and to avoid `git -C <path>` which breaks permission pattern matching -- eliminates unnecessary permission prompts
+- CLAUDE.md restructured from monolithic Phase Completion Checklist to three-path development process tree (Quick/Standard/Project) -- task complexity now determines process depth, reducing overhead for small changes while maintaining rigor for large projects
 - All documentation and CI workflows now use `uv sync --all-packages --group dev` to correctly install all workspace members
-
 - Default base branch from "main" to "master" -- new projects created from this template will use "master" as the default branch name
 - Claude Code permissions moved from settings.local.json to settings.json -- projects created from this template will automatically inherit tool permissions at the project level, reducing approval prompts
+
+### Removed
+
+- Shell Command Style and Allowed Operations sections from CLAUDE.md -- absolute path preferences and read-only command lists are now handled by settings.json permission rules rather than prose instructions
 
 ### Fixed
 

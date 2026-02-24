@@ -30,7 +30,7 @@ Manage Claude Code permission rules in `.claude/settings.json`. This skill helps
 
 Chained operators (`&&`, `\|`, `;`, `\|\|`) cause the **entire command** to be evaluated as one unit. Individual patterns will not match partial segments.
 
-**Solution:** Use absolute paths instead of `cd && command` chains. Ensure CLAUDE.md instructs this.
+**Solution:** Use absolute paths instead of `cd && command` chains.
 
 ## Pattern Syntax
 
