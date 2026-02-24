@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Development container (`.devcontainer/`) with Claude Code CLI, network security firewall, and Python tooling pre-installed -- developers can open the project in VS Code and get a sandboxed, reproducible environment with one click
+- Docker Compose service profiles selectable during project setup (`--services postgres`, `--services postgres-redis`, `--services custom`) -- common stacks are ready to use without writing compose files from scratch
 - Architectural decisions and feature requests are now captured in `docs/DECISIONS.md`, so trade-offs are never lost between sessions (maintained during Standard/Project paths, consistency-checked during Project analysis)
 - Automated permission tests (53 tests) validate settings.json structure, pattern syntax, matching semantics, conflict detection, security invariants, and deny > ask > allow evaluation order -- catches misconfigurations before they cause unexpected prompts or weaken security
 - Template packages now include tests/ directories so pytest discovers package tests immediately after setup
