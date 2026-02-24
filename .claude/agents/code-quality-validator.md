@@ -1,6 +1,6 @@
 ---
 name: code-quality-validator
-description: Use this agent for Phase Completion Step 3a - Code Quality validation.\n\nRuns linting, formatting verification, and type checking across monorepo packages.\n\n**Examples:**\n\n<example>\nContext: Phase completion checklist step 3a.\n\nuser: "Run code quality checks"\n\nassistant: "I'll use the code-quality-validator agent to run linting, formatting, and type checks."\n\n<uses Task tool to launch code-quality-validator agent>\n</example>\n\n<example>\nContext: Pre-commit validation before pushing.\n\nuser: "Check code quality before I commit"\n\nassistant: "Let me run the code-quality-validator agent to verify everything passes."\n\n<uses Task tool to launch code-quality-validator agent>\n</example>
+description: Use this agent for Step S.5 - Code Quality validation.\n\nRuns linting, formatting verification, and type checking across monorepo packages.\n\n**Examples:**\n\n<example>\nContext: Phase completion checklist step 3a.\n\nuser: "Run code quality checks"\n\nassistant: "I'll use the code-quality-validator agent to run linting, formatting, and type checks."\n\n<uses Task tool to launch code-quality-validator agent>\n</example>\n\n<example>\nContext: Pre-commit validation before pushing.\n\nuser: "Check code quality before I commit"\n\nassistant: "Let me run the code-quality-validator agent to verify everything passes."\n\n<uses Task tool to launch code-quality-validator agent>\n</example>
 model: haiku
 tools: Read, Glob, Bash, Edit
 permissionMode: acceptEdits

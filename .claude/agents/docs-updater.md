@@ -1,6 +1,6 @@
 ---
 name: docs-updater
-description: Use this agent for Phase Completion Step 5 - Documentation Updates.\n\nUpdates IMPLEMENTATION_PLAN.md and CHANGELOG.md after phase completion.\n\n**Examples:**\n\n<example>\nContext: A development phase was just completed.\n\nuser: "Update documentation for Phase 2 completion"\n\nassistant: "I'll use the docs-updater agent to update the implementation plan and changelog."\n\n<uses Task tool to launch docs-updater agent>\n</example>\n\n<example>\nContext: After completing a feature.\n\nuser: "Update docs after the new feature addition"\n\nassistant: "Let me run the docs-updater agent to update all documentation files."\n\n<uses Task tool to launch docs-updater agent>\n</example>
+description: Use this agent for Step S.7 / P.3.3 - Documentation Updates.\n\nUpdates IMPLEMENTATION_PLAN.md and CHANGELOG.md after phase completion.\n\n**Examples:**\n\n<example>\nContext: A development phase was just completed.\n\nuser: "Update documentation for Phase 2 completion"\n\nassistant: "I'll use the docs-updater agent to update the implementation plan and changelog."\n\n<uses Task tool to launch docs-updater agent>\n</example>\n\n<example>\nContext: After completing a feature.\n\nuser: "Update docs after the new feature addition"\n\nassistant: "Let me run the docs-updater agent to update all documentation files."\n\n<uses Task tool to launch docs-updater agent>\n</example>
 model: sonnet
 tools: Read, Glob, Grep, Bash, Edit
 permissionMode: acceptEdits
