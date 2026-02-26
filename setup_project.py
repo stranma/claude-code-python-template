@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -44,6 +45,7 @@ TEXT_EXTENSIONS = {
     ".cfg",
     ".ini",
     ".txt",
+    ".sh",
     ".dockerfile",
     ".dockerignore",
     ".gitignore",
@@ -322,6 +324,146 @@ def rename_packages(root: Path, namespace: str, packages: list[str]) -> list[str
     return actions
 
 
+# --- Docker Compose templates for devcontainer services ---
+
+_COMPOSE_APP_BLOCK = """\
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TZ: ${TZ:-America/Los_Angeles}
+        CLAUDE_CODE_VERSION: latest
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+"""
+
+COMPOSE_TEMPLATES: dict[str, str] = {
+    "postgres": _COMPOSE_APP_BLOCK
+    + """\
+    environment:
+      - DATABASE_URL=postgres://{{namespace}}:{{namespace}}@db:5432/{{namespace}}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: {{namespace}}
+      POSTGRES_PASSWORD: {{namespace}}
+      POSTGRES_DB: {{namespace}}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{namespace}}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+""",
+    "postgres-redis": _COMPOSE_APP_BLOCK
+    + """\
+    environment:
+      - DATABASE_URL=postgres://{{namespace}}:{{namespace}}@db:5432/{{namespace}}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: {{namespace}}
+      POSTGRES_PASSWORD: {{namespace}}
+      POSTGRES_DB: {{namespace}}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{namespace}}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-bookworm
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+""",
+    "custom": _COMPOSE_APP_BLOCK
+    + """\
+    # Add environment variables, depends_on, and services below
+""",
+}
+
+
+def configure_devcontainer_services(root: Path, services: str, replacements: dict[str, str]) -> list[str]:
+    """Generate docker-compose.yml and update devcontainer.json for the chosen service profile.
+
+    :param root: project root directory
+    :param services: service profile name (postgres, postgres-redis, custom)
+    :param replacements: placeholder replacement map
+    :return: list of action descriptions
+    """
+    actions = []
+    devcontainer_dir = root / ".devcontainer"
+
+    # Write docker-compose.yml from template
+    template = COMPOSE_TEMPLATES[services]
+    for placeholder, value in replacements.items():
+        template = template.replace(placeholder, value)
+    compose_path = devcontainer_dir / "docker-compose.yml"
+    compose_path.write_text(template, encoding="utf-8")
+    actions.append(f"  Created .devcontainer/docker-compose.yml ({services} profile)")
+
+    # Rewrite devcontainer.json: switch from simple build to docker-compose mode
+    devcontainer_json = devcontainer_dir / "devcontainer.json"
+    if devcontainer_json.exists():
+        raw = devcontainer_json.read_text(encoding="utf-8")
+        try:
+            config = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            print(f"  Warning: Failed to parse devcontainer.json ({exc})")
+            print("  Hint: Remove JSON comments before running with --services")
+            return actions
+
+        # Remove simple-build keys
+        config.pop("build", None)
+        config.pop("runArgs", None)
+        config.pop("workspaceMount", None)
+
+        # Add compose keys (insert at position 1, after "name")
+        items = list(config.items())
+        new_items = [items[0]]  # "name"
+        new_items.append(("dockerComposeFile", "docker-compose.yml"))
+        new_items.append(("service", "app"))
+        new_items.extend(items[1:])
+        config = dict(new_items)
+
+        devcontainer_json.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+        actions.append("  Updated devcontainer.json for docker-compose mode")
+
+    return actions
+
+
 def get_input(prompt: str, default: str = "") -> str:
     """Get user input with optional default."""
     if default:
@@ -359,6 +501,15 @@ def interactive_setup() -> dict[str, str]:
         )
         config["packages"] = packages
 
+    print("\nDocker Compose services (for devcontainer):")
+    print("  1. None (simple build, no extra services)")
+    print("  2. PostgreSQL")
+    print("  3. PostgreSQL + Redis")
+    print("  4. Custom (skeleton -- add your own services)")
+    svc_choice = get_input("Choose [1/2/3/4]", "1")
+    svc_map = {"1": "none", "2": "postgres", "3": "postgres-redis", "4": "custom"}
+    config["services"] = svc_map.get(svc_choice, "none")
+
     return config
 
 
@@ -374,6 +525,12 @@ def main() -> None:
     parser.add_argument("--base-branch", default="master", help="Base branch (default: master)")
     parser.add_argument("--type", choices=["mono", "single"], default="mono", help="Project type")
     parser.add_argument("--packages", default="core,server", help="Package names (comma-separated)")
+    parser.add_argument(
+        "--services",
+        choices=["none", "postgres", "postgres-redis", "custom"],
+        default="none",
+        help="Docker Compose services profile for devcontainer (default: none)",
+    )
     parser.add_argument("--git-init", action="store_true", help="Initialize git and make initial commit")
     parser.add_argument("--keep-setup", action="store_true", help="Don't delete this setup script after running")
 
@@ -393,6 +550,7 @@ def main() -> None:
             "base_branch": args.base_branch,
             "type": args.type,
             "packages": args.packages,
+            "services": args.services,
         }
 
     # Validate required fields
@@ -417,6 +575,7 @@ def main() -> None:
     print(f"  Namespace: {namespace}")
     print(f"  Type: {config.get('type', 'mono')}")
     print(f"  Base branch: {config.get('base_branch', 'master')}")
+    print(f"  Devcontainer services: {config.get('services', 'none')}")
 
     # Step 1: Rename {{namespace}} directories
     print("\nRenaming namespace directories...")
@@ -470,7 +629,15 @@ def main() -> None:
         )
         claude_md.write_text(content, encoding="utf-8")
 
-    # Step 5: Git init if requested
+    # Step 5: Configure devcontainer services
+    services = config.get("services", "none")
+    if services != "none":
+        print(f"\nConfiguring devcontainer services ({services})...")
+        actions = configure_devcontainer_services(TEMPLATE_DIR, services, replacements)
+        for a in actions:
+            print(a)
+
+    # Step 6: Git init if requested
     if getattr(args, "git_init", False):
         print("\nInitializing git repository...")
         try:
@@ -487,7 +654,7 @@ def main() -> None:
         except subprocess.TimeoutExpired as e:
             print(f"  Warning: Git operation timed out after 30s: {' '.join(e.cmd)}")
 
-    # Step 6: Install Claude Code plugins
+    # Step 7: Install Claude Code plugins
     print("\nInstalling Claude Code plugins...")
     if shutil.which("claude"):
         try:
@@ -509,7 +676,7 @@ def main() -> None:
         print("  Claude CLI not found -- install plugins after installing Claude Code:")
         print("  claude plugin install security-guidance --scope project")
 
-    # Step 7: Self-delete unless --keep-setup
+    # Step 8: Self-delete unless --keep-setup
     if not getattr(args, "keep_setup", False):
         print(f"\nRemoving setup script ({Path(__file__).name})...")
         print("  Run: rm setup_project.py")

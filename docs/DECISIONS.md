@@ -32,6 +32,19 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Shell Command Style and Allowed Operations sections removed -- redundant with settings.json
 - "PCC now" shorthand preserved -- triggers S.5 Validate + S.6 Ship + S.7 Document
 
+## 2026-02-24: Devcontainer Setup
+
+**Request**: Add `.devcontainer/` with Claude Code CLI, network firewall, and docker-compose profiles for common service stacks (inspired by official Claude Code devcontainer and okruh project adaptation).
+
+**Decisions**:
+- Python base image (`python:{{python_version}}-bookworm`) with Node.js 20 added for Claude Code CLI -- not Node base image, since this is a Python project
+- `vscode` user (UID 1000) with restricted sudoers (firewall-only) instead of `NOPASSWD:ALL` -- follows principle of least privilege from the official reference
+- No docker-compose.yml by default (simple build) -- compose only generated when user selects a services profile during setup
+- Three compose profiles embedded as Python string constants in `setup_project.py` rather than separate template files -- keeps the repo clean, compose files only appear when needed
+- `zsh-in-docker` script instead of manual oh-my-zsh installation -- cleaner single-step setup, matches official Claude Code reference
+- Firewall uses `aggregate` tool for GitHub CIDR consolidation -- more robust than resolving individual domains, matches official reference
+- Non-critical domain resolution failures log WARNING and continue instead of exit 1 -- DNS blips should not prevent container startup
+
 ## 2026-02-24: Decision Log
 
 **Request**: Create persistent decision log tracking every feature request and user decision.
