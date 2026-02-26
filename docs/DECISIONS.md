@@ -45,6 +45,16 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Firewall uses `aggregate` tool for GitHub CIDR consolidation -- more robust than resolving individual domains, matches official reference
 - Non-critical domain resolution failures log WARNING and continue instead of exit 1 -- DNS blips should not prevent container startup
 
+## 2026-02-26: Trim CLAUDE.md Based on "Evaluating AGENTS.md" Paper
+
+**Request**: Reduce CLAUDE.md size based on findings from ETH Zurich paper (Feb 2026) showing that large context files reduce agent task success rates by ~3% and increase cost by 20%+.
+
+**Decisions**:
+- Keep only non-discoverable constraints in CLAUDE.md (security rules, dev commands, ASCII requirement, version sync rule) -- agents can read pyproject.toml for discoverable config
+- Move full development process (Q/S/P paths, agent reference, changelog format, PCC shorthand, context recovery rule) to `docs/DEVELOPMENT_PROCESS.md` -- still accessible but not loaded into every context window
+- Remove repository structure and testing sections entirely -- proven unhelpful by the paper, fully discoverable from project files
+- CLAUDE.md must contain a mandatory directive to classify every task as Q/S/P before starting work
+
 ## 2026-02-24: Decision Log
 
 **Request**: Create persistent decision log tracking every feature request and user decision.
