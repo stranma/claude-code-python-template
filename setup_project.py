@@ -437,7 +437,13 @@ def configure_devcontainer_services(root: Path, services: str, replacements: dic
     # Rewrite devcontainer.json: switch from simple build to docker-compose mode
     devcontainer_json = devcontainer_dir / "devcontainer.json"
     if devcontainer_json.exists():
-        config = json.loads(devcontainer_json.read_text(encoding="utf-8"))
+        raw = devcontainer_json.read_text(encoding="utf-8")
+        try:
+            config = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            print(f"  Warning: Failed to parse devcontainer.json ({exc})")
+            print("  Hint: Remove JSON comments before running with --services")
+            return actions
 
         # Remove simple-build keys
         config.pop("build", None)
