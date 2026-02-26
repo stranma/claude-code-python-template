@@ -5,10 +5,11 @@ A production-ready Python project template designed for use with [Claude Code](h
 ## What's Included
 
 - **Monorepo layout** with `apps/` + `libs/` separation using [uv](https://docs.astral.sh/uv/) workspaces (inspired by [carderne/postmodern-mono](https://github.com/carderne/postmodern-mono))
-- **CLAUDE.md** with generalized development methodology (~200 lines):
-  - Three-path development process (Quick / Standard / Project)
-  - TDD workflow with parallel agent validation
-  - Context Recovery Rule
+- **CLAUDE.md** (~40 lines) with non-discoverable constraints (security, dev commands, code style, version sync) and mandatory Q/S/P task classification
+- **Development process** in `docs/DEVELOPMENT_PROCESS.md`:
+  - Quick/Standard/Project paths scaled to task complexity
+  - TDD workflow, agent reference, failure protocol
+  - Context Recovery Rule, PCC shorthand
 - **8 Claude Code agents** automating quality gates:
   - `code-quality-validator` (haiku) -- linting, formatting, type checks
   - `test-coverage-validator` (sonnet) -- TDD validation & coverage
@@ -95,7 +96,7 @@ rm setup_project.py
 
 ```
 my-project/
-├── CLAUDE.md                     # Development methodology
+├── CLAUDE.md                     # Compact agent directives (~40 lines)
 ├── apps/                         # Executable applications
 │   └── api/                      # Example: API server
 │       ├── pyproject.toml
@@ -109,6 +110,7 @@ my-project/
 ├── docs/                         # Documentation
 │   ├── CHANGELOG.md
 │   ├── DECISIONS.md
+│   ├── DEVELOPMENT_PROCESS.md
 │   └── IMPLEMENTATION_PLAN.md
 ├── .claude/                      # Claude Code config
 │   ├── settings.json             # Tool permissions & plugin config

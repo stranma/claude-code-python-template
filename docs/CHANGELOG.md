@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- New `docs/DEVELOPMENT_PROCESS.md` contains the full Q/S/P development workflow, agent reference, failure protocol, changelog format, and PCC shorthand -- accessible on demand instead of always loaded into context
 - Development container (`.devcontainer/`) with Claude Code CLI, network security firewall, and Python tooling pre-installed -- developers can open the project in VS Code and get a sandboxed, reproducible environment with one click
 - Docker Compose service profiles selectable during project setup (`--services postgres`, `--services postgres-redis`, `--services custom`) -- common stacks are ready to use without writing compose files from scratch
 - Architectural decisions and feature requests are now captured in `docs/DECISIONS.md`, so trade-offs are never lost between sessions (maintained during Standard/Project paths, consistency-checked during Project analysis)
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- CLAUDE.md trimmed from ~200 lines to ~40 lines -- keeps only non-discoverable constraints (security, dev commands, code style, version sync) and a mandatory Q/S/P task classification directive, reducing agent context overhead
 - Permission patterns in settings.json migrated from deprecated `:*` syntax to ` *` -- no behavior change, follows current Claude Code documentation
 - CLAUDE.md restructured from monolithic Phase Completion Checklist to three-path development process tree (Quick/Standard/Project) -- task complexity now determines process depth, reducing overhead for small changes while maintaining rigor for large projects
 - All documentation and CI workflows now use `uv sync --all-packages --group dev` to correctly install all workspace members

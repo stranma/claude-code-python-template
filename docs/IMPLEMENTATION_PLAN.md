@@ -43,7 +43,7 @@
 | Use -name pattern for package name replacements | Bare name replacement (e.g., "core" -> "engine") | Avoids false matches on substrings like "core" appearing in "pyproject" or other unrelated strings; more robust and predictable |
 
 **Phase Completion Steps:**
-> After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (code-quality-validator + test-coverage-validator + acceptance criteria agents), Plan agent for implementation check, docs-updater agent for documentation verification + changelog, create PR with pr-writer agent, verify CI, review-responder agent for code review (optional), phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After this phase, follow the development process in `docs/DEVELOPMENT_PROCESS.md`: classify as Q/S/P, then execute the corresponding path (validate with agents, ship, document).
 
 ---
 
@@ -77,7 +77,7 @@
 | Create custom `.claude/skills/` skill instead of installing `@otrebu/claude-permissions` | Installing community skill ZIP; using built-in `/permissions` command only | Community skill is for claude.ai web (ZIP upload), not Claude Code CLI. Custom skill lives in `.claude/skills/` and ships with the template automatically |
 
 **Phase Completion Steps:**
-> After this phase, execute the Phase Completion Checklist (steps 0-10 from CLAUDE.md): sync remote, pre-commit hygiene, commit & push, parallel validation (`.claude/agents/code-quality-validator.md` + `.claude/agents/test-coverage-validator.md` + `.claude/agents/acceptance-criteria-validator.md` -- all invoked via `subagent_type: "general-purpose"`), Plan agent or `.claude/agents/implementation-tracker.md` for implementation check, `.claude/agents/docs-updater.md` for documentation + changelog, create PR with `.claude/agents/pr-writer.md`, verify CI, code review with `.claude/agents/code-reviewer.md` (NOT `feature-dev:code-reviewer`) or `.claude/agents/review-responder.md`, phase handoff note. Consult the Failure & Rollback Protocol if any step fails.
+> After this phase, follow the development process in `docs/DEVELOPMENT_PROCESS.md`: classify as Q/S/P, then execute the corresponding path (validate with agents, ship, document).
 
 ---
 
