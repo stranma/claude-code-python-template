@@ -71,9 +71,8 @@ if echo "$OUTPUT" | grep -qiE '(postgres|mysql|mongodb|redis)://[^:]+:[^@]+@'; t
 fi
 
 if [ -n "$WARNINGS" ]; then
-    # Escape for JSON
-    ESCAPED=$(echo -e "$WARNINGS" | sed 's/"/\\"/g' | tr '\n' ' ')
-    echo "{\"systemMessage\":\"SECURITY WARNING: ${ESCAPED}Avoid sharing or committing this output. Rotate any exposed credentials immediately.\"}"
+    MSG=$(echo -e "SECURITY WARNING: ${WARNINGS}Avoid sharing or committing this output. Rotate any exposed credentials immediately.")
+    jq -n --arg msg "$MSG" '{systemMessage: $msg}'
 fi
 
 exit 0

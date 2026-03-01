@@ -75,13 +75,12 @@ fi
 
 # Run the test
 if command -v uv &>/dev/null; then
-    TEST_OUTPUT=$(uv run pytest "$TEST_FILE" -x -q 2>&1) || true
+    TEST_OUTPUT=$(uv run pytest "$TEST_FILE" -x -q 2>&1)
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -ne 0 ]; then
-        # Escape for JSON
-        ESCAPED=$(echo "$TEST_OUTPUT" | tail -20 | sed 's/"/\\"/g' | tr '\n' ' ')
-        echo "{\"systemMessage\":\"Tests failed in $TEST_FILE: $ESCAPED\"}"
+        TAIL=$(echo "$TEST_OUTPUT" | tail -20)
+        jq -n --arg msg "Tests failed in $TEST_FILE: $TAIL" '{systemMessage: $msg}'
     fi
 fi
 
