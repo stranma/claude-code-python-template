@@ -15,7 +15,9 @@ if [ "$TOOL_NAME" != "Bash" ]; then
     exit 0
 fi
 
-OUTPUT=$(echo "$INPUT" | jq -r '.tool_output.stdout // empty')
+STDOUT=$(echo "$INPUT" | jq -r '.tool_output.stdout // empty')
+STDERR=$(echo "$INPUT" | jq -r '.tool_output.stderr // empty')
+OUTPUT="${STDOUT}${STDERR}"
 
 if [ -z "$OUTPUT" ]; then
     exit 0

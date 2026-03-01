@@ -71,7 +71,7 @@ Calculate a security posture score (0-100) and assign a grade:
 
 Present the full report:
 
-```
+```markdown
 # Security Audit Report
 
 ## Score: [X]/100 (Grade: [A-F])

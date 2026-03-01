@@ -21,14 +21,13 @@ if [ -z "$COMMAND" ]; then
     exit 0
 fi
 
-# Patterns that should be blocked outright
-BLOCKED_PATTERNS=(
+# Literal patterns that should be blocked outright (matched with grep -F for safety)
+BLOCKED_LITERAL_PATTERNS=(
     'rm -rf /'
     'rm -rf /*'
     'rm -rf ~'
     'rm -rf $HOME'
     'sudo rm -rf'
-    'mkfs\.'
     'dd if=/dev/zero'
     ':(){:|:&};:'
     'chmod -R 777 /'
@@ -41,7 +40,6 @@ BLOCKED_PATTERNS=(
     'DROP DATABASE'
     'DROP TABLE'
     'TRUNCATE TABLE'
-    'DELETE FROM .* WHERE 1'
     'shutdown'
     'reboot'
     'init 0'
@@ -50,30 +48,56 @@ BLOCKED_PATTERNS=(
     'poweroff'
 )
 
-for pattern in "${BLOCKED_PATTERNS[@]}"; do
+# Regex patterns that require extended matching
+BLOCKED_REGEX_PATTERNS=(
+    'mkfs\.'
+    'DELETE FROM .* WHERE 1'
+)
+
+for pattern in "${BLOCKED_LITERAL_PATTERNS[@]}"; do
+    if echo "$COMMAND" | grep -qiF "$pattern"; then
+        jq -n --arg reason "Blocked by dangerous-actions-blocker hook: command matches dangerous pattern '$pattern'" \
+            '{"decision":"block","reason":$reason}'
+        exit 2
+    fi
+done
+
+for pattern in "${BLOCKED_REGEX_PATTERNS[@]}"; do
     if echo "$COMMAND" | grep -qiE "$pattern"; then
-        echo '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command matches dangerous pattern '"'$pattern'"'"}'
+        jq -n --arg reason "Blocked by dangerous-actions-blocker hook: command matches dangerous pattern '$pattern'" \
+            '{"decision":"block","reason":$reason}'
         exit 2
     fi
 done
 
 # Block commands containing secrets/tokens passed as arguments
-SECRET_PATTERNS=(
+# Literal key names use -F; patterns with wildcards use -E
+SECRET_LITERAL_PATTERNS=(
     'ANTHROPIC_API_KEY='
     'OPENAI_API_KEY='
     'AWS_SECRET_ACCESS_KEY='
     'GITHUB_TOKEN='
     'GH_TOKEN='
-    'DATABASE_URL=.*://.*:.*@'
     'password='
     'passwd='
     'secret='
     'token='
 )
 
-for pattern in "${SECRET_PATTERNS[@]}"; do
+SECRET_REGEX_PATTERNS=(
+    'DATABASE_URL=.*://.*:.*@'
+)
+
+for pattern in "${SECRET_LITERAL_PATTERNS[@]}"; do
+    if echo "$COMMAND" | grep -qiF "$pattern"; then
+        jq -n '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command appears to contain secrets or credentials. Use environment variables instead."}'
+        exit 2
+    fi
+done
+
+for pattern in "${SECRET_REGEX_PATTERNS[@]}"; do
     if echo "$COMMAND" | grep -qiE "$pattern"; then
-        echo '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command appears to contain secrets or credentials. Use environment variables instead."}'
+        jq -n '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command appears to contain secrets or credentials. Use environment variables instead."}'
         exit 2
     fi
 done

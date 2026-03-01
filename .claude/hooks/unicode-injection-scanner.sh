@@ -29,6 +29,12 @@ if [ -z "$CONTENT" ]; then
     exit 0
 fi
 
+# Check for PCRE support (grep -P requires GNU grep with PCRE; not available on macOS/Alpine by default)
+if ! echo "" | grep -qP '' 2>/dev/null; then
+    echo "WARNING: grep -P (PCRE) not supported on this system, unicode-injection-scanner hook disabled" >&2
+    exit 0
+fi
+
 # Zero-width characters (invisible text manipulation)
 # U+200B Zero Width Space, U+200C ZWNJ, U+200D ZWJ, U+FEFF BOM
 if echo "$CONTENT" | grep -qP '[\x{200B}\x{200C}\x{200D}\x{FEFF}]' 2>/dev/null; then

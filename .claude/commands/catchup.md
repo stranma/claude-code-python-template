@@ -29,7 +29,7 @@ Restore full project context and recommend next steps.
 
 Present findings in this format:
 
-```
+```markdown
 ## Current State
 - Branch: [branch name]
 - Phase: [current phase from IMPLEMENTATION_PLAN.md]

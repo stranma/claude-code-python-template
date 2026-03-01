@@ -32,9 +32,12 @@ if [ ! -f "$FILE_PATH" ]; then
 fi
 
 # Run ruff format (auto-fixes formatting)
-if command -v uv &>/dev/null; then
-    uv run ruff format "$FILE_PATH" 2>/dev/null
-    uv run ruff check --fix "$FILE_PATH" 2>/dev/null
+if ! command -v uv &>/dev/null; then
+    echo "WARNING: uv not found, auto-format hook disabled" >&2
+    exit 0
 fi
+
+uv run ruff format "$FILE_PATH" 2>/dev/null
+uv run ruff check --fix "$FILE_PATH" 2>/dev/null
 
 exit 0
