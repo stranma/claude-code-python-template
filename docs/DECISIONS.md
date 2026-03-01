@@ -63,3 +63,18 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Dedicated `docs/DECISIONS.md` rather than only per-phase tables in IMPLEMENTATION_PLAN.md -- long-lived, cross-phase visibility
 - No status field; prune by deletion (git preserves history) -- simpler than Active/Superseded/Obsolete tracking
 - Integrated into S.2 (log), S.7 (update), P.1 (consistency check + prune) -- Quick path exempt
+
+## 2026-03-01: Hooks, Commands, Agents, Rules, CI
+
+**Request**: Add hooks (5), slash commands (3), agents (3), review rules (4), and AI-powered CI to bring the template to a comprehensive state.
+
+**Decisions**:
+- Hook scripts in `.claude/hooks/` using `$CLAUDE_PROJECT_DIR` for path resolution -- official Claude Code convention
+- jq required for JSON parsing in hooks with graceful degradation (exit 0 + stderr warning) if missing -- avoids blocking dev work
+- auto-format hook is synchronous (no systemMessage) so Claude sees formatted code; test-on-change is informational only
+- Commands in `.claude/commands/` not `.claude/skills/` -- simpler single-file format for instruction-set content
+- security-auditor and refactoring-specialist agents are read-only (permissionMode: plan) -- analyze, not modify
+- output-evaluator uses haiku + dontAsk -- designed for automated pipeline integration, scoring is formulaic
+- Review rules have no `paths:` frontmatter (apply globally) and stay under 80 lines -- loaded into every context window
+- CLAUDE.md kept compact per ETH Zurich paper decision; detailed hooks/commands/rules tables added to DEVELOPMENT_PROCESS.md instead
+- CI review workflow uses claude-sonnet-4-6 with read-only tools (Read, Glob, Grep) -- security principle of least privilege

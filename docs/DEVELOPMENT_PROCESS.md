@@ -125,6 +125,53 @@ All custom agents are in `.claude/agents/` and use `subagent_type: "general-purp
 | S.7 | `docs-updater.md` | Verify and update documentation |
 | P.3.2 | `acceptance-criteria-validator.md` | Verify acceptance criteria |
 | P.3.3 | `implementation-tracker.md` | Verify plan matches reality |
+| -- | `agent-auditor.md` | Audit agent definitions against best practices |
+| -- | `security-auditor.md` | OWASP-based security analysis (read-only) |
+| -- | `refactoring-specialist.md` | SOLID/code smell analysis (read-only) |
+| -- | `output-evaluator.md` | LLM-as-Judge quality scoring |
+
+---
+
+## Hooks
+
+5 hook scripts in `.claude/hooks/` run automatically via settings.json:
+
+| Hook | Event | Matcher | Behavior |
+|------|-------|---------|----------|
+| `dangerous-actions-blocker.sh` | PreToolUse | Bash | Blocks `rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, secrets in args. Exit 2 = block. |
+| `unicode-injection-scanner.sh` | PreToolUse | Edit\|Write | Blocks zero-width chars, RTL overrides, ANSI escapes, null bytes, tag chars. Exit 2 = block. |
+| `output-secrets-scanner.sh` | PostToolUse | Bash | Scans output for AWS/Anthropic/OpenAI/GitHub keys, JWTs, private keys, DB URLs. Warns via systemMessage. |
+| `auto-format.sh` | PostToolUse | Edit\|Write | Runs `uv run ruff format` and `uv run ruff check --fix` on edited .py files. Synchronous. |
+| `test-on-change.sh` | PostToolUse | Edit\|Write | Discovers and runs associated test file. Informational (systemMessage on failure). |
+
+All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
+
+---
+
+## Commands
+
+3 slash commands in `.claude/commands/`:
+
+| Command | Purpose |
+|---------|---------|
+| `/catchup` | Context restoration after `/clear`. Reads IMPLEMENTATION_PLAN.md, CHANGELOG.md, git history; recommends next steps. |
+| `/security-audit` | 6-phase Python security scan (deps, secrets, code patterns, input validation, config, scoring). Outputs A-F grade. |
+| `/ship` | Pre-deployment checklist with 3 tiers: Blockers (tests, lint, types, secrets), High Priority (coverage, TODOs, docs), Recommended (git history, branch sync). |
+
+---
+
+## Rules
+
+4 review rules in `.claude/rules/` auto-loaded as project context:
+
+| Rule | Focus |
+|------|-------|
+| `architecture-review.md` | System design, dependencies, data flow, security boundaries |
+| `code-quality-review.md` | DRY, error handling, type annotations, complexity |
+| `performance-review.md` | N+1 queries, memory, caching, algorithmic complexity |
+| `test-review.md` | Coverage gaps, test quality, edge cases, assertion quality |
+
+These cover what linters cannot: architecture, design, and logic-level concerns.
 
 ---
 

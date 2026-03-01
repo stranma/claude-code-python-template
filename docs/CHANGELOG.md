@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 5 hook scripts in `.claude/hooks/` run automatically during Claude Code sessions -- 3 security hooks block destructive commands, secret leaks, and invisible Unicode attacks in real time; 2 productivity hooks auto-format Python files and auto-run associated tests after every edit
+- 3 slash commands (`/catchup`, `/security-audit`, `/ship`) provide one-command context restoration after `/clear`, a 6-phase security posture scan with A-F grading, and a 3-tier pre-deployment checklist
+- 3 new specialized agents: `security-auditor` (OWASP-based vulnerability analysis, read-only), `refactoring-specialist` (SOLID/code smell detection, read-only), `output-evaluator` (LLM-as-Judge quality scoring for automated pipelines)
+- 4 review rules in `.claude/rules/` auto-loaded as project context -- cover architecture, code quality, performance, and test quality concerns that linters cannot catch
+- AI-powered PR review via GitHub Actions (`claude-code-review.yml`) using `anthropics/claude-code-action@v1` -- automatically reviews PRs with read-only tools on open/sync/ready_for_review
+- Local config template (`.claude/settings.local.json.example`) for developer-specific hook overrides, extra permissions, and MCP server configuration
+- Tests for hooks (test_hooks.py), commands (test_commands.py), agents (test_agents.py), and rules (test_rules.py) validating existence, structure, frontmatter, and behavioral contracts
 - New `docs/DEVELOPMENT_PROCESS.md` contains the full Q/S/P development workflow, agent reference, failure protocol, changelog format, and PCC shorthand -- accessible on demand instead of always loaded into context
 - Development container (`.devcontainer/`) with Claude Code CLI, network security firewall, and Python tooling pre-installed -- developers can open the project in VS Code and get a sandboxed, reproducible environment with one click
 - Docker Compose service profiles selectable during project setup (`--services postgres`, `--services postgres-redis`, `--services custom`) -- common stacks are ready to use without writing compose files from scratch
@@ -20,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Setup script now makes `.claude/hooks/*.sh` files executable after placeholder substitution -- hook scripts work immediately after project setup without manual `chmod`
+- Agent count increased from 9 to 12 with security-auditor, refactoring-specialist, and output-evaluator
+- `docs/DEVELOPMENT_PROCESS.md` expanded with hooks, commands, rules reference tables and 4 new agent entries
 - CLAUDE.md trimmed from ~200 lines to ~40 lines -- keeps only non-discoverable constraints (security, dev commands, code style, version sync) and a mandatory Q/S/P task classification directive, reducing agent context overhead
 - Permission patterns in settings.json migrated from deprecated `:*` syntax to ` *` -- no behavior change, follows current Claude Code documentation
 - CLAUDE.md restructured from monolithic Phase Completion Checklist to three-path development process tree (Quick/Standard/Project) -- task complexity now determines process depth, reducing overhead for small changes while maintaining rigor for large projects
