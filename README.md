@@ -1,6 +1,6 @@
 # Claude Code Python Template
 
-A production-ready Python project template designed for use with [Claude Code](https://claude.com/claude-code). Includes a battle-tested development methodology with TDD workflow, automated quality gates, and a three-path development process (Quick/Standard/Project) enforced by 7 custom Claude Code agents.
+A production-ready Python project template designed for use with [Claude Code](https://claude.com/claude-code). Includes a battle-tested development methodology with TDD workflow, automated quality gates, and a three-path development process (Quick/Standard/Project) enforced by 12 custom Claude Code agents.
 
 ## What's Included
 
@@ -10,16 +10,28 @@ A production-ready Python project template designed for use with [Claude Code](h
   - Quick/Standard/Project paths scaled to task complexity
   - TDD workflow, agent reference, failure protocol
   - Context Recovery Rule, PCC shorthand
-- **8 Claude Code agents** automating quality gates:
+- **12 Claude Code agents** automating quality gates:
   - `code-quality-validator` (haiku) -- linting, formatting, type checks
   - `test-coverage-validator` (sonnet) -- TDD validation & coverage
   - `acceptance-criteria-validator` (sonnet) -- cumulative criteria verification
   - `code-reviewer` (sonnet) -- independent code review
+  - `review-responder` (sonnet) -- automated review triage (optional)
   - `implementation-tracker` (sonnet) -- plan vs reality sync
   - `docs-updater` (sonnet) -- auto-update docs & changelog
   - `pr-writer` (sonnet) -- structured PR descriptions
-  - `review-responder` (sonnet) -- automated review triage (optional)
-- **CI/CD workflows** for GitHub Actions (lint + test + typecheck + publish)
+  - `agent-auditor` (haiku) -- agent definition best practices
+  - `security-auditor` (sonnet) -- OWASP-based vulnerability detection (read-only)
+  - `refactoring-specialist` (sonnet) -- SOLID/code smell analysis (read-only)
+  - `output-evaluator` (haiku) -- LLM-as-Judge quality scoring
+- **5 security & productivity hooks**:
+  - `dangerous-actions-blocker` -- blocks destructive commands and secret leaks
+  - `unicode-injection-scanner` -- blocks invisible Unicode attacks
+  - `output-secrets-scanner` -- warns on leaked credentials in output
+  - `auto-format` -- auto-formats Python files after edits
+  - `test-on-change` -- auto-runs associated tests after edits
+- **3 slash commands**: `/catchup` (context restore), `/security-audit` (A-F grading), `/ship` (deploy checklist)
+- **4 review rules**: architecture, code quality, performance, test quality
+- **CI/CD workflows** for GitHub Actions (lint + test + typecheck + publish + AI code review)
 - **GitHub templates** for PRs, bug reports, and feature requests
 - **Setup script** for one-command project initialization
 
@@ -113,10 +125,14 @@ my-project/
 │   ├── DEVELOPMENT_PROCESS.md
 │   └── IMPLEMENTATION_PLAN.md
 ├── .claude/                      # Claude Code config
-│   ├── settings.json             # Tool permissions & plugin config
-│   └── agents/                   # 7 custom agents
+│   ├── settings.json             # Permissions, hooks, & plugins
+│   ├── agents/                   # 12 custom agents
+│   ├── commands/                 # 3 slash commands
+│   ├── hooks/                    # 5 hook scripts
+│   ├── rules/                    # 4 review rules
+│   └── skills/                   # 1 skill
 ├── .github/                      # CI/CD
-│   ├── workflows/
+│   ├── workflows/                # lint + test + typecheck + publish + AI review
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── ISSUE_TEMPLATE/
 └── pyproject.toml                # Root workspace config
@@ -185,6 +201,10 @@ Say **"PCC now"** to trigger S.5 through S.7 (Validate, Ship, Document).
 | S.7 | `docs-updater` | Documentation updates |
 | P.3.2 | `acceptance-criteria-validator` | Acceptance criteria |
 | P.3.3 | `implementation-tracker` | Plan vs reality sync |
+| -- | `agent-auditor` | Agent definition best practices |
+| -- | `security-auditor` | OWASP-based security analysis (read-only) |
+| -- | `refactoring-specialist` | SOLID/code smell analysis (read-only) |
+| -- | `output-evaluator` | LLM-as-Judge quality scoring |
 
 ## Setup Script Options
 

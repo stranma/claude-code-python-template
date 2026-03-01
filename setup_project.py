@@ -595,6 +595,16 @@ def main() -> None:
                 changed_count += 1
     print(f"  Updated {changed_count} files")
 
+    # Step 2b: Make hook scripts executable
+    hooks_dir = TEMPLATE_DIR / ".claude" / "hooks"
+    if hooks_dir.exists():
+        hook_count = 0
+        for hook_file in hooks_dir.glob("*.sh"):
+            hook_file.chmod(hook_file.stat().st_mode | 0o755)
+            hook_count += 1
+        if hook_count:
+            print(f"  Made {hook_count} hook scripts executable")
+
     # Step 3: Handle project type
     if config.get("type") == "single":
         print("\nConverting to single-package layout...")

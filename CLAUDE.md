@@ -3,6 +3,10 @@
 ## Security
 
 - **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, pickle deserialization, XSS, and os.system() usage
+- **Runtime hooks**: 3 security hooks run automatically via `.claude/hooks/`:
+  - `dangerous-actions-blocker.sh` (PreToolUse/Bash): blocks `rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, secrets in args
+  - `output-secrets-scanner.sh` (PostToolUse/Bash): warns if command output contains API keys, tokens, private keys, or DB URLs
+  - `unicode-injection-scanner.sh` (PreToolUse/Edit|Write): blocks zero-width chars, RTL overrides, ANSI escapes, null bytes
 - **Secrets handling**: Never commit API keys, tokens, passwords, or private keys -- use environment variables or `.env` files (which are gitignored)
 - **Unsafe operations**: Avoid `eval`, `exec`, `pickle.loads`, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
 - **Code review**: The code-reviewer agent checks for logic-level security issues (authorization bypass, TOCTOU, data exposure) that static pattern matching cannot catch

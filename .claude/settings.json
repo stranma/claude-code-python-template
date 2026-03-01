@@ -47,6 +47,31 @@
       "WebFetch"
     ]
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": ["\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dangerous-actions-blocker.sh"]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": ["\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/unicode-injection-scanner.sh"]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": ["\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/output-secrets-scanner.sh"]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-format.sh",
+          "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/test-on-change.sh"
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "security-guidance@claude-code-plugins": true
   }

@@ -341,7 +341,12 @@ class TestSecurityInvariants:
         assert evaluate("Bash(git restore --staged file.py)", settings) == "ask"
 
     def test_gh_issue_mutations_require_confirmation(self, settings: dict[str, Any]) -> None:
-        for cmd in ["gh issue create --title bug", "gh issue comment 5 --body fix", "gh issue close 5", "gh issue edit 5"]:
+        for cmd in [
+            "gh issue create --title bug",
+            "gh issue comment 5 --body fix",
+            "gh issue close 5",
+            "gh issue edit 5",
+        ]:
             assert evaluate(f"Bash({cmd})", settings) == "ask", f"{cmd} should require confirmation"
 
     def test_gh_pr_reopen_requires_confirmation(self, settings: dict[str, Any]) -> None:
@@ -389,9 +394,15 @@ class TestEvaluationOrder:
 
     def test_git_read_operations_are_allowed(self, settings: dict[str, Any]) -> None:
         for cmd in [
-            "git status", "git log --oneline", "git diff HEAD",
-            "git blame src/main.py", "git reflog", "git ls-files",
-            "git describe --tags", "git shortlog -sn", "git rev-list HEAD",
+            "git status",
+            "git log --oneline",
+            "git diff HEAD",
+            "git blame src/main.py",
+            "git reflog",
+            "git ls-files",
+            "git describe --tags",
+            "git shortlog -sn",
+            "git rev-list HEAD",
         ]:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
 
@@ -435,8 +446,12 @@ class TestEvaluationOrder:
 
     def test_gh_read_only_operations_are_allowed(self, settings: dict[str, Any]) -> None:
         for cmd in [
-            "gh repo view", "gh release list", "gh release view v1.0",
-            "gh label list", "gh browse", "gh search repos python",
+            "gh repo view",
+            "gh release list",
+            "gh release view v1.0",
+            "gh label list",
+            "gh browse",
+            "gh search repos python",
         ]:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
 
