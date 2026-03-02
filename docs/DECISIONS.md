@@ -78,3 +78,12 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Review rules have no `paths:` frontmatter (apply globally) and stay under 80 lines -- loaded into every context window
 - CLAUDE.md kept compact per ETH Zurich paper decision; detailed hooks/commands/rules tables added to DEVELOPMENT_PROCESS.md instead
 - CI review workflow uses claude-sonnet-4-6 with read-only tools (Read, Glob, Grep) -- security principle of least privilege
+
+## 2026-03-02: QSP Enforcement and Pre-flight Sync
+
+**Request**: Fix three process failures: QSP classification ignored until reminded, no git sync before work (caused push rejection), no branch confirmation.
+
+**Decisions**:
+- QSP classification moved to first section in CLAUDE.md -- being last made it easy to skip
+- New "Pre-flight (all paths)" section in DEVELOPMENT_PROCESS.md with mandatory git sync and explicit classification -- applies before Q, S, or P begins
+- Redundant `git fetch` removed from S.3 -- now centralized in pre-flight
