@@ -33,7 +33,7 @@ Task complexity determines process depth. Classify each task, then follow the ma
 
 Before making any changes:
 
-1. **Sync** -- `git fetch origin && git status` to confirm you are on the correct branch and up to date with remote
+1. **Sync** -- `git fetch origin && git status` to confirm you are on the correct branch and up to date with remote. If behind, pull or rebase before proceeding
 2. **Classify** -- state the QSP classification to the user before proceeding
 
 ---
@@ -42,7 +42,7 @@ Before making any changes:
 
 1. **Fix it** -- make the change
 2. **Validate** -- run `uv run ruff check . && uv run ruff format --check . && uv run pytest`
-3. **Commit and push** -- push directly to the base branch
+3. **Commit and push** -- push directly to the base branch (`main`/`master`)
 4. **Verify CI** -- run `gh run watch` to confirm the triggered run passes
 
 If branch protection is enabled: after step 2, push to a short-lived branch, run `gh pr create --fill && gh pr checks --watch`, merge, and delete the branch.
