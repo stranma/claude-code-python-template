@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Quick (Q) path now ships changes to production -- previously ended at local commit with no push or CI verification, so fixes never reached the remote
+- QSP task classification is now the first section in CLAUDE.md -- previously buried at the bottom where it was easily skipped
+- All development paths (Q, S, P) now require a pre-flight git sync before starting work -- prevents push rejections from stale local branches
+
 - Setup script now correctly renames package names inside pyproject.toml and __init__.py files when customizing packages beyond the defaults
 - Additional packages created by setup script now get correct project-prefixed names instead of inheriting the template source package name (e.g., vizier-engine instead of vizier-core when adding engine package)
 - Root pyproject.toml no longer includes a [build-system] section that caused hatchling build failures in workspace mode
