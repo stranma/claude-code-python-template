@@ -31,6 +31,8 @@ uv run ruff format .                    # Format
 uv run pyright                          # Type check
 ```
 
+Do not use unnecessary cd like `cd /path/to/cwd && git log`.
+
 ## Code Style
 
 - **Docstrings**: reStructuredText format, PEP 257
