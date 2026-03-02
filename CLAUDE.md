@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Development Process (QSP classification)
+
+Before starting ANY task, classify it as **Q** (Quick), **S** (Standard), or **P** (Project) and follow the corresponding path in `docs/DEVELOPMENT_PROCESS.md`. This classification is mandatory -- do not skip it.
+
 ## Security
 
 - **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, pickle deserialization, XSS, and os.system() usage
@@ -37,7 +41,3 @@ uv run pyright                          # Type check
 ## Version Management
 
 All packages maintain synchronized MAJOR.MINOR versions. Patch versions can differ. Check with `python scripts/check_versions.py`.
-
-## Development Process
-
-Before starting any task, classify it as **Q** (Quick), **S** (Standard), or **P** (Project) and follow the corresponding path in `docs/DEVELOPMENT_PROCESS.md`. This classification is mandatory -- do not skip it.

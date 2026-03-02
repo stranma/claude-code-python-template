@@ -29,6 +29,15 @@ Task complexity determines process depth. Classify each task, then follow the ma
 
 ---
 
+## Pre-flight (all paths)
+
+Before making any changes:
+
+1. **Sync** -- `git fetch origin && git status` to confirm you are on the correct branch and up to date with remote
+2. **Classify** -- state the QSP classification to the user before proceeding
+
+---
+
 ## Q. Quick Path
 
 1. **Fix it** -- make the change
@@ -48,7 +57,7 @@ If the fix fails twice, reveals unexpected complexity, or CI fails, promote to *
 
 **S.2 Plan** -- Read `docs/DECISIONS.md`. Check for conflicts with prior decisions; if a conflict is found, present the contradiction to the user before proceeding. Design approach. Identify files to modify. Log the feature request and any user decisions.
 
-**S.3 Setup** -- Create feature branch (`fix/...`, `feat/...`, `refactor/...`). Run `git fetch origin` and sync with base branch.
+**S.3 Setup** -- Create feature branch from the base branch (`fix/...`, `feat/...`, `refactor/...`).
 
 **S.4 Build (TDD cycle)**
 1. Create code structure (interfaces, types)
