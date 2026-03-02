@@ -81,7 +81,8 @@ All agents use `subagent_type: "general-purpose"`. Do NOT use `feature-dev:code-
 1. Commit and push
 2. Create PR (use `.claude/agents/pr-writer.md` agent to generate description)
 3. Verify CI with `gh pr checks`
-4. Code review: use `.claude/agents/code-reviewer.md` agent, or `.claude/agents/review-responder.md` if an automated reviewer (e.g., CodeRabbit) is configured. Fix Critical issues before merge.
+4. Wait for automated reviewer (e.g., CodeRabbit). When comments arrive, use `.claude/agents/review-responder.md` to triage and fix. Push fixes before proceeding.
+5. Code review: use `.claude/agents/code-reviewer.md` agent. Fix Critical issues before merge.
 
 **S.7 Document** -- Update `docs/CHANGELOG.md` with user-facing changes and `docs/DECISIONS.md` with decisions made. Use `.claude/agents/docs-updater.md` to verify.
 
@@ -132,8 +133,8 @@ All custom agents are in `.claude/agents/` and use `subagent_type: "general-purp
 | S.5 | `code-quality-validator.md` | Lint, format, type check |
 | S.5 | `test-coverage-validator.md` | Tests and coverage |
 | S.6.2 | `pr-writer.md` | Generate PR description |
-| S.6.4 | `code-reviewer.md` | Independent code review |
 | S.6.4 | `review-responder.md` | Handle automated reviewer comments |
+| S.6.5 | `code-reviewer.md` | Independent code review |
 | S.7 | `docs-updater.md` | Verify and update documentation |
 | P.3.2 | `acceptance-criteria-validator.md` | Verify acceptance criteria |
 | P.3.3 | `implementation-tracker.md` | Verify plan matches reality |
