@@ -36,6 +36,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -s /usr/bin/zsh
 
 # Install Node.js 20 (required for Claude Code CLI)
+SHELL ["/bin/bash", "-c"]
 RUN set -o pipefail && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*

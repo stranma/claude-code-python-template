@@ -33,9 +33,12 @@ Task complexity determines process depth. Classify each task, then follow the ma
 
 1. **Fix it** -- make the change
 2. **Validate** -- run `uv run ruff check . && uv run ruff format --check . && uv run pytest`
-3. **Commit**
+3. **Commit and push** -- push directly to the base branch
+4. **Verify CI** -- run `gh run watch` to confirm the triggered run passes
 
-If the fix fails twice or reveals unexpected complexity, promote to **S**.
+If branch protection is enabled: after step 2, push to a short-lived branch, run `gh pr create --fill && gh pr checks --watch`, merge, and delete the branch.
+
+If the fix fails twice, reveals unexpected complexity, or CI fails, promote to **S**.
 
 ---
 
