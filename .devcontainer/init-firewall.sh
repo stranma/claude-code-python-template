@@ -7,7 +7,11 @@ IFS=$'\n\t'
 # Uses ipset with aggregated CIDR ranges for reliable filtering.
 
 echo "iptables version: $(iptables --version)"
-echo "iptables backend: $(readlink -f "$(which iptables)")"
+if iptables_path="$(command -v iptables 2>/dev/null)"; then
+    echo "iptables backend: $(readlink -f "$iptables_path")"
+else
+    echo "iptables backend: iptables not found"
+fi
 
 if ! iptables -L -n >/dev/null 2>&1; then
     echo "ERROR: iptables not functional (missing kernel support or capabilities)"
