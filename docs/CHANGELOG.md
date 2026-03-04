@@ -50,3 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Setup script now correctly renames package names inside pyproject.toml and __init__.py files when customizing packages beyond the defaults
 - Additional packages created by setup script now get correct project-prefixed names instead of inheriting the template source package name (e.g., vizier-engine instead of vizier-core when adding engine package)
 - Root pyproject.toml no longer includes a [build-system] section that caused hatchling build failures in workspace mode
+- Devcontainer now installs Claude Code CLI via the official native binary installer, removing the Node.js 20 dependency -- reduces image size and eliminates a runtime that served no purpose in a Python project
+- Devcontainer firewall hardened: switched to iptables-legacy backend (nftables is unreliable inside Docker), added a pre-check with graceful degradation so container startup is never blocked by missing iptables support, suppressed Docker-internal chain errors on iptables -X, skipped comment lines in DNS rule restoration, and moved DROP policies after ACCEPT rules to prevent access lockout on partial failure
+- Devcontainer firewall allowlist updated: replaced registry.npmjs.org with claude.ai now that npm is no longer used
+- Shell scripts, Dockerfiles, and .devcontainer files now enforce LF line endings via .gitattributes -- prevents CRLF corruption on Windows checkouts that caused silent script failures

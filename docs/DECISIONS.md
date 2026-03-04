@@ -87,3 +87,17 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - QSP classification moved to first section in CLAUDE.md -- being last made it easy to skip
 - New "Pre-flight (all paths)" section in DEVELOPMENT_PROCESS.md with mandatory git sync and explicit classification -- applies before Q, S, or P begins
 - Redundant `git fetch` removed from S.3 -- now centralized in pre-flight
+
+## 2026-03-04: Devcontainer Native Installer and Firewall Hardening
+
+**Request**: Port devcontainer fixes from Vizier repository -- migrate Claude Code CLI from npm to native binary installer, enforce LF line endings, and harden the iptables firewall script.
+
+**Decisions**:
+- Native binary installer for Claude Code CLI instead of npm + Node.js 20 -- Node.js added no value to a Python project; the official native installer is the recommended path and removes a large runtime dependency
+- .gitattributes enforcing LF line endings for shell scripts (`*.sh`), Dockerfiles, and `.devcontainer` files -- CRLF-corrupted shell scripts fail silently on Linux, and Windows developers check out these files by default with CRLF
+- iptables-legacy backend instead of the default nftables -- nftables is unreliable inside Docker due to missing kernel module support; iptables-legacy is stable and widely supported across host kernels
+- iptables pre-check with graceful degradation (log warning, skip firewall) instead of hard exit 1 -- a missing iptables binary should degrade to an open network rather than block container startup entirely
+- Suppress stderr on iptables -X (chain flush) -- Docker pre-populates chains (DOCKER, DOCKER-USER, etc.) that cannot be deleted; the errors are expected and misleading
+- Skip lines starting with `#` during DNS rule restoration -- comment lines in the allowlist were being passed to iptables as hostnames, causing spurious errors
+- DROP policies added after all ACCEPT rules -- reordering prevents a partial-failure scenario where DROP is installed before the ACCEPT rules complete, locking out the container
+- Replaced registry.npmjs.org with claude.ai in the firewall allowlist -- npmjs.org is no longer contacted now that the native installer is used; claude.ai is required for Claude Code authentication
