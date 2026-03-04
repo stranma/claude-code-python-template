@@ -101,3 +101,17 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Skip lines starting with `#` during DNS rule restoration -- comment lines in the allowlist were being passed to iptables as hostnames, causing spurious errors
 - DROP policies added after all ACCEPT rules -- reordering prevents a partial-failure scenario where DROP is installed before the ACCEPT rules complete, locking out the container
 - Replaced registry.npmjs.org with claude.ai in the firewall allowlist -- npmjs.org is no longer contacted now that the native installer is used; claude.ai is required for Claude Code authentication
+
+## 2026-03-04: Devcontainer Permission Tiers
+
+**Request**: Expand Claude Code permissions for devcontainer usage, taking advantage of container isolation (firewall, non-root user, hooks) to reduce unnecessary permission prompts.
+
+**Decisions**:
+- Three graduated tiers (Assisted, Autonomous, Full Trust) stored as JSON in `.devcontainer/permissions/` -- copied to `.claude/settings.local.json` at container creation via build arg
+- `settings.local.json` (gitignored) for devcontainer-specific expansions, NOT modifying shared `settings.json` -- base settings remain the universal bare-metal baseline
+- Tier 2 (Autonomous, recommended default) uses `Bash(*)` allow with curated deny list -- zero prompts for bash, denied commands fail immediately instead of prompting
+- Deny list targets three categories: shared external state (gh pr merge, workflow triggers, issue mutations), irreversible actions (package publishing to npm/PyPI), and container escape vectors (docker --privileged)
+- Tool installation comprehensively denied in Tier 2 (pip, npm -g, cargo, go, gem, uv tool, apt, snap, brew) -- toolchain defined by Dockerfile, project deps via `uv add`
+- Separate `devcontainer-tool-blocker.sh` hook (not modifying existing hooks) catches tool install patterns in chained commands (`cd && pip install`) that bypass glob-based deny rules
+- `docs/DEVCONTAINER_PERMISSIONS.md` maps every denied command to its approved alternative -- CLAUDE.md references this doc so Claude checks alternatives before attempting blocked commands
+- Full plan documented in `docs/DEVCONTAINER_PERMISSION_TIERS_PLAN.md`
