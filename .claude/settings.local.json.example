@@ -5,6 +5,14 @@
     "Precedence: global < project settings.json < settings.local.json",
     "Use this for: local hook overrides, extra permissions, MCP server configs"
   ],
+  "__devcontainer_tiers": [
+    "In devcontainers, this file is auto-generated from .devcontainer/permissions/tier{1,2,3}.json.",
+    "Set PERMISSION_TIER env var before building (default: 2).",
+    "  Tier 1 (Assisted): File ops auto-allowed, bash asks per-command",
+    "  Tier 2 (Autonomous): Bash(*) with curated deny list -- zero prompts",
+    "  Tier 3 (Full Trust): Bash(*) with minimal deny -- requires branch protection",
+    "See docs/DEVCONTAINER_PERMISSIONS.md for full details."
+  ],
 
   "hooks": {
     "PreToolUse": [],

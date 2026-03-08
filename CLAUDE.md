@@ -7,10 +7,11 @@ Before starting ANY task, classify it as **Q** (Quick), **S** (Standard), or **P
 ## Security
 
 - **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, pickle deserialization, XSS, and os.system() usage
-- **Runtime hooks**: 3 security hooks run automatically via `.claude/hooks/`:
+- **Runtime hooks**: 3 base security hooks run automatically via `.claude/hooks/` (+ 1 devcontainer-only policy hook):
   - `dangerous-actions-blocker.sh` (PreToolUse/Bash): blocks `rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, secrets in args
   - `output-secrets-scanner.sh` (PostToolUse/Bash): warns if command output contains API keys, tokens, private keys, or DB URLs
   - `unicode-injection-scanner.sh` (PreToolUse/Edit|Write): blocks zero-width chars, RTL overrides, ANSI escapes, null bytes
+  - `devcontainer-policy-blocker.sh` (PreToolUse/Bash, devcontainer only): blocks tool installation, publishing, supply-chain piping, and tier-dependent GH/infra commands
 - **Secrets handling**: Never commit API keys, tokens, passwords, or private keys -- use environment variables or `.env` files (which are gitignored)
 - **Unsafe operations**: Avoid `eval`, `exec`, `pickle.loads`, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
 - **Code review**: The code-reviewer agent checks for logic-level security issues (authorization bypass, TOCTOU, data exposure) that static pattern matching cannot catch
@@ -32,6 +33,14 @@ uv run pyright                          # Type check
 ```
 
 Do not use unnecessary cd like `cd /path/to/cwd && git log`.
+
+## Devcontainer Rules
+
+When running in a devcontainer, some operations are denied by policy. Before attempting a command that might be blocked, check `docs/DEVCONTAINER_PERMISSIONS.md` for the approved alternative. Key rules:
+
+- **Dependencies**: Use `uv add <package>`, never `pip install`
+- **System tools**: Add to `.devcontainer/Dockerfile`, do not install at runtime
+- **No chained cd**: Use absolute paths. `cd /path && command` bypasses permission checks.
 
 ## Code Style
 

@@ -1,0 +1,61 @@
+{
+  "__comment": "Tier 1: Assisted -- minimal expansion. File ops and WebFetch auto-allowed, bash still asks per-command.",
+  "permissions": {
+    "allow": [
+      "Edit", "Write", "Read",
+      "WebFetch",
+      "Bash(git reset *)", "Bash(git restore *)",
+      "Bash(git rm *)", "Bash(git mv *)", "Bash(git worktree *)"
+    ],
+    "deny": [
+      "Bash(*pip install *)", "Bash(*pip3 install *)",
+      "Bash(*pipx install *)", "Bash(*python -m pip install *)",
+      "Bash(*npm install -g *)", "Bash(*npm i -g *)",
+      "Bash(*cargo install *)", "Bash(*go install *)", "Bash(*gem install *)",
+      "Bash(*uv tool install *)", "Bash(*uv tool *)",
+      "Bash(*apt install *)", "Bash(*apt-get install *)", "Bash(*dpkg -i *)",
+      "Bash(*snap install *)", "Bash(*brew install *)",
+      "Bash(*npm publish*)", "Bash(*npx npm publish*)",
+      "Bash(*uv publish *)", "Bash(*twine upload *)",
+      "Bash(*docker run --privileged *)",
+      "Bash(*docker run --cap-add=ALL *)",
+      "Bash(*docker run --pid=host *)",
+      "Bash(*docker run --network=host *)",
+      "Bash(*gh pr merge *)",
+      "Bash(*gh workflow run *)", "Bash(*gh workflow enable *)", "Bash(*gh workflow disable *)",
+      "Bash(*gh issue create *)", "Bash(*gh issue close *)", "Bash(*gh issue edit *)",
+      "Bash(*terraform *)"
+    ]
+  },
+  "enabledPlugins": {
+    "security-guidance@claude-code-plugins": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dangerous-actions-blocker.sh"},
+          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/devcontainer-policy-blocker.sh"}
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/unicode-injection-scanner.sh"}]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/output-secrets-scanner.sh"}]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-format.sh"},
+          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/test-on-change.sh"}
+        ]
+      }
+    ]
+  }
+}

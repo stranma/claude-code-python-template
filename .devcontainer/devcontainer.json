@@ -46,11 +46,12 @@
   ],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
-    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
+    "PERMISSION_TIER": "${localEnv:PERMISSION_TIER:2}"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
-  "onCreateCommand": "uv sync --all-packages --group dev",
+  "onCreateCommand": "bash -c 'cp .devcontainer/permissions/tier${PERMISSION_TIER:-2}.json .claude/settings.local.json && if ! grep -q \"{{project_name}}\" pyproject.toml 2>/dev/null; then uv sync --all-packages --group dev; fi'",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand"
 }

@@ -112,6 +112,18 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Tier 2 (Autonomous, recommended default) uses `Bash(*)` allow with curated deny list -- zero prompts for bash, denied commands fail immediately instead of prompting
 - Deny list targets three categories: shared external state (gh pr merge, workflow triggers, issue mutations), irreversible actions (package publishing to npm/PyPI), and container escape vectors (docker --privileged)
 - Tool installation comprehensively denied in Tier 2 (pip, npm -g, cargo, go, gem, uv tool, apt, snap, brew) -- toolchain defined by Dockerfile, project deps via `uv add`
-- Separate `devcontainer-tool-blocker.sh` hook (not modifying existing hooks) catches tool install patterns in chained commands (`cd && pip install`) that bypass glob-based deny rules
+- Separate `devcontainer-policy-blocker.sh` hook (not modifying existing hooks) catches denied patterns in chained commands (`cd && pip install`) that bypass glob-based deny rules
+- Single hook script with `$PERMISSION_TIER` env var for tier awareness -- fail-closed (if unset, blocks everything)
+- Each tier file is fully self-contained (permissions + ALL hooks) to survive settings.local.json replace-not-merge semantics
+- Template guard in onCreateCommand: skips `uv sync` if pyproject.toml still has `{{project_name}}` placeholders
 - `docs/DEVCONTAINER_PERMISSIONS.md` maps every denied command to its approved alternative -- CLAUDE.md references this doc so Claude checks alternatives before attempting blocked commands
 - Full plan documented in `docs/DEVCONTAINER_PERMISSION_TIERS_PLAN.md`
+
+**Accepted Risks**:
+
+| Risk | Why accepted | Mitigation |
+|------|-------------|------------|
+| Grep-based hook bypass via obfuscation (`p\ip install`, `alias p=pip; p install`) | Grep hooks are a UX layer to prevent Claude from wasting turns on naive mistakes. They cannot stop deliberate bash obfuscation from prompt injection. | Actual security boundaries are non-root user (installs fail) + firewall (limits exfiltration). The hook catches the 99% case. |
+| GitHub API via curl (`curl -H "Authorization: ..." https://api.github.com/.../merge`) | Blocking curl to github.com is fragile and breaks legitimate web fetching. The hook already blocks commands containing `GH_TOKEN=` as a literal argument. | Use fine-grained PATs with minimal scopes. CLAUDE.md instructs Claude to use `gh` CLI, not raw API calls. Token scoping is the real control. |
+| Docker not present but deny rules exist | Docker is not installed in the current template container. Deny rules exist as defense-in-depth for users who add Docker-in-Docker later. | If Docker-in-Docker is added, the deny list should be revisited (add `-v` and `--mount` volume escape patterns). |
+| Whitelisted domains as exfil channels | `github.com` is whitelisted for git/gh operations. A compromised agent could theoretically exfiltrate via gist creation or issue comments. | Token scoping (no gist/issue create permission) + GH mutation deny rules in Tier 2. Tier 3 accepts this risk explicitly. |
