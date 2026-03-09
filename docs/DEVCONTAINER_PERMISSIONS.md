@@ -85,7 +85,7 @@ Set `PERMISSION_TIER` before building the devcontainer:
 export PERMISSION_TIER=1  # or 2, 3
 
 # Or in VS Code settings (devcontainer.json override)
-# "build": { "args": { "PERMISSION_TIER": "3" } }
+# "containerEnv": { "PERMISSION_TIER": "3" }
 ```
 
 The tier is applied during `onCreateCommand` by copying the corresponding file to `.claude/settings.local.json`.

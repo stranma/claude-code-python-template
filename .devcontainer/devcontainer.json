@@ -51,7 +51,7 @@
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
-  "onCreateCommand": "bash -c 'cp .devcontainer/permissions/tier${PERMISSION_TIER:-2}.json .claude/settings.local.json && if ! grep -q \"{{project_name}}\" pyproject.toml 2>/dev/null; then uv sync --all-packages --group dev; fi'",
+  "onCreateCommand": "bash -c 'case \"${PERMISSION_TIER:-2}\" in 1) f=tier1-assisted.json;; 2) f=tier2-autonomous.json;; 3) f=tier3-full-trust.json;; *) echo \"Invalid PERMISSION_TIER: ${PERMISSION_TIER}\" >&2; exit 1;; esac; cp \".devcontainer/permissions/$f\" .claude/settings.local.json && if ! grep -q \"{{project_name}}\" pyproject.toml 2>/dev/null; then uv sync --all-packages --group dev; fi'",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand"
 }

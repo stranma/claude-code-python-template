@@ -4,11 +4,11 @@
 # Uses $PERMISSION_TIER env var: 1/2 = all categories blocked, 3 = omit GH/infra/tool-install blocks.
 # Fail-closed: if PERMISSION_TIER is unset, all categories are blocked (strictest).
 # Exit 2 = block the action, Exit 0 = allow.
-# Requires jq for JSON parsing; degrades gracefully if missing.
+# Requires jq for JSON parsing; fails closed if missing (blocks all bash).
 
 if ! command -v jq &>/dev/null; then
-    echo "WARNING: jq not found, devcontainer-policy-blocker hook disabled" >&2
-    exit 0
+    printf '%s\n' '{"decision":"block","reason":"devcontainer-policy-blocker requires jq for policy enforcement. Install jq in the Dockerfile."}'
+    exit 2
 fi
 
 INPUT=$(cat)
@@ -61,6 +61,7 @@ fi
 # --- Package publishing (all tiers) ---
 BLOCKED_PUBLISH=(
     'npm publish'
+    'npx npm publish'
     'uv publish'
     'twine upload'
 )
@@ -84,6 +85,20 @@ BLOCKED_SUPPLY_CHAIN=(
 for pattern in "${BLOCKED_SUPPLY_CHAIN[@]}"; do
     if echo "$COMMAND" | grep -qiF "$pattern"; then
         block "Blocked by devcontainer-policy-blocker: piping to a shell ('$pattern') is not allowed. Add tools to .devcontainer/Dockerfile instead."
+    fi
+done
+
+# --- Docker escape vectors (all tiers) ---
+BLOCKED_DOCKER_ESCAPE=(
+    'docker run --privileged'
+    'docker run --cap-add=ALL'
+    'docker run --pid=host'
+    'docker run --network=host'
+)
+
+for pattern in "${BLOCKED_DOCKER_ESCAPE[@]}"; do
+    if echo "$COMMAND" | grep -qiF "$pattern"; then
+        block "Blocked by devcontainer-policy-blocker: '$pattern' is not allowed. Use 'docker run' without escape flags."
     fi
 done
 
