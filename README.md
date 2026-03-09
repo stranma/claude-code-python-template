@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![uv](https://img.shields.io/badge/uv-workspace-blueviolet)](https://docs.astral.sh/uv/)
 
-**An opinionated Python project template that makes Claude Code produce consistent, tested, production-quality code.**
+**An opinionated Python project template that makes Claude Code produce consistent, tested, well-structured code.**
 
 Without structure, Claude Code results vary -- tests get skipped, context gets lost between sessions, small fixes turn into rewrites. This template gives you a complete starting point: TDD workflow, quality gates, security hooks, and a 3-command workflow that scales from typo fixes to multi-phase projects.
 
-This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling. It enforces TDD. It runs agents on every PR. If that's what you want, you're in the right place. If not, no hard feelings.
+This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling. It enforces TDD. It runs agents on every PR. It is designed for new Python projects -- not for retrofitting into existing repos. If that's what you want, you're in the right place.
 
 ## Who Is This For?
 
@@ -56,10 +56,10 @@ You never classify tasks upfront. `/done` auto-detects scope from your branch, d
 
 **1. Create your project**
 
+Click **"Use this template"** on GitHub to create your own repo, then clone it:
+
 ```bash
-# From GitHub: click "Use this template", then clone your new repo
-# Or directly:
-git clone https://github.com/stranma/claude-code-python-template my-project
+git clone https://github.com/YOUR_USERNAME/my-project.git
 cd my-project
 ```
 
@@ -111,7 +111,39 @@ See [Devcontainer Permissions](docs/DEVCONTAINER_PERMISSIONS.md) for the full de
 
 ### Core (always active)
 
-- **CLAUDE.md** -- compact agent directives (~40 lines) with `/sync`, `/design`, `/done` workflow
+- **CLAUDE.md** -- compact agent directives (~40 lines) with `/sync`, `/design`, `/done` workflow:
+
+<details>
+<summary>See the full CLAUDE.md</summary>
+
+```markdown
+## Development Process
+
+Use /sync before starting work, /design to formalize a plan, and /done when
+finished. /design estimates scope (Q/S/P) during planning; /done auto-detects
+actual scope at completion based on workspace signals.
+
+## Security
+
+- Real-time scanning: security-guidance plugin warns about unsafe patterns
+- Runtime hooks: 3 base security hooks (+ 1 devcontainer-only policy hook)
+- Secrets handling: Never commit API keys, tokens, passwords, or private keys
+
+## Development Commands
+
+- Create virtual environment: uv venv
+- Install all dependencies: uv sync --all-packages --group dev
+- Use uv run from the repo root for all commands (pytest, ruff, pyright)
+
+## Code Style
+
+- Docstrings: reStructuredText format, PEP 257
+- No special Unicode characters in code or output
+- Use types everywhere possible
+```
+
+</details>
+
 - **5 workflow agents** -- code quality, test coverage, PR writing, code review, docs updates
 - **3 security hooks** -- block destructive commands, scan for leaked secrets, catch Unicode injection
 - **CI/CD** -- GitHub Actions for lint + test + typecheck + publish + AI code review
@@ -232,13 +264,23 @@ my-tool/
 
 Package naming: by default, the first package is a library (in `libs/`), the rest are applications (in `apps/`). Use prefixes to control placement: `--packages "lib:models,lib:utils,app:api,app:worker"`.
 
-## A Note on Token Costs
+## Token Costs
 
-The agents in this template use Claude's sub-agents (mostly Sonnet, some Haiku) to validate code quality, run reviews, and write PR descriptions. This costs tokens beyond what you'd spend on a bare Claude Code session.
+The agents use Claude sub-agents to validate code, run reviews, and write PR descriptions. This adds token usage beyond a bare Claude Code session. Here's what drives costs:
 
-This is intentional. A few extra cents per PR is trivially cheap compared to the cost of your time debugging a bug that a code review agent would have caught, or manually writing PR descriptions, or re-running tests you forgot to run. The agents exist because developer time is the expensive resource, not tokens.
+**Runs on every `/done`** (most frequent):
+- `code-quality-validator` (Haiku) -- lint, format, type check
+- `test-coverage-validator` (Sonnet) -- run tests, check coverage
 
-If cost is a concern, the workflow agents (code-quality-validator, test-coverage-validator) are the ones that run most frequently. The others (pr-writer, code-reviewer, docs-updater) run once per PR. The optional specialist agents only run when you explicitly invoke them.
+**Runs once per PR** (Standard and Project scope only):
+- `pr-writer` (Sonnet) -- generate PR description
+- `code-reviewer` (Sonnet) -- independent code review
+- `docs-updater` (Sonnet) -- update changelog and decision log
+
+**Runs only when you invoke them** (optional specialists):
+- `security-auditor`, `refactoring-specialist`, `output-evaluator`, etc.
+
+The cost depends on your diff size and model pricing. For most PRs, the sub-agent overhead is small relative to the main session cost. We believe this trade-off is worth it -- developer time spent on manual review, PR writing, and re-running forgotten tests is far more expensive than tokens.
 
 ## Credits
 

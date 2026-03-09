@@ -109,15 +109,20 @@ All three sources agree: **usability before promotion**. Nobody shares a tool th
 
 ---
 
-## Priority Order
+## Completed (PR #21)
+
+- [x] README restructure (1.1) -- personas, workflow, devcontainer section, honest tone
+- [x] Getting Started guide (partial 1.4) -- docs/GETTING_STARTED.md
+- [x] Fix "battle-tested" / "production-quality" claims (1.5)
+
+## Priority Order (remaining)
 
 | Priority | Step | Type | Impact |
 |----------|------|------|--------|
-| 1 | README restructure (1.1) | Code | Unblocks everything else |
-| 2 | Community files (1.4) + fix inconsistencies (1.5) | Code | Trust signals |
-| 3 | Example project (1.2) | Code | "Show don't tell" |
-| 4 | v1.0.0 release + GitHub topics (2.1, 2.2) | GitHub | Discoverability |
-| 5 | Demo recording (3.1) | Real-world | Conversion driver |
-| 6 | awesome-claude-code + Discord + Reddit (4.1) | Real-world | First users |
-| 7 | Blog post (3.2) | Real-world | Long-tail discovery |
-| 8 | Show HN + social (4.2, 4.3) | Real-world | Broader reach |
+| 1 | Example project (1.2) | Code | "Show don't tell" |
+| 2 | Community files -- CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md (1.4) | Code | Trust signals |
+| 3 | v1.0.0 release + GitHub topics (2.1, 2.2) | GitHub | Discoverability |
+| 4 | Demo recording (3.1) | Real-world | Conversion driver |
+| 5 | awesome-claude-code + Discord + Reddit (4.1) | Real-world | First users |
+| 6 | Blog post (3.2) | Real-world | Long-tail discovery |
+| 7 | Show HN + social (4.2, 4.3) | Real-world | Broader reach |

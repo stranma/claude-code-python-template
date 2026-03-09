@@ -1,3 +1,9 @@
+# Archived Transcript: Gemini Assessment
+
+Captured: March 2025 | Model: Gemini 2.0 | Subject: stranma/claude-code-python-template
+
+---
+
 Please estimate how useful is https://github.com/stranma/claude-code-python-template
 
 Odpověď Gemini

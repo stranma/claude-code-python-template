@@ -1,3 +1,9 @@
+# Archived Transcript: Claude Assessment
+
+Captured: March 2025 | Model: Claude 3.5 Sonnet | Subject: stranma/claude-code-python-template
+
+---
+
 Please estimate how useful is stranma/claude-code-python-template
 
 Mar 1
