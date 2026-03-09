@@ -1,106 +1,197 @@
 # Claude Code Python Template
 
-A production-ready Python project template designed for use with [Claude Code](https://claude.com/claude-code). Includes a battle-tested development methodology with TDD workflow, automated quality gates, and a three-path development process (Quick/Standard/Project) enforced by 12 custom Claude Code agents.
+[![CI](https://github.com/stranma/claude-code-python-template/actions/workflows/tests.yml/badge.svg)](https://github.com/stranma/claude-code-python-template/actions/workflows/tests.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![uv](https://img.shields.io/badge/uv-workspace-blueviolet)](https://docs.astral.sh/uv/)
 
-## What's Included
+**An opinionated Python project template that makes Claude Code produce consistent, tested, well-structured code.**
 
-- **Monorepo layout** with `apps/` + `libs/` separation using [uv](https://docs.astral.sh/uv/) workspaces (inspired by [carderne/postmodern-mono](https://github.com/carderne/postmodern-mono))
-- **CLAUDE.md** (~40 lines) with non-discoverable constraints (security, dev commands, code style, version sync) and mandatory Q/S/P task classification
-- **Development process** in `docs/DEVELOPMENT_PROCESS.md`:
-  - Quick/Standard/Project paths scaled to task complexity
-  - TDD workflow, agent reference, failure protocol
-  - Context Recovery Rule, PCC shorthand
-- **12 Claude Code agents** automating quality gates:
-  - `code-quality-validator` (haiku) -- linting, formatting, type checks
-  - `test-coverage-validator` (sonnet) -- TDD validation & coverage
-  - `acceptance-criteria-validator` (sonnet) -- cumulative criteria verification
-  - `code-reviewer` (sonnet) -- independent code review
-  - `review-responder` (sonnet) -- automated review triage (optional)
-  - `implementation-tracker` (sonnet) -- plan vs reality sync
-  - `docs-updater` (sonnet) -- auto-update docs & changelog
-  - `pr-writer` (sonnet) -- structured PR descriptions
-  - `agent-auditor` (haiku) -- agent definition best practices
-  - `security-auditor` (sonnet) -- OWASP-based vulnerability detection (read-only)
-  - `refactoring-specialist` (sonnet) -- SOLID/code smell analysis (read-only)
-  - `output-evaluator` (haiku) -- LLM-as-Judge quality scoring
-- **5 security & productivity hooks**:
-  - `dangerous-actions-blocker` -- blocks destructive commands and secret leaks
-  - `unicode-injection-scanner` -- blocks invisible Unicode attacks
-  - `output-secrets-scanner` -- warns on leaked credentials in output
-  - `auto-format` -- auto-formats Python files after edits
-  - `test-on-change` -- auto-runs associated tests after edits
-- **3 slash commands**: `/catchup` (context restore), `/security-audit` (A-F grading), `/ship` (deploy checklist)
-- **4 review rules**: architecture, code quality, performance, test quality
-- **CI/CD workflows** for GitHub Actions (lint + test + typecheck + publish + AI code review)
-- **GitHub templates** for PRs, bug reports, and feature requests
-- **Setup script** for one-command project initialization
+Without structure, Claude Code results vary -- tests get skipped, context gets lost between sessions, small fixes turn into rewrites. This template gives you a complete starting point: TDD workflow, quality gates, security hooks, and a 3-command workflow that scales from typo fixes to multi-phase projects.
+
+This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling. It enforces TDD. It runs agents on every PR. It is designed for new Python projects -- not for retrofitting into existing repos. If that's what you want, you're in the right place.
+
+## Who Is This For?
+
+**Solo developer who knows Python?** You move fast, but you still want tests, type checking, linted code, and proper PRs - why not, it is now almost for free! The template's agents handle the discipline so you can focus on the problem. The devcontainer setup means you can let Claude Code run more autonomously inside a sandbox -- no worrying about it running `rm -rf` on your host machine.
+
+**Leading a team adopting Claude Code?** Without a shared baseline, every developer has their own CLAUDE.md (or none). This template standardizes how your team uses Claude Code -- same workflow, same quality gates, same security hooks across all projects. The devcontainer with [permission tiers](docs/DEVCONTAINER_PERMISSIONS.md) lets you control how much autonomy Claude Code gets: from per-command approval (Tier 1) to full trust with minimal guardrails (Tier 3).
+
+**Data scientist or ML engineer?** You know Python and pandas, but software engineering practices (CI/CD, type annotations, code review) feel like overhead. This template adds those practices without you having to learn how to set them up. Claude Code handles the ceremony; you focus on the models.
+
+**New to Claude Code and still learning Python?** This template is a good way to learn professional practices by doing. It enforces TDD, type checking, linting, and proper git workflow -- things that are hard to pick up from tutorials alone. Claude Code walks you through it, and the agents catch mistakes before they stick. You'll need basic comfort with the terminal and git. If that's new to you, see [Getting Started Guide](docs/GETTING_STARTED.md) for the prerequisites.
+
+## How It Works
+
+Three commands. That's the whole workflow:
+
+```
+/sync   Preflight check. Fetches remote, reports branch state, dirty files.
+/design Turns brainstorming into a structured plan. Reads decision log,
+        auto-classifies scope, outputs actionable steps.
+/done   Ships your work. Auto-detects scope, validates (lint + test + review),
+        commits, creates PR, updates docs. One command.
+```
+
+Real workflows:
+
+```
+Quick fix:     /sync -> fix the bug -> /done
+New feature:   /sync -> brainstorm with Claude -> /design -> "implement this" -> /done
+Multi-phase:   /sync -> brainstorm -> /design -> "implement phase 1" -> /done -> ... -> /done
+Exploration:   just talk to Claude -- no commands needed
+```
+
+You never classify tasks upfront. `/done` auto-detects scope from your branch, diff size, and whether an implementation plan exists -- then picks the right level of ceremony:
+
+| Detected scope | What `/done` does |
+|----------------|-------------------|
+| **Quick** (on main, small diff) | Validate, commit, push, verify CI |
+| **Standard** (feature branch) | Validate, commit, PR, CI, code review, update changelog |
+| **Project** (has plan phases) | All of Standard + acceptance criteria + plan update + handoff note |
 
 ## Quick Start
 
-### 1. Create from Template
+**Prerequisites:** Python 3.11+, [uv](https://docs.astral.sh/uv/getting-started/installation/), [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview). New to these tools? See [Getting Started Guide](docs/GETTING_STARTED.md).
 
-Click **"Use this template"** on GitHub, or clone directly:
+**1. Create your project**
+
+Click **"Use this template"** on GitHub to create your own repo, then clone it:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-code-python-template my-project
+git clone https://github.com/YOUR_USERNAME/my-project.git
 cd my-project
 ```
 
-### 2. Run Setup
+**2. Run setup**
 
-**Interactive mode** (for humans):
 ```bash
-python setup_project.py
+# Simple project (recommended for first use):
+python setup_project.py --name my-tool --namespace my_tool --type single
+
+# Monorepo with multiple packages:
+python setup_project.py --name my-project --namespace my_project --type mono --packages "core,api"
 ```
 
-**CLI mode** (for Claude agents or scripts):
-```bash
-python setup_project.py \
-  --name my-project \
-  --namespace my_project \
-  --description "My awesome project" \
-  --author "Your Name" \
-  --email "you@example.com" \
-  --base-branch master \
-  --type mono \
-  --packages "core,api,worker"
-```
+The setup script replaces `{{project_name}}` placeholders across all files, renames directories to match your namespace, and optionally initializes git. It only modifies files inside the project directory.
 
-**Single-package mode** (no monorepo):
-```bash
-python setup_project.py \
-  --name my-tool \
-  --namespace my_tool \
-  --type single
-```
-
-### 3. Install Dependencies
+**3. Install and verify**
 
 ```bash
 uv sync --all-packages --group dev
+uv run pytest && uv run ruff check . && uv run pyright
 ```
 
-### 4. Install Claude Code Plugins
+That's it. Claude Code picks up the agents, hooks, and rules automatically.
 
-The setup script attempts this automatically. If Claude Code wasn't installed at setup time:
+## Devcontainer Setup (Recommended)
 
-```bash
-claude plugin install security-guidance --scope project
+The template includes a full VS Code devcontainer configuration. This is the recommended way to work because it sandboxes Claude Code -- firewall, non-root user, and policy hooks limit what it can do, so you can give it more autonomy without risk to your host machine.
+
+**What the devcontainer provides:**
+
+- **Network firewall** -- all egress blocked except ~10 whitelisted domains (GitHub, PyPI, etc.)
+- **Non-root user** -- Claude Code cannot install system packages or modify system files
+- **Permission tiers** -- control how much autonomy Claude Code gets:
+
+| Tier | Name | Who | Claude Code behavior |
+|------|------|-----|----------------------|
+| 1 | Assisted | New users, compliance teams | Per-command approval |
+| 2 | Autonomous (default) | Most developers | Free to run commands, curated deny list |
+| 3 | Full Trust | Solo devs with strong CI | Minimal restrictions |
+
+- **Policy hooks** -- block dangerous patterns even in chained commands (`cd /tmp && rm -rf *`)
+- **Pre-installed tools** -- Python, uv, ruff, git, Claude Code VS Code extension
+
+Set the tier before building: `PERMISSION_TIER=1` (or 2, 3) in your environment. Default is 2.
+
+See [Devcontainer Permissions](docs/DEVCONTAINER_PERMISSIONS.md) for the full denied commands list and approved alternatives.
+
+## What's Included
+
+### Core (always active)
+
+- **CLAUDE.md** -- compact agent directives (~40 lines) with `/sync`, `/design`, `/done` workflow:
+
+<details>
+<summary>See the full CLAUDE.md</summary>
+
+```markdown
+## Development Process
+
+Use /sync before starting work, /design to formalize a plan, and /done when
+finished. /design estimates scope (Q/S/P) during planning; /done auto-detects
+actual scope at completion based on workspace signals.
+
+## Security
+
+- Real-time scanning: security-guidance plugin warns about unsafe patterns
+- Runtime hooks: 3 base security hooks (+ 1 devcontainer-only policy hook)
+- Secrets handling: Never commit API keys, tokens, passwords, or private keys
+
+## Development Commands
+
+- Create virtual environment: uv venv
+- Install all dependencies: uv sync --all-packages --group dev
+- Use uv run from the repo root for all commands (pytest, ruff, pyright)
+
+## Code Style
+
+- Docstrings: reStructuredText format, PEP 257
+- No special Unicode characters in code or output
+- Use types everywhere possible
 ```
 
-### 5. Verify
+</details>
 
-```bash
-uv run pytest
-uv run ruff check .
-uv run pyright
-```
+- **5 workflow agents** -- code quality, test coverage, PR writing, code review, docs updates
+- **3 security hooks** -- block destructive commands, scan for leaked secrets, catch Unicode injection
+- **CI/CD** -- GitHub Actions for lint + test + typecheck + publish + AI code review
+- **Tool stack** -- [uv](https://docs.astral.sh/uv/) workspaces, [ruff](https://docs.astral.sh/ruff/), [pyright](https://github.com/microsoft/pyright), [pytest](https://pytest.org/), [hatchling](https://hatch.pypa.io/)
 
-### 6. Remove Setup Script
+### Optional specialists
 
-```bash
-rm setup_project.py
-```
+<details>
+<summary>7 additional agents for larger projects</summary>
+
+| Agent | Purpose |
+|-------|---------|
+| `acceptance-criteria-validator` | Verify acceptance criteria across phases |
+| `implementation-tracker` | Keep plan and reality in sync |
+| `review-responder` | Automated review triage |
+| `agent-auditor` | Audit agent definitions for best practices |
+| `security-auditor` | OWASP-based vulnerability detection (read-only) |
+| `refactoring-specialist` | SOLID/code smell analysis (read-only) |
+| `output-evaluator` | LLM-as-Judge quality scoring |
+
+</details>
+
+<details>
+<summary>2 productivity hooks</summary>
+
+- **auto-format** -- auto-formats Python files after edits
+- **test-on-change** -- auto-runs associated tests after edits
+
+</details>
+
+<details>
+<summary>Commands and skills</summary>
+
+- `/sync` -- preflight workspace check before starting work
+- `/design` -- crystallize brainstorming into a structured plan
+- `/done` -- validate, ship, and document in one command
+- `/catchup` -- restore context after session break or `/clear`
+- `/security-audit` -- 6-phase security posture scan with A-F grading
+- `/edit-permissions` -- manage Claude Code permission rules
+
+</details>
+
+<details>
+<summary>4 review rules</summary>
+
+Architecture, code quality, performance, and test quality -- applied automatically during code review.
+
+</details>
 
 ## Project Structure
 
@@ -108,31 +199,35 @@ rm setup_project.py
 
 ```
 my-project/
-├── CLAUDE.md                     # Compact agent directives (~40 lines)
+├── CLAUDE.md                     # Agent directives (~40 lines)
 ├── apps/                         # Executable applications
-│   └── api/                      # Example: API server
+│   └── api/
 │       ├── pyproject.toml
 │       └── my_project/api/
 ├── libs/                         # Reusable libraries
-│   └── core/                     # Example: Core library
+│   └── core/
 │       ├── pyproject.toml
 │       └── my_project/core/
-├── tests/                        # Root-level tests
-├── scripts/                      # Dev scripts
-├── docs/                         # Documentation
+├── tests/
+├── docs/
 │   ├── CHANGELOG.md
 │   ├── DECISIONS.md
 │   ├── DEVELOPMENT_PROCESS.md
 │   └── IMPLEMENTATION_PLAN.md
 ├── .claude/                      # Claude Code config
-│   ├── settings.json             # Permissions, hooks, & plugins
-│   ├── agents/                   # 12 custom agents
-│   ├── commands/                 # 3 slash commands
+│   ├── settings.json
+│   ├── agents/                   # 12 agents
+│   ├── skills/                   # /sync, /design, /done, /edit-permissions
+│   ├── commands/                 # /catchup, /security-audit
 │   ├── hooks/                    # 5 hook scripts
-│   ├── rules/                    # 4 review rules
-│   └── skills/                   # 1 skill
-├── .github/                      # CI/CD
-│   ├── workflows/                # lint + test + typecheck + publish + AI review
+│   └── rules/                    # 4 review rules
+├── .devcontainer/                # VS Code devcontainer
+│   ├── Dockerfile
+│   ├── devcontainer.json
+│   ├── init-firewall.sh
+│   └── permissions/              # Tier 1/2/3 configs
+├── .github/
+│   ├── workflows/                # CI/CD
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── ISSUE_TEMPLATE/
 └── pyproject.toml                # Root workspace config
@@ -143,68 +238,14 @@ my-project/
 ```
 my-tool/
 ├── CLAUDE.md
-├── src/my_tool/                  # Package source
+├── src/my_tool/
 ├── tests/
 ├── docs/
 ├── .claude/
+├── .devcontainer/
 ├── .github/
 └── pyproject.toml
 ```
-
-## Development Methodology
-
-This template encodes a development process proven across real production projects:
-
-### Development Process Tree
-
-Task complexity determines which path executes:
-
-```
-ROOT (auto-classify):
-  Trivial fix?                          -> Q (Quick)
-  Single session, clear scope?          -> S (Standard)
-  Multi-phase, cross-session?           -> P (Project)
-
-Q. QUICK PATH
-   Q.1  Fix it
-   Q.2  Validate (lint + test)
-   Q.3  Commit
-   ESCALATION: fails twice or complex -> promote to S
-
-S. STANDARD PATH
-   S.1  Explore (read code, find patterns)
-   S.2  Plan (design approach, read decision log)
-   S.3  Setup (branch, sync remote)
-   S.4  Build (TDD: structure -> tests -> implement -> iterate)
-   S.5  Validate (parallel agents: code quality + test coverage)
-   S.6  Ship (commit, PR, CI, code review)
-   S.7  Document (CHANGELOG + decision log)
-
-P. PROJECT PATH
-   P.1  Analyze (explore, read decision log, consistency check)
-   P.2  Plan (write IMPLEMENTATION_PLAN.md, define phases)
-   P.3  Execute per phase (run S.1-S.7, verify acceptance criteria, handoff note)
-   P.4  Finalize (merge, version bump if needed)
-```
-
-Say **"PCC now"** to trigger S.5 through S.7 (Validate, Ship, Document).
-
-### Agents
-
-| Step | Agent | Purpose |
-|------|-------|---------|
-| S.5 | `code-quality-validator` | Lint, format, type check |
-| S.5 | `test-coverage-validator` | Tests and coverage |
-| S.6.2 | `pr-writer` | PR description |
-| S.6.4 | `code-reviewer` | Independent code review |
-| S.6.4 | `review-responder` | Automated review triage (optional) |
-| S.7 | `docs-updater` | Documentation updates |
-| P.3.2 | `acceptance-criteria-validator` | Acceptance criteria |
-| P.3.3 | `implementation-tracker` | Plan vs reality sync |
-| -- | `agent-auditor` | Agent definition best practices |
-| -- | `security-auditor` | OWASP-based security analysis (read-only) |
-| -- | `refactoring-specialist` | SOLID/code smell analysis (read-only) |
-| -- | `output-evaluator` | LLM-as-Judge quality scoring |
 
 ## Setup Script Options
 
@@ -218,35 +259,36 @@ Say **"PCC now"** to trigger S.5 through S.7 (Validate, Ship, Document).
 | `--python-version` | "3.11" | Python version requirement |
 | `--base-branch` | "master" | Git base branch |
 | `--type` | "mono" | `mono` or `single` |
-| `--packages` | "core,server" | Comma-separated package names |
+| `--packages` | "core,server" | Comma-separated package names (mono only) |
 | `--git-init` | false | Init git + initial commit |
-| `--keep-setup` | false | Don't suggest deleting setup script |
 
-### Package naming
+Package naming: by default, the first package is a library (in `libs/`), the rest are applications (in `apps/`). Use prefixes to control placement: `--packages "lib:models,lib:utils,app:api,app:worker"`.
 
-By default, the first package is created as a library (in `libs/`) and subsequent packages as applications (in `apps/`). Use prefixes to control placement:
+## Token Costs
 
-```bash
---packages "lib:models,lib:utils,app:api,app:worker"
-```
+The agents use Claude sub-agents to validate code, run reviews, and write PR descriptions. This adds token usage beyond a bare Claude Code session. Here's what drives costs:
 
-## Tool Stack
+**Runs on every `/done`** (most frequent):
+- `code-quality-validator` (Haiku) -- lint, format, type check
+- `test-coverage-validator` (Sonnet) -- run tests, check coverage
 
-| Tool | Purpose |
-|------|---------|
-| [uv](https://docs.astral.sh/uv/) | Package management & workspaces |
-| [ruff](https://docs.astral.sh/ruff/) | Linting & formatting (line-length: 120) |
-| [pyright](https://github.com/microsoft/pyright) | Type checking (standard mode) |
-| [pytest](https://pytest.org/) | Testing framework |
-| [hatchling](https://hatch.pypa.io/) | Build backend |
+**Runs once per PR** (Standard and Project scope only):
+- `pr-writer` (Sonnet) -- generate PR description
+- `code-reviewer` (Sonnet) -- independent code review
+- `docs-updater` (Sonnet) -- update changelog and decision log
+
+**Runs only when you invoke them** (optional specialists):
+- `security-auditor`, `refactoring-specialist`, `output-evaluator`, etc.
+
+The cost depends on your diff size and model pricing. For most PRs, the sub-agent overhead is small relative to the main session cost. We believe this trade-off is worth it -- developer time spent on manual review, PR writing, and re-running forgotten tests is far more expensive than tokens.
 
 ## Credits
 
-Monorepo structure inspired by [carderne/postmodern-mono](https://github.com/carderne/postmodern-mono), which demonstrates excellent uv workspace patterns. Key differences from that project:
+Monorepo structure inspired by [carderne/postmodern-mono](https://github.com/carderne/postmodern-mono), which demonstrates excellent uv workspace patterns. Key differences:
 
 - Direct `uv run` commands instead of Poe the Poet
 - Standard pyright instead of basedpyright
-- Claude Code methodology layer (CLAUDE.md, agents, Q/S/P process)
+- Claude Code methodology layer (CLAUDE.md, agents, skills, hooks)
 - Setup script for template initialization
 
 ## License
