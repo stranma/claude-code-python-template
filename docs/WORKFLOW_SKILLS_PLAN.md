@@ -2,7 +2,7 @@
 
 Replace rigid QSP upfront classification with three entry-point skills that meet the user where they are.
 
-**Status**: Planned (not yet implemented)
+**Status**: Implemented (2026-03-09). Note: `/plan` renamed to `/design` because `/plan` is a built-in Claude Code command.
 
 ---
 
@@ -22,7 +22,7 @@ Three skills replace the rigid classify-then-follow model:
 | Skill | Purpose | When to use |
 |-------|---------|-------------|
 | `/sync` | Pre-flight workspace sync | Before starting any work |
-| `/plan` | Crystallize brainstorm into structured plan | At start or end of brainstorming |
+| `/design` | Crystallize brainstorm into structured plan | At start or end of brainstorming |
 | `/done` | Validate + ship/land/deliver + document | When work is finished |
 
 QSP classification moves from a gate to an auto-detected property of `/done`.
@@ -35,8 +35,8 @@ Interactive workflows (user calls /done):
   Debugging:  /sync -> debug with Claude -> /done
 
 Delegated workflows (Claude handles /done automatically):
-  Feature:    /sync -> brainstorm -> /plan -> "implement this" -> [build + /done]
-  Project:    /sync -> brainstorm -> /plan -> "implement phase N" -> [build + /done]
+  Feature:    /sync -> brainstorm -> /design -> "implement this" -> [build + /done]
+  Project:    /sync -> brainstorm -> /design -> "implement phase N" -> [build + /done]
 
 Read-only:    no skills needed -- explore, analyze, review freely
 ```
@@ -78,14 +78,14 @@ Pre-flight workspace sync. Lightweight, fast.
 
 Does NOT classify the task. Does NOT read DECISIONS.md. Just "is my workspace ready?"
 
-### /plan
+### /design
 
 Crystallize brainstorming into a structured plan. Works at BOTH start and end:
 
 - **At start**: Guides brainstorming by reading codebase, checking DECISIONS.md
 - **At end**: Structures the discussion into an actionable plan with scope classification
 
-Auto-trigger: Claude should suggest `/plan` when brainstorming seems ready to formalize.
+Auto-trigger: Claude should suggest `/design` when brainstorming seems ready to formalize.
 
 Steps:
 1. Read `docs/DECISIONS.md` -- check for conflicts
@@ -144,7 +144,7 @@ Universal "I'm finished" command. Four phases:
 | Action | File |
 |--------|------|
 | CREATE | `.claude/skills/sync/SKILL.md` |
-| CREATE | `.claude/skills/plan/SKILL.md` |
+| CREATE | `.claude/skills/design/SKILL.md` |
 | CREATE | `.claude/skills/done/SKILL.md` |
 | DELETE | `.claude/commands/ship.md` |
 | MODIFY | `CLAUDE.md` |
