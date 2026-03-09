@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Template integration CI pipeline (`template-integration.yml`) tests `setup_project.py` across 5 configurations (mono-default, mono-renamed, mono-extra-pkgs, single-package, mono-postgres) -- verifies each produces a valid project that installs, lints, type-checks, and passes tests
+- Reusable `scripts/test_template_integration.sh` for local template validation with the same 9-step verification as CI
 - Workflow skill `/sync` checks workspace readiness before starting work (git fetch, status, branch info, warnings)
 - Workflow skill `/design` crystallizes brainstorming into structured plans with conflict detection against DECISIONS.md
 - Workflow skill `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline, including the former `/ship` checklist
