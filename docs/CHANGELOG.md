@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 3 workflow skills (`/sync`, `/design`, `/done`) replace rigid upfront QSP classification -- `/sync` checks workspace readiness before work, `/design` crystallizes brainstorming into structured plans with conflict detection, `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline including the former `/ship` checklist
+
+### Changed
+- QSP scope classification is now auto-detected by `/done` based on branch, diff size, and IMPLEMENTATION_PLAN.md state -- users no longer classify manually before starting work
+- PCC shorthand now triggers `/done` instead of manually executing S.5-S.7
+
+### Removed
+- `/ship` slash command -- its 3-tier validation checklist (Blockers, High Priority, Recommended) is preserved in `/done` Phase 2
+
+### Added
 - Three graduated permission tiers (Assisted, Autonomous, Full Trust) for devcontainer environments -- container isolation (firewall, non-root, hooks) enables safely expanding Claude Code permissions, reducing unnecessary prompts from dozens per session to zero in Tier 2/3 while blocking tool installation, package publishing, and container escape vectors via curated deny lists and a policy-enforcement hook
 - 5 hook scripts in `.claude/hooks/` run automatically during Claude Code sessions -- 3 security hooks block destructive commands, secret leaks, and invisible Unicode attacks in real time; 2 productivity hooks auto-format Python files and auto-run associated tests after every edit
 - 3 slash commands (`/catchup`, `/security-audit`, `/ship`) provide one-command context restoration after `/clear`, a 6-phase security posture scan with A-F grading, and a 3-tier pre-deployment checklist

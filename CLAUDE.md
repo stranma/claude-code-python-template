@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-## Development Process (QSP classification)
+## Development Process
 
-Before starting ANY task, classify it as **Q** (Quick), **S** (Standard), or **P** (Project) and follow the corresponding path in `docs/DEVELOPMENT_PROCESS.md`. This classification is mandatory -- do not skip it.
+Use `/sync` before starting work, `/design` to formalize a plan, and `/done` when finished. Scope (Q/S/P) is auto-detected by `/done` -- do not classify manually. See `docs/DEVELOPMENT_PROCESS.md` for the full workflow.
 
 ## Security
 

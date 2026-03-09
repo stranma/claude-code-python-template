@@ -2,7 +2,7 @@
 
 Replace rigid QSP upfront classification with three entry-point skills that meet the user where they are.
 
-**Status**: Planned (not yet implemented)
+**Status**: Implemented (2026-03-09). Note: `/plan` renamed to `/design` because `/plan` is a built-in Claude Code command.
 
 ---
 

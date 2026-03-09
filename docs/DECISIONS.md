@@ -102,6 +102,17 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - DROP policies added after all ACCEPT rules -- reordering prevents a partial-failure scenario where DROP is installed before the ACCEPT rules complete, locking out the container
 - Replaced registry.npmjs.org with claude.ai in the firewall allowlist -- npmjs.org is no longer contacted now that the native installer is used; claude.ai is required for Claude Code authentication
 
+## 2026-03-09: Workflow Skills (/sync, /design, /done)
+
+**Request**: Replace rigid QSP upfront classification with three entry-point skills that auto-detect scope at completion time.
+
+**Decisions**:
+- Three skills (`/sync`, `/design`, `/done`) replace mandatory upfront QSP classification -- scope is now auto-detected by `/done` based on branch, diff size, and plan state
+- `/plan` renamed to `/design` because `/plan` is a built-in Claude Code command (enters read-only plan mode) -- `/design` is distinct and forms a natural arc: sync -> design -> done
+- `/ship` command absorbed into `/done` Phase 2 -- the 3-tier checklist (Blockers/High Priority/Recommended) is preserved in `/done`'s validate phase
+- `/sync` and `/done` have `disable-model-invocation: true` (side effects: git fetch, git commit/push, PR creation); `/design` is intentionally model-invocable so Claude can suggest it during brainstorming
+- QSP paths (Q/S/P) and their step descriptions preserved in DEVELOPMENT_PROCESS.md -- skills orchestrate the paths, they don't replace them
+
 ## 2026-03-04: Devcontainer Permission Tiers
 
 **Request**: Expand Claude Code permissions for devcontainer usage, taking advantage of container isolation (firewall, non-root user, hooks) to reduce unnecessary permission prompts.

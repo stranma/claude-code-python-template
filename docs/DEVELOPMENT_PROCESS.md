@@ -19,22 +19,19 @@ This ensures continuity and prevents duplicated or missed work.
 
 ## Task Classification
 
-Task complexity determines process depth. Classify each task, then follow the matching path. Within an activated path, execute all steps -- do not cherry-pick.
+Scope (Q/S/P) is **auto-detected** by `/done` based on branch, diff size, and plan state. Do not classify manually upfront.
 
-| Path | When to use | Examples |
-|------|-------------|---------|
-| **Q** (Quick) | Trivial, obvious, single-location change | Typo fix, config tweak, one-liner bug fix |
-| **S** (Standard) | Fits in one session, clear scope | New feature, multi-file refactor, bug requiring investigation |
-| **P** (Project) | Needs phased execution across sessions | Multi-phase feature, architectural change, large migration |
+| Scope | When detected | Examples |
+|-------|---------------|---------|
+| **Q** (Quick) | On main/master, <=3 files, <100 lines | Typo fix, config tweak, one-liner bug fix |
+| **S** (Standard) | On feature branch, no active plan phases | New feature, multi-file refactor, bug requiring investigation |
+| **P** (Project) | IMPLEMENTATION_PLAN.md has unchecked phases | Multi-phase feature, architectural change, large migration |
 
 ---
 
-## Pre-flight (all paths)
+## Pre-flight
 
-Before making any changes:
-
-1. **Sync** -- `git fetch origin && git status` to confirm you are on the correct branch and up to date with remote. If behind, pull or rebase before proceeding
-2. **Classify** -- state the QSP classification to the user before proceeding
+Run `/sync` before starting any work. It fetches remote refs, reports branch state, dirty files, ahead/behind counts, and recent commits.
 
 ---
 
@@ -163,13 +160,25 @@ All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
 
 ## Commands
 
-3 slash commands in `.claude/commands/`:
+2 slash commands in `.claude/commands/`:
 
 | Command | Purpose |
 |---------|---------|
 | `/catchup` | Context restoration after `/clear`. Reads IMPLEMENTATION_PLAN.md, CHANGELOG.md, git history; recommends next steps. |
 | `/security-audit` | 6-phase Python security scan (deps, secrets, code patterns, input validation, config, scoring). Outputs A-F grade. |
-| `/ship` | Pre-deployment checklist with 3 tiers: Blockers (tests, lint, types, secrets), High Priority (coverage, TODOs, docs), Recommended (git history, branch sync). |
+
+---
+
+## Skills
+
+4 skills in `.claude/skills/`:
+
+| Skill | Purpose |
+|-------|---------|
+| `/sync` | Pre-flight workspace sync. Fetches remote, reports branch state, dirty files, ahead/behind, recent commits. |
+| `/design` | Crystallize brainstorming into a structured plan. Reads DECISIONS.md for conflicts, auto-classifies scope, outputs actionable plan. |
+| `/done` | Universal completion. Auto-detects scope (Q/S/P), validates (3-tier checklist), ships/lands/delivers, updates docs. Absorbs former `/ship`. |
+| `/edit-permissions` | Manage Claude Code permission rules in settings.json. Pattern syntax reference and safety guardrails. |
 
 ---
 
@@ -202,4 +211,4 @@ Update changelog for every MINOR or MAJOR version bump. Patch updates are option
 
 ## PCC Shorthand
 
-When the user says **"PCC"** or **"PCC now"**, execute S.5 through S.7 in order (Validate, Ship, Document).
+When the user says **"PCC"** or **"PCC now"**, run `/done` (which executes Validate, Ship/Land/Deliver, and Document).
