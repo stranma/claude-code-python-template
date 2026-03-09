@@ -129,7 +129,9 @@ class TestSkillContent:
 
     def test_design_classifies_scope(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")
-        assert "Q" in content and "S" in content and "P" in content, "design should classify scope as Q/S/P"
+        assert "**Q** (Quick)" in content and "**S** (Standard)" in content and "**P** (Project)" in content, (
+            "design should classify scope as Q/S/P with descriptive labels"
+        )
 
     def test_design_has_argument_hint(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")

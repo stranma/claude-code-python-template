@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Three graduated permission tiers (Assisted, Autonomous, Full Trust) for devcontainer environments -- container isolation (firewall, non-root, hooks) enables safely expanding Claude Code permissions, reducing unnecessary prompts from dozens per session to zero in Tier 2/3 while blocking tool installation, package publishing, and container escape vectors via curated deny lists and a policy-enforcement hook
 - 5 hook scripts in `.claude/hooks/` run automatically during Claude Code sessions -- 3 security hooks block destructive commands, secret leaks, and invisible Unicode attacks in real time; 2 productivity hooks auto-format Python files and auto-run associated tests after every edit
-- 3 slash commands (`/catchup`, `/security-audit`, `/ship`) provide one-command context restoration after `/clear`, a 6-phase security posture scan with A-F grading, and a 3-tier pre-deployment checklist
+- 2 slash commands (`/catchup`, `/security-audit`) provide one-command context restoration after `/clear` and a 6-phase security posture scan with A-F grading
 - 3 new specialized agents: `security-auditor` (OWASP-based vulnerability analysis, read-only), `refactoring-specialist` (SOLID/code smell detection, read-only), `output-evaluator` (LLM-as-Judge quality scoring for automated pipelines)
 - 4 review rules in `.claude/rules/` auto-loaded as project context -- cover architecture, code quality, performance, and test quality concerns that linters cannot catch
 - AI-powered PR review via GitHub Actions (`claude-code-review.yml`) using `anthropics/claude-code-action@v1` -- automatically reviews PRs with read-only tools on open/sync/ready_for_review

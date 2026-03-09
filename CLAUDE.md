@@ -2,7 +2,7 @@
 
 ## Development Process
 
-Use `/sync` before starting work, `/design` to formalize a plan, and `/done` when finished. Scope (Q/S/P) is auto-detected by `/done` -- do not classify manually. Before creating any plan, read `docs/DEVELOPMENT_PROCESS.md` first and include the Q/S/P classification in the plan where applicable.
+Use `/sync` before starting work, `/design` to formalize a plan, and `/done` when finished. `/design` estimates scope (Q/S/P) during planning; `/done` auto-detects actual scope at completion based on workspace signals. Before creating any plan, read `docs/DEVELOPMENT_PROCESS.md` first.
 
 ## Security
 
