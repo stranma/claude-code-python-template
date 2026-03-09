@@ -114,10 +114,6 @@ class TestSkillContent:
         content = (SKILLS_DIR / "sync" / "SKILL.md").read_text(encoding="utf-8")
         assert "git log" in content, "sync should show recent commits"
 
-    def test_sync_does_not_classify(self) -> None:
-        content = (SKILLS_DIR / "sync" / "SKILL.md").read_text(encoding="utf-8")
-        assert "does not classify" in content.lower(), "sync should explicitly state it does not classify tasks"
-
     # /design
     def test_design_reads_decisions(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")

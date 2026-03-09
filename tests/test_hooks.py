@@ -1,6 +1,7 @@
 """Tests for .claude/hooks/ -- validates hook scripts exist, are executable, and have correct structure."""
 
 import stat
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -50,8 +51,17 @@ class TestHookPermissions:
     @pytest.mark.parametrize("hook_name", ALL_HOOKS)
     def test_hook_is_executable(self, hook_name: str) -> None:
         hook_path = HOOKS_DIR / hook_name
-        mode = hook_path.stat().st_mode
-        assert mode & stat.S_IXUSR, f"{hook_name} is not executable (missing user execute bit)"
+        # Check git's tracked mode instead of filesystem stat (NTFS has no execute bit)
+        rel_path = hook_path.relative_to(Path(__file__).parent.parent)
+        result = subprocess.run(
+            ["git", "ls-files", "-s", str(rel_path)],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        assert result.stdout.startswith("100755"), (
+            f"{hook_name} is not tracked as executable by git (expected mode 100755)"
+        )
 
     @pytest.mark.parametrize("hook_name", ALL_HOOKS)
     def test_hook_is_readable(self, hook_name: str) -> None:
