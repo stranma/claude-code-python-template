@@ -1,7 +1,7 @@
 # Implementation Plan
 
-> **Status**: Phase 8 - Complete
-> **Last Updated**: 2026-03-01
+> **Status**: Phase 10 - Complete
+> **Last Updated**: 2026-03-09
 
 ## Quick Status Summary
 
@@ -15,6 +15,8 @@
 | 6 | New Agents | Complete |
 | 7 | Review Rules | Complete |
 | 8 | GitHub Actions + Config + Documentation | Complete |
+| 9 | Devcontainer Permission Tiers | Complete |
+| 10 | Workflow Skills (/sync, /design, /done) | Complete |
 
 ---
 
@@ -271,6 +273,51 @@
 
 **Phase Completion Steps:**
 > After this phase, follow the development process in `docs/DEVELOPMENT_PROCESS.md`: classify as Q/S/P, then execute the corresponding path (validate with agents, ship, document).
+
+---
+
+## Phase 9: Devcontainer Permission Tiers
+
+**Goal:** Expand Claude Code permissions inside devcontainers using container isolation (firewall, non-root, hooks) to safely reduce prompts.
+
+**Acceptance Criteria:**
+- [x] Three tier files in `.devcontainer/permissions/` (Assisted, Autonomous, Full Trust)
+- [x] `devcontainer-policy-blocker.sh` hook using `$PERMISSION_TIER` env var (fail-closed)
+- [x] Tier files are fully self-contained (permissions + hooks) to survive settings.local.json replace semantics
+- [x] `docs/DEVCONTAINER_PERMISSIONS.md` maps every denied command to its approved alternative
+- [x] Tests validate tier structure and policy hook behavior
+
+**Decisions & Trade-offs:**
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
+| Three graduated tiers stored as JSON in `.devcontainer/permissions/` | Single expanded settings file | Graduated trust levels let teams choose their risk tolerance |
+| Tier 2 uses `Bash(*)` allow with curated deny list | Per-command allow patterns | Zero prompts for bash; denied commands fail immediately instead of prompting |
+| Separate `devcontainer-policy-blocker.sh` hook | Modifying existing hooks | Catches denied patterns in chained commands that bypass glob-based deny rules |
+| Each tier file fully self-contained | Shared base + tier-specific overlays | `settings.local.json` replaces (not merges) `settings.json`; self-contained files prevent silently losing base hooks |
+
+---
+
+## Phase 10: Workflow Skills (/sync, /design, /done)
+
+**Goal:** Replace rigid upfront QSP classification with three entry-point skills that auto-detect scope at completion time.
+
+**Acceptance Criteria:**
+- [x] `/sync` skill checks workspace readiness (git fetch, status, branch info, recent commits)
+- [x] `/design` skill crystallizes brainstorming into structured plans with DECISIONS.md conflict detection
+- [x] `/done` skill auto-detects scope (Q/S/P), validates (3-tier checklist), ships/lands/delivers, documents
+- [x] `/ship` command absorbed into `/done` Phase 2 (3-tier checklist preserved)
+- [x] CLAUDE.md updated: `/design` estimates scope, `/done` auto-detects actual scope
+- [x] `tests/test_skills.py` validates all 4 skills (54 tests)
+
+**Decisions & Trade-offs:**
+
+| Decision | Alternatives Considered | Why This Option |
+|----------|------------------------|-----------------|
+| `/plan` renamed to `/design` | Keep `/plan` | `/plan` is a built-in Claude Code command (enters read-only plan mode) |
+| `/sync` and `/done` have `disable-model-invocation: true` | Allow model invocation | Both have side effects (git fetch, git commit/push, PR creation) |
+| `/design` intentionally model-invocable | Disable model invocation | Claude should suggest `/design` when brainstorming seems ready to formalize |
+| `/ship` absorbed into `/done` Phase 2 | Keep `/ship` as separate command | Single completion command is simpler; `/done` orchestrates the full pipeline |
 
 ---
 

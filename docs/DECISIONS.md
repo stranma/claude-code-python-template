@@ -128,7 +128,7 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Each tier file is fully self-contained (permissions + ALL hooks) to survive settings.local.json replace-not-merge semantics
 - Template guard in onCreateCommand: skips `uv sync` if pyproject.toml still has `{{project_name}}` placeholders
 - `docs/DEVCONTAINER_PERMISSIONS.md` maps every denied command to its approved alternative -- CLAUDE.md references this doc so Claude checks alternatives before attempting blocked commands
-- Full plan documented in `docs/DEVCONTAINER_PERMISSION_TIERS_PLAN.md`
+- Full implementation recorded in `docs/IMPLEMENTATION_PLAN.md` Phase 9
 
 **Accepted Risks**:
 
