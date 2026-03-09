@@ -113,6 +113,19 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - `/sync` and `/done` have `disable-model-invocation: true` (side effects: git fetch, git commit/push, PR creation); `/design` is intentionally model-invocable so Claude can suggest it during brainstorming
 - QSP paths (Q/S/P) and their step descriptions preserved in DEVELOPMENT_PROCESS.md -- skills orchestrate the paths, they don't replace them
 
+## 2026-03-10: Template Integration CI Pipeline
+
+**Request**: Create a CI pipeline that applies the template in various settings to catch template bugs before merge.
+
+**Decisions**:
+- New workflow `template-integration.yml` (not extending `tests.yml`) -- `tests.yml` has `{{base_branch}}` in its trigger and never fires on the raw template repo
+- GitHub Actions matrix (5 configs) + reusable shell script (`scripts/test_template_integration.sh`) -- matrix defines WHAT to test, script defines HOW to verify; script also runnable locally
+- Copy template to temp dir before applying -- `setup_project.py` modifies in-place, would destroy the checkout
+- 5 matrix configs cover all major code paths: default monorepo, package renaming, additional packages, single-package conversion, Docker Compose services
+- Unit tests gate job runs first -- fail fast if setup_project.py functions are broken before spending matrix resources
+- Placeholder check uses named pattern matching (`{{project_name}}` etc.) not generic `{{` -- avoids false positives from GitHub Actions `${{ }}` expressions
+- `test_setup_project.py` excluded from integration pytest runs -- tests setup script internals (already covered by unit-tests job), fails on single-package layout
+
 ## 2026-03-04: Devcontainer Permission Tiers
 
 **Request**: Expand Claude Code permissions for devcontainer usage, taking advantage of container isolation (firewall, non-root user, hooks) to reduce unnecessary permission prompts.
