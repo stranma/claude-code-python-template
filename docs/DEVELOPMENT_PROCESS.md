@@ -80,6 +80,7 @@ All agents use `subagent_type: "general-purpose"`. Do NOT use `feature-dev:code-
 3. Verify CI with `gh pr checks`
 4. Wait for automated reviewer (e.g., CodeRabbit). When comments arrive, use `.claude/agents/review-responder.md` to triage and fix. Push fixes before proceeding.
 5. Code review: use `.claude/agents/code-reviewer.md` agent. Fix Critical issues before merge.
+6. **Update the PR test plan** -- check off completed items, add results for any manual verification steps. Do this after every push to the PR branch, not just at the end.
 
 **S.7 Document** -- Update `docs/CHANGELOG.md` with user-facing changes and `docs/DECISIONS.md` with decisions made. Use `.claude/agents/docs-updater.md` to verify.
 
