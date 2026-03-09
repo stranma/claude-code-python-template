@@ -196,6 +196,8 @@ actual scope at completion based on workspace signals.
 - `/design` -- crystallize brainstorming into a structured plan
 - `/done` -- validate, ship, and document in one command
 - `/catchup` -- restore context after session break or `/clear`
+- `/cove` -- Chain-of-Verification for high-stakes accuracy (4-step self-verification)
+- `/cove-isolated` -- CoVe with isolated verification agent (prevents confirmation bias)
 - `/security-audit` -- 6-phase security posture scan with A-F grading
 - `/edit-permissions` -- manage Claude Code permission rules
 
@@ -233,7 +235,7 @@ my-project/
 │   ├── settings.json
 │   ├── agents/                   # 12 agents
 │   ├── skills/                   # /sync, /design, /done, /edit-permissions
-│   ├── commands/                 # /catchup, /security-audit
+│   ├── commands/                 # /catchup, /cove, /cove-isolated, /security-audit
 │   ├── hooks/                    # 5 hook scripts
 │   └── rules/                    # 4 review rules
 ├── .devcontainer/                # VS Code devcontainer
@@ -305,6 +307,8 @@ Monorepo structure inspired by [carderne/postmodern-mono](https://github.com/car
 - Standard pyright instead of basedpyright
 - Claude Code methodology layer (CLAUDE.md, agents, skills, hooks)
 - Setup script for template initialization
+
+Chain-of-Verification commands and template sync workflow inspired by [serpro69/claude-starter-kit](https://github.com/serpro69/claude-starter-kit), a language-agnostic Claude Code starter template with MCP server integrations. Python SOLID checklist items in the refactoring-specialist agent also draw from their structured code review approach.
 
 ## License
 

@@ -8,6 +8,8 @@ COMMANDS_DIR = Path(__file__).parent.parent / ".claude" / "commands"
 
 ALL_COMMANDS = [
     "catchup.md",
+    "cove.md",
+    "cove-isolated.md",
     "security-audit.md",
 ]
 
@@ -92,6 +94,25 @@ class TestCommandContent:
         assert "secret" in content.lower(), "security-audit should scan for secrets"
 
     def test_security_audit_checks_code_patterns(self) -> None:
+        # Checks that security-audit references unsafe code patterns (static strings, not code usage)
         content = (COMMANDS_DIR / "security-audit.md").read_text(encoding="utf-8")
         for pattern in ["eval", "exec", "pickle", "subprocess"]:
             assert pattern in content, f"security-audit missing code pattern: {pattern}"
+
+    def test_cove_has_four_steps(self) -> None:
+        content = (COMMANDS_DIR / "cove.md").read_text(encoding="utf-8")
+        for step in ["Step 1", "Step 2", "Step 3", "Step 4"]:
+            assert step in content, f"cove missing {step}"
+
+    def test_cove_has_verification_questions(self) -> None:
+        content = (COMMANDS_DIR / "cove.md").read_text(encoding="utf-8")
+        assert "Verification" in content, "cove should mention verification"
+
+    def test_cove_isolated_uses_agent(self) -> None:
+        content = (COMMANDS_DIR / "cove-isolated.md").read_text(encoding="utf-8")
+        assert "Agent" in content, "cove-isolated should use Agent tool for isolation"
+
+    def test_cove_isolated_has_four_steps(self) -> None:
+        content = (COMMANDS_DIR / "cove-isolated.md").read_text(encoding="utf-8")
+        for step in ["Step 1", "Step 2", "Step 3", "Step 4"]:
+            assert step in content, f"cove-isolated missing {step}"

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Chain-of-Verification (CoVe) commands (`/cove`, `/cove-isolated`) for high-stakes accuracy -- 4-step self-verification process based on Meta's CoVe paper, with an isolated variant that runs verification in a separate agent to prevent confirmation bias
+- Template sync workflow (`.github/workflows/template-sync.yml`) for downstream projects to auto-sync upstream template improvements -- runs weekly or on manual trigger, creates PRs with changed template-managed files while preserving project-specific code
+- Python-specific SOLID checklist in `refactoring-specialist` agent -- checks for mutable default arguments, ABC/Protocol misuse, missing dependency injection, god classes, `@property` overuse, and circular imports
 - Template integration CI pipeline (`template-integration.yml`) tests `setup_project.py` across 5 configurations (mono-default, mono-renamed, mono-extra-pkgs, single-package, mono-postgres) -- verifies each produces a valid project that installs, lints, type-checks, and passes tests
 - Reusable `scripts/test_template_integration.sh` for local template validation with the same 9-step verification as CI
 - Workflow skill `/sync` checks workspace readiness before starting work (git fetch, status, branch info, warnings)
@@ -15,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflow skill `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline, including the former `/ship` checklist
 - Three graduated permission tiers (Assisted, Autonomous, Full Trust) for devcontainer environments -- container isolation (firewall, non-root, hooks) enables safely expanding Claude Code permissions, reducing unnecessary prompts from dozens per session to zero in Tier 2/3 while blocking tool installation, package publishing, and container escape vectors via curated deny lists and a policy-enforcement hook
 - 5 hook scripts in `.claude/hooks/` run automatically during Claude Code sessions -- 3 security hooks block destructive commands, secret leaks, and invisible Unicode attacks in real time; 2 productivity hooks auto-format Python files and auto-run associated tests after every edit
-- 2 slash commands (`/catchup`, `/security-audit`) provide one-command context restoration after `/clear` and a 6-phase security posture scan with A-F grading
+- 4 slash commands (`/catchup`, `/cove`, `/cove-isolated`, `/security-audit`) provide context restoration, chain-of-verification for accuracy, and a 6-phase security posture scan with A-F grading
 - 3 new specialized agents: `security-auditor` (OWASP-based vulnerability analysis, read-only), `refactoring-specialist` (SOLID/code smell detection, read-only), `output-evaluator` (LLM-as-Judge quality scoring for automated pipelines)
 - 4 review rules in `.claude/rules/` auto-loaded as project context -- cover architecture, code quality, performance, and test quality concerns that linters cannot catch
 - AI-powered PR review via GitHub Actions (`claude-code-review.yml`) using `anthropics/claude-code-action@v1` -- automatically reviews PRs with read-only tools on open/sync/ready_for_review

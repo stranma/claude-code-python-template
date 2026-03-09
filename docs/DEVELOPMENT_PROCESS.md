@@ -161,11 +161,13 @@ All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
 
 ## Commands
 
-2 slash commands in `.claude/commands/`:
+4 slash commands in `.claude/commands/`:
 
 | Command | Purpose |
 |---------|---------|
 | `/catchup` | Context restoration after `/clear`. Reads IMPLEMENTATION_PLAN.md, CHANGELOG.md, git history; recommends next steps. |
+| `/cove` | Chain-of-Verification (CoVe) for high-stakes accuracy. 4-step process: generate baseline, plan verifications, verify from source, produce corrected response. |
+| `/cove-isolated` | Isolated CoVe variant. Verification step runs in a separate agent that cannot see the baseline response, preventing confirmation bias. |
 | `/security-audit` | 6-phase Python security scan (deps, secrets, code patterns, input validation, config, scoring). Outputs A-F grade. |
 
 ---
