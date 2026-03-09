@@ -18,7 +18,11 @@ PRODUCTIVITY_HOOKS = [
     "test-on-change.sh",
 ]
 
-ALL_HOOKS = SECURITY_HOOKS + PRODUCTIVITY_HOOKS
+DEVCONTAINER_HOOKS = [
+    "devcontainer-policy-blocker.sh",
+]
+
+ALL_HOOKS = SECURITY_HOOKS + PRODUCTIVITY_HOOKS + DEVCONTAINER_HOOKS
 
 
 class TestHookExistence:
