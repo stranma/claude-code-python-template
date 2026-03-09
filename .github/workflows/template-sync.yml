@@ -1,0 +1,169 @@
+# Inspired by serpro69/claude-starter-kit template-sync approach
+name: Template Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Show changes without creating a PR"
+        type: boolean
+        default: false
+      template_repo:
+        description: "Upstream template repository (owner/repo)"
+        type: string
+        default: "stranma/claude-code-python-template"
+      template_branch:
+        description: "Upstream template branch"
+        type: string
+        default: "master"
+  schedule:
+    - cron: "0 9 * * 1" # Weekly on Monday at 09:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync from upstream template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine template repo
+        id: config
+        run: |
+          REPO="${{ inputs.template_repo || 'stranma/claude-code-python-template' }}"
+          BRANCH="${{ inputs.template_branch || 'master' }}"
+          echo "repo=${REPO}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "Syncing from ${REPO}@${BRANCH}"
+
+      - name: Add upstream remote and fetch
+        run: |
+          git remote add upstream "https://github.com/${{ steps.config.outputs.repo }}.git" || true
+          git fetch upstream "${{ steps.config.outputs.branch }}"
+
+      - name: Compute template diff
+        id: diff
+        env:
+          UPSTREAM_BRANCH: ${{ steps.config.outputs.branch }}
+        run: |
+          # Paths managed by the template (synced from upstream)
+          # Defined once here; reused in the apply step via GITHUB_OUTPUT
+          TEMPLATE_PATHS=".claude/agents/ .claude/commands/ .claude/hooks/ .claude/rules/ .claude/skills/ .devcontainer/ .github/workflows/ docs/DEVELOPMENT_PROCESS.md"
+          echo "template_paths=${TEMPLATE_PATHS}" >> "$GITHUB_OUTPUT"
+
+          # Get changed files between local and upstream
+          CHANGED=$(git diff --name-only HEAD "upstream/${UPSTREAM_BRANCH}" -- ${TEMPLATE_PATHS} 2>/dev/null || true)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No template changes found"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Template changes detected:"
+            echo "$CHANGED"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            # Store diff summary for PR body
+            DIFF_STAT=$(git diff --stat HEAD "upstream/${UPSTREAM_BRANCH}" -- ${TEMPLATE_PATHS} 2>/dev/null || true)
+            {
+              echo "diff_stat<<EOF"
+              echo "$DIFF_STAT"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Show diff (dry run)
+        if: steps.diff.outputs.has_changes == 'true' && (inputs.dry_run == true || inputs.dry_run == 'true')
+        run: |
+          echo "=== DRY RUN: Changes that would be synced ==="
+          echo "${{ steps.diff.outputs.diff_stat }}"
+
+      - name: Apply template changes
+        id: apply
+        if: steps.diff.outputs.has_changes == 'true' && inputs.dry_run != true && inputs.dry_run != 'true'
+        env:
+          UPSTREAM_BRANCH: ${{ steps.config.outputs.branch }}
+          TEMPLATE_PATHS: ${{ steps.diff.outputs.template_paths }}
+        run: |
+          SYNC_BRANCH="template-sync/$(date +%Y%m%d)"
+
+          # Check if branch already exists
+          if git rev-parse --verify "refs/heads/${SYNC_BRANCH}" > /dev/null 2>&1; then
+            echo "Sync branch ${SYNC_BRANCH} already exists, updating"
+            git checkout "${SYNC_BRANCH}"
+          else
+            git checkout -b "${SYNC_BRANCH}"
+          fi
+
+          # Checkout template-managed files from upstream
+          for path in ${TEMPLATE_PATHS}; do
+            git checkout "upstream/${UPSTREAM_BRANCH}" -- "${path}" 2>/dev/null || true
+          done
+
+          # Stage and commit
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit after checkout"
+            echo "changes_applied=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "changes_applied=true" >> "$GITHUB_OUTPUT"
+
+          git commit -m "chore: sync template from upstream
+
+          Source: ${{ steps.config.outputs.repo }}@${{ steps.config.outputs.branch }}"
+
+          git push -u origin "${SYNC_BRANCH}"
+
+          echo "sync_branch=${SYNC_BRANCH}" >> "$GITHUB_ENV"
+
+      - name: Create pull request
+        if: steps.apply.outputs.changes_applied == 'true' && inputs.dry_run != true && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check for existing PR from this branch
+          EXISTING_PR=$(gh pr list --head "${{ env.sync_branch }}" --json number --jq '.[0].number' 2>/dev/null || true)
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #${EXISTING_PR} already exists for this sync branch"
+            exit 0
+          fi
+
+          gh pr create \
+            --title "chore: sync upstream template changes" \
+            --body "$(cat <<'EOF'
+          ## Template Sync
+
+          Automated sync of template-managed files from upstream.
+
+          **Source:** ${{ steps.config.outputs.repo }}@${{ steps.config.outputs.branch }}
+
+          ### Changed files
+          ```
+          ${{ steps.diff.outputs.diff_stat }}
+          ```
+
+          ### What to review
+          - Check if any synced files conflict with project-specific customizations
+          - Template-managed paths: `.claude/`, `.devcontainer/`, `.github/workflows/`, `docs/DEVELOPMENT_PROCESS.md`
+          - Project-specific files (`apps/`, `libs/`, `tests/`, `pyproject.toml`, `README.md`) are NOT touched
+
+          ### How to resolve conflicts
+          If a synced file conflicts with local changes, edit the file on this branch to keep your customizations, then merge.
+          EOF
+          )"
+
+      - name: Summary
+        if: steps.diff.outputs.has_changes == 'false'
+        run: echo "Already up to date with upstream template. No sync needed."
