@@ -42,7 +42,7 @@ jobs:
             services: none
           - config-name: single-package
             project-type: single
-            packages: "core,server"
+            packages: "core,server"  # ignored by setup_project.py in single mode
             services: none
           - config-name: mono-postgres
             project-type: mono

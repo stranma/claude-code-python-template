@@ -109,6 +109,7 @@ step_pass "Template applied"
 # Step 3: Verify no remaining placeholders
 # ---------------------------------------------------------------------------
 echo "Step 3: Check for remaining template placeholders"
+# All subsequent steps run inside $WORK_DIR (uv sync/run need the project root as cwd).
 cd "$WORK_DIR"
 
 # Search for actual template placeholders (not GitHub Actions ${{ }} expressions).
