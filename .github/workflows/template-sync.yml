@@ -88,6 +88,7 @@ jobs:
           echo "${{ steps.diff.outputs.diff_stat }}"
 
       - name: Apply template changes
+        id: apply
         if: steps.diff.outputs.has_changes == 'true' && inputs.dry_run != true && inputs.dry_run != 'true'
         env:
           UPSTREAM_BRANCH: ${{ steps.config.outputs.branch }}
@@ -112,8 +113,11 @@ jobs:
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit after checkout"
+            echo "changes_applied=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          echo "changes_applied=true" >> "$GITHUB_OUTPUT"
 
           git commit -m "chore: sync template from upstream
 
@@ -124,7 +128,7 @@ jobs:
           echo "sync_branch=${SYNC_BRANCH}" >> "$GITHUB_ENV"
 
       - name: Create pull request
-        if: steps.diff.outputs.has_changes == 'true' && inputs.dry_run != true && inputs.dry_run != 'true'
+        if: steps.apply.outputs.changes_applied == 'true' && inputs.dry_run != true && inputs.dry_run != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
