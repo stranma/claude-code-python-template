@@ -13,13 +13,11 @@ This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling
 
 ## Who Is This For?
 
-**Solo developer who knows Python?** You move fast, but you still want tests, type checking, linted code, and proper PRs - why not, it is now almost for free! The template's agents handle the discipline so you can focus on the problem. The devcontainer setup means you can let Claude Code run more autonomously inside a sandbox -- no worrying about it running `rm -rf` on your host machine.
+**Getting started with Claude Code?** The template gives you a working CLAUDE.md, agents, hooks, and a modern Python toolchain -- all configured and ready. Instead of spending days figuring out what works, start with a setup that enforces good habits from day one.
 
-**Leading a team adopting Claude Code?** Without a shared baseline, every developer has their own CLAUDE.md (or none). This template standardizes how your team uses Claude Code -- same workflow, same quality gates, same security hooks across all projects. The devcontainer with [permission tiers](docs/DEVCONTAINER_PERMISSIONS.md) lets you control how much autonomy Claude Code gets: from per-command approval (Tier 1) to full trust with minimal guardrails (Tier 3).
+**Building solo?** You move fast, but you still want tests, type checking, linted code, and proper PRs. The template's agents handle the discipline so you can focus on the problem.
 
-**Data scientist or ML engineer?** You know Python and pandas, but software engineering practices (CI/CD, type annotations, code review) feel like overhead. This template adds those practices without you having to learn how to set them up. Claude Code handles the ceremony; you focus on the models.
-
-**New to Claude Code and still learning Python?** This template is a good way to learn professional practices by doing. It enforces TDD, type checking, linting, and proper git workflow -- things that are hard to pick up from tutorials alone. Claude Code walks you through it, and the agents catch mistakes before they stick. You'll need basic comfort with the terminal and git. If that's new to you, see [Getting Started Guide](docs/GETTING_STARTED.md) for the prerequisites.
+**Leading a team adopting Claude Code?** Without a shared baseline, every developer has their own CLAUDE.md (or none). This template standardizes how your team uses Claude Code -- same workflow, same quality gates, same security hooks across all projects.
 
 ## How It Works
 
@@ -52,7 +50,7 @@ You never classify tasks upfront. `/done` auto-detects scope from your branch, d
 
 ## Quick Start
 
-**Prerequisites:** Python 3.11+, [uv](https://docs.astral.sh/uv/getting-started/installation/), [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview). New to these tools? See [Getting Started Guide](docs/GETTING_STARTED.md).
+**Prerequisites:** Python 3.11+, [uv](https://docs.astral.sh/uv/getting-started/installation/), [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
 
 **1. Create your project**
 
@@ -83,29 +81,6 @@ uv run pytest && uv run ruff check . && uv run pyright
 ```
 
 That's it. Claude Code picks up the agents, hooks, and rules automatically.
-
-## Devcontainer Setup (Recommended)
-
-The template includes a full VS Code devcontainer configuration. This is the recommended way to work because it sandboxes Claude Code -- firewall, non-root user, and policy hooks limit what it can do, so you can give it more autonomy without risk to your host machine.
-
-**What the devcontainer provides:**
-
-- **Network firewall** -- all egress blocked except ~10 whitelisted domains (GitHub, PyPI, etc.)
-- **Non-root user** -- Claude Code cannot install system packages or modify system files
-- **Permission tiers** -- control how much autonomy Claude Code gets:
-
-| Tier | Name | Who | Claude Code behavior |
-|------|------|-----|----------------------|
-| 1 | Assisted | New users, compliance teams | Per-command approval |
-| 2 | Autonomous (default) | Most developers | Free to run commands, curated deny list |
-| 3 | Full Trust | Solo devs with strong CI | Minimal restrictions |
-
-- **Policy hooks** -- block dangerous patterns even in chained commands (`cd /tmp && rm -rf *`)
-- **Pre-installed tools** -- Python, uv, ruff, git, Claude Code VS Code extension
-
-Set the tier before building: `PERMISSION_TIER=1` (or 2, 3) in your environment. Default is 2.
-
-See [Devcontainer Permissions](docs/DEVCONTAINER_PERMISSIONS.md) for the full denied commands list and approved alternatives.
 
 ## What's Included
 
@@ -189,11 +164,6 @@ my-project/
 │   ├── commands/                 # /catchup, /security-audit
 │   ├── hooks/                    # 5 hook scripts
 │   └── rules/                    # 4 review rules
-├── .devcontainer/                # VS Code devcontainer
-│   ├── Dockerfile
-│   ├── devcontainer.json
-│   ├── init-firewall.sh
-│   └── permissions/              # Tier 1/2/3 configs
 ├── .github/
 │   ├── workflows/                # CI/CD
 │   ├── PULL_REQUEST_TEMPLATE.md
@@ -210,7 +180,6 @@ my-tool/
 ├── tests/
 ├── docs/
 ├── .claude/
-├── .devcontainer/
 ├── .github/
 └── pyproject.toml
 ```
