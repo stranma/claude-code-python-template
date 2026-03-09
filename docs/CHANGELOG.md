@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 3 workflow skills (`/sync`, `/design`, `/done`) replace rigid upfront QSP classification -- `/sync` checks workspace readiness before work, `/design` crystallizes brainstorming into structured plans with conflict detection, `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline including the former `/ship` checklist
+- Workflow skill `/sync` checks workspace readiness before starting work (git fetch, status, branch info, warnings)
+- Workflow skill `/design` crystallizes brainstorming into structured plans with conflict detection against DECISIONS.md
+- Workflow skill `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline, including the former `/ship` checklist
 
 ### Changed
 - QSP scope classification is now auto-detected by `/done` based on branch, diff size, and IMPLEMENTATION_PLAN.md state -- users no longer classify manually before starting work

@@ -19,7 +19,7 @@ Crystallize brainstorming into a structured implementation plan. Use at the star
 
 ### 2. Auto-Classify Scope
 
-Based on conversation context, classify as:
+This is a planning-time estimate based on conversation context. `/done` will later auto-detect actual scope from workspace signals (branch, files changed, diff size, plan state) at completion time.
 
 | Scope | Criteria |
 |-------|----------|
@@ -73,7 +73,7 @@ The plan format varies by scope:
 ...
 ```
 
-For P-scoped plans: write the phase breakdown to `docs/IMPLEMENTATION_PLAN.md`.
+For P-scoped plans: write the phase breakdown to `docs/IMPLEMENTATION_PLAN.md` using the same structure shown above (phase name, acceptance criteria, files, approach). The `.claude/agents/implementation-tracker.md` agent validates this format.
 
 ### 4. Decision Candidates
 

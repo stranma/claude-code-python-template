@@ -116,9 +116,7 @@ class TestSkillContent:
 
     def test_sync_does_not_classify(self) -> None:
         content = (SKILLS_DIR / "sync" / "SKILL.md").read_text(encoding="utf-8")
-        assert "does NOT classify" in content.lower() or "Does NOT classify" in content, (
-            "sync should explicitly state it does not classify tasks"
-        )
+        assert "does not classify" in content.lower(), "sync should explicitly state it does not classify tasks"
 
     # /design
     def test_design_reads_decisions(self) -> None:

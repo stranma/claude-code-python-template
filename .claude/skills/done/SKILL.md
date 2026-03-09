@@ -17,11 +17,11 @@ Determine scope from workspace signals:
 |--------|----------|----------|-------------|
 | Branch | main/master | feature branch | feature branch |
 | Files changed | <=3 | >3 | any |
-| IMPLEMENTATION_PLAN.md | no active phases | no active phases | has unchecked phases |
+| IMPLEMENTATION_PLAN.md | no unchecked phases | no unchecked phases | has unchecked phases |
 | Diff size | <100 lines | >=100 lines | any |
 
 **Decision logic** (first match wins):
-1. If `docs/IMPLEMENTATION_PLAN.md` has active/unchecked phases -> **P** (deliver)
+1. If `docs/IMPLEMENTATION_PLAN.md` has unchecked phases -> **P** (deliver)
 2. If on a feature branch -> **S** (land)
 3. If on main/master AND small scope (<=3 files, <100 lines changed) -> **Q** (ship)
 4. If on main/master AND large scope -> warn user, suggest creating a feature branch
@@ -40,7 +40,7 @@ Absorbs the former `/ship` checklist. Three tiers of checks:
 
 2. **No debug code**
    - Search for: `breakpoint()`, `pdb.set_trace()` in non-test source files
-   - Flag `print(` statements for review (may be intentional)
+   - These are hard blockers -- any match stops the process
 
 3. **Pre-commit hygiene**
    - Search for leftover `TODO`, `FIXME`, `HACK` markers in changed files
@@ -64,7 +64,7 @@ All agents use `subagent_type: "general-purpose"`.
 
 ### Skip Conditions
 
-- If ALL changed files are `.md` files: skip Python tooling (lint, format, types, tests)
+- If no `.py` files are changed: skip Python tooling (lint, format, types, tests)
 - Report skipped checks and why
 
 ### Blocker Found
@@ -82,7 +82,7 @@ Actions depend on detected scope:
 3. `git push` to main/master
 4. `gh run watch` to verify CI passes
 
-If branch protection is enabled: push to a short-lived branch, create PR with `gh pr create --fill`, watch checks, merge, delete branch.
+Note: If a direct push to main fails due to branch protection, re-detect scope as **S (Land)** and follow the S path instead.
 
 ### S (Land)
 
