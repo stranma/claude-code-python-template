@@ -7,19 +7,34 @@
 
 **An opinionated Python project template that makes Claude Code produce consistent, tested, well-structured code.**
 
-Without structure, Claude Code results vary -- tests get skipped, context gets lost between sessions, small fixes turn into rewrites. This template gives you a complete starting point: TDD workflow, quality gates, security hooks, and a 3-command workflow that scales from typo fixes to multi-phase projects.
+```
+/sync                /design              /done
+  |                    |                    |
+  fetch remote         scope detection     lint + format
+  branch state         plan generation     tests + coverage
+  dirty files          decision check      code review
+                                           PR + changelog
+```
 
 This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling. It enforces TDD. It runs agents on every PR. It is designed for new Python projects -- not for retrofitting into existing repos. If that's what you want, you're in the right place.
 
 ## Who Is This For?
 
-**Solo developer who knows Python?** You move fast, but you still want tests, type checking, linted code, and proper PRs - why not, it is now almost for free! The template's agents handle the discipline so you can focus on the problem. The devcontainer setup means you can let Claude Code run more autonomously inside a sandbox -- no worrying about it running `rm -rf` on your host machine.
+#### Solo developer who knows Python?
 
-**Leading a team adopting Claude Code?** Without a shared baseline, every developer has their own CLAUDE.md (or none). This template standardizes how your team uses Claude Code -- same workflow, same quality gates, same security hooks across all projects. The devcontainer with [permission tiers](docs/DEVCONTAINER_PERMISSIONS.md) lets you control how much autonomy Claude Code gets: from per-command approval (Tier 1) to full trust with minimal guardrails (Tier 3).
+You move fast, but you still want tests, type checking, linted code, and proper PRs - why not, it is now almost for free! The template's agents handle the discipline so you can focus on the problem. The devcontainer setup means you can let Claude Code run more autonomously inside a sandbox -- no worrying about it running `rm -rf` on your host machine.
 
-**Data scientist or ML engineer?** You know Python and pandas, but software engineering practices (CI/CD, type annotations, code review) feel like overhead. This template adds those practices without you having to learn how to set them up. Claude Code handles the ceremony; you focus on the models.
+#### Leading a team adopting Claude Code?
 
-**New to Claude Code and still learning Python?** This template is a good way to learn professional practices by doing. It enforces TDD, type checking, linting, and proper git workflow -- things that are hard to pick up from tutorials alone. Claude Code walks you through it, and the agents catch mistakes before they stick. You'll need basic comfort with the terminal and git. If that's new to you, see [Getting Started Guide](docs/GETTING_STARTED.md) for the prerequisites.
+Without a shared baseline, every developer has their own CLAUDE.md (or none). This template standardizes how your team uses Claude Code -- same workflow, same quality gates, same security hooks across all projects. The devcontainer with [permission tiers](docs/DEVCONTAINER_PERMISSIONS.md) lets you control how much autonomy Claude Code gets: from per-command approval (Tier 1) to full trust with minimal guardrails (Tier 3).
+
+#### Data scientist or ML engineer?
+
+You know Python and pandas, but software engineering practices (CI/CD, type annotations, code review) feel like overhead. This template adds those practices without you having to learn how to set them up. Claude Code handles the ceremony; you focus on the models.
+
+#### New to Claude Code and still learning Python?
+
+This template is a good way to learn professional practices by doing. It enforces TDD, type checking, linting, and proper git workflow -- things that are hard to pick up from tutorials alone. Claude Code walks you through it, and the agents catch mistakes before they stick. You'll need basic comfort with the terminal and git. If that's new to you, see [Getting Started Guide](docs/GETTING_STARTED.md) for the prerequisites.
 
 ## How It Works
 
