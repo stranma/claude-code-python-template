@@ -44,6 +44,16 @@ if [[ -z "$SOURCE_DIR" || -z "$WORK_DIR" ]]; then
     exit 1
 fi
 
+# Guard against rm -rf on dangerous paths (/, $HOME, source dir).
+RESOLVED_WORK=$(cd "$SOURCE_DIR" 2>/dev/null && pwd)  # resolve SOURCE_DIR for comparison
+RESOLVED_SRC="$RESOLVED_WORK"
+case "$WORK_DIR" in
+    /|"$HOME"|"$RESOLVED_SRC")
+        echo "ERROR: --work-dir '$WORK_DIR' is unsafe (matches /, \$HOME, or --source-dir)" >&2
+        exit 1
+        ;;
+esac
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -143,7 +153,27 @@ if [[ "$PROJECT_TYPE" == "single" ]]; then
 else
     [[ -d "libs" ]] || step_fail "libs/ missing"
     [[ -d "apps" ]] || step_fail "apps/ missing"
-    step_pass "Monorepo layout correct"
+    # Verify each requested package exists in the expected directory.
+    # setup_project.py treats the first unlabeled package as a lib, subsequent
+    # unlabeled ones as apps. lib: and app: prefixes override this.
+    FIRST_UNLABELED=true
+    IFS=',' read -ra PKG_LIST <<< "$PACKAGES"
+    for pkg in "${PKG_LIST[@]}"; do
+        pkg=$(echo "$pkg" | xargs)  # trim whitespace
+        if [[ "$pkg" == lib:* ]]; then
+            pkg_name="${pkg#lib:}"
+            [[ -d "libs/$pkg_name" ]] || step_fail "libs/$pkg_name/ missing (from lib:$pkg_name)"
+        elif [[ "$pkg" == app:* ]]; then
+            pkg_name="${pkg#app:}"
+            [[ -d "apps/$pkg_name" ]] || step_fail "apps/$pkg_name/ missing (from app:$pkg_name)"
+        elif $FIRST_UNLABELED; then
+            FIRST_UNLABELED=false
+            [[ -d "libs/$pkg" ]] || step_fail "libs/$pkg/ missing (first package defaults to lib)"
+        else
+            [[ -d "apps/$pkg" ]] || step_fail "apps/$pkg/ missing (subsequent packages default to app)"
+        fi
+    done
+    step_pass "Monorepo layout correct (all packages present)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -192,12 +222,24 @@ step_pass "Tests passed"
 # ---------------------------------------------------------------------------
 if [[ "$SERVICES" != "none" ]]; then
     echo "Step 9: Verify docker-compose.yml"
-    [[ -f ".devcontainer/docker-compose.yml" ]] \
-        || step_fail ".devcontainer/docker-compose.yml missing"
-    # Basic validation: check for 'services:' key
-    grep -q 'services:' ".devcontainer/docker-compose.yml" \
-        || step_fail "docker-compose.yml missing 'services:' key"
-    step_pass "docker-compose.yml present and valid"
+    COMPOSE_FILE=".devcontainer/docker-compose.yml"
+    [[ -f "$COMPOSE_FILE" ]] || step_fail "$COMPOSE_FILE missing"
+    grep -q 'services:' "$COMPOSE_FILE" \
+        || step_fail "$COMPOSE_FILE missing 'services:' key"
+    # Verify the requested service is actually defined (db for postgres profiles).
+    case "$SERVICES" in
+        postgres)
+            grep -q '  db:' "$COMPOSE_FILE" \
+                || step_fail "$COMPOSE_FILE missing 'db' service for --services postgres"
+            ;;
+        postgres-redis)
+            grep -q '  db:' "$COMPOSE_FILE" \
+                || step_fail "$COMPOSE_FILE missing 'db' service for --services postgres-redis"
+            grep -q '  redis:' "$COMPOSE_FILE" \
+                || step_fail "$COMPOSE_FILE missing 'redis' service for --services postgres-redis"
+            ;;
+    esac
+    step_pass "docker-compose.yml present with expected services"
 fi
 
 # ---------------------------------------------------------------------------
