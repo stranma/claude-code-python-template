@@ -51,17 +51,22 @@ class TestHookPermissions:
     @pytest.mark.parametrize("hook_name", ALL_HOOKS)
     def test_hook_is_executable(self, hook_name: str) -> None:
         hook_path = HOOKS_DIR / hook_name
-        # Check git's tracked mode instead of filesystem stat (NTFS has no execute bit)
-        rel_path = hook_path.relative_to(Path(__file__).parent.parent)
+        repo_root = Path(__file__).parent.parent
+        # Try git's tracked mode first (works on Windows where NTFS has no execute bit)
         result = subprocess.run(
-            ["git", "ls-files", "-s", str(rel_path)],
+            ["git", "ls-files", "-s", str(hook_path.relative_to(repo_root))],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent,
+            cwd=repo_root,
         )
-        assert result.stdout.startswith("100755"), (
-            f"{hook_name} is not tracked as executable by git (expected mode 100755)"
-        )
+        if result.stdout:
+            assert result.stdout.startswith("100755"), (
+                f"{hook_name} is not tracked as executable by git (expected mode 100755)"
+            )
+        else:
+            # Not in a git repo (e.g. integration test copy) -- fall back to filesystem
+            mode = hook_path.stat().st_mode
+            assert mode & stat.S_IXUSR, f"{hook_name} is not executable (missing user execute bit)"
 
     @pytest.mark.parametrize("hook_name", ALL_HOOKS)
     def test_hook_is_readable(self, hook_name: str) -> None:
