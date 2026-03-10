@@ -90,9 +90,9 @@ These run **before** Claude executes a command or file edit. They can block the 
 
 1. **Destructive commands** (23 literal patterns): `rm -rf /`, `sudo rm -rf`, `dd if=/dev/zero`, fork bombs, `chmod -R 777 /`, `shutdown`, `reboot`, `halt`, `poweroff`, `git push --force`, `git push -f`, `git push origin +master`, `git push origin +main`, `DROP DATABASE`, `DROP TABLE`, `TRUNCATE TABLE`
 2. **Filesystem format** (regex): `mkfs.*`, `DELETE FROM .* WHERE 1`
-3. **Secrets in commands** (13 literal + 1 regex): any command containing `ANTHROPIC_API_KEY=`, `OPENAI_API_KEY=`, `AWS_SECRET_ACCESS_KEY=`, `password=`, `token=`, or database URLs with embedded credentials
+3. **Secrets in commands** (9 literal + 1 regex): any command containing `ANTHROPIC_API_KEY=`, `OPENAI_API_KEY=`, `AWS_SECRET_ACCESS_KEY=`, `GITHUB_TOKEN=`, `GH_TOKEN=`, `password=`, `passwd=`, `secret=`, `token=`, or database URLs with embedded credentials
 
-Uses `grep -qiF` (case-insensitive, literal) for exact patterns and `grep -qiE` for regex. Returns a JSON decision object to stderr with exit code 2 to block.
+Uses `grep -qiF` (case-insensitive, literal) for exact patterns and `grep -qiE` for regex. Returns a JSON decision object to stdout with exit code 2 to block.
 
 **What happens if you remove it.** No pre-execution safety net. A command like `git push --force origin main` would execute if it passes the settings.json permissions. The devcontainer policy blocker (if present) covers some patterns but not all.
 
@@ -244,7 +244,7 @@ These layers only apply when running inside the devcontainer. They are optional 
 - GitHub IPs (fetched dynamically from GitHub's API, aggregated into CIDR ranges via `ipset`)
 - Specific domains: PyPI (`pypi.org`, `files.pythonhosted.org`), Astral (`astral.sh`), Claude/Anthropic (`claude.ai`, `api.anthropic.com`, `sentry.io`, `statsig.com`), VS Code marketplace
 
-Uses `ipset` with `hash:net` for efficient CIDR-based filtering instead of per-IP iptables rules. IPv6 is completely blocked. Self-tests at the end by verifying `example.com` is unreachable and `api.github.com` is reachable.
+GitHub CIDR ranges are aggregated using the `aggregate` tool, then stored in `ipset` with `hash:net` for efficient filtering instead of per-IP iptables rules. IPv6 is completely blocked. Self-tests at the end by verifying `example.com` is unreachable and `api.github.com` is reachable.
 
 **What happens if you remove it.** The container has unrestricted network access. Claude Code could download arbitrary packages from any host, which is a supply-chain attack vector.
 
@@ -289,7 +289,7 @@ Uses `ipset` with `hash:net` for efficient CIDR-based filtering instead of per-I
 
 **Why it exists.** Principle of least privilege. A root user inside the container could modify system files, install packages at the OS level, and potentially escape the container in some Docker configurations.
 
-**What it does.** The Dockerfile creates a `vscode` user (uid 1000) and runs all commands as that user. Sudo is restricted to firewall-related commands only (`iptables`, `ipset`, `ip6tables`).
+**What it does.** The Dockerfile creates a `vscode` user (uid 1000) and runs all commands as that user. Sudo is restricted to a single script: `/usr/local/bin/init-firewall.sh`. The user cannot run `sudo iptables` directly.
 
 **What happens if you remove it.** Claude Code runs as root inside the container. Combined with removed firewall/policy hooks, this means unrestricted system access within the container.
 
@@ -336,9 +336,9 @@ These run automatically as part of `/done` for Standard and Project scope tasks.
 
 **Why.** Verifies tests pass and checks coverage. Uses Sonnet because it needs to reason about test adequacy, not just run commands.
 
-**What.** Runs `pytest` with coverage flags. Analyzes results and can add missing test cases (`permissionMode: acceptEdits`).
+**What.** Runs `pytest` with coverage flags. Analyzes results and reports findings. Read-only (`permissionMode: dontAsk` -- no Edit tool).
 
-**Remove.** Tests are not validated before PR creation. CI still runs them, but you lose the pre-commit coverage check and auto-fix capability.
+**Remove.** Tests are not validated before PR creation. CI still runs them, but you lose the pre-commit coverage check.
 
 </details>
 
@@ -401,7 +401,7 @@ These are invoked manually, not by `/done`. They have no workflow dependencies.
 |-------|---------|------|
 | security-auditor | OWASP-based vulnerability scan | plan (read-only) |
 | refactoring-specialist | SOLID/code smell analysis | plan (read-only) |
-| review-responder | Triage automated PR review comments | dontAsk |
+| review-responder | Triage and fix automated PR review comments | acceptEdits |
 | output-evaluator | LLM-as-Judge quality scoring | dontAsk |
 | agent-auditor | Audit agent definitions against best practices | plan (read-only) |
 
@@ -521,7 +521,7 @@ An example file is provided at `.claude/settings.local.json.example`.
 
 Location: project root
 
-The main agent directives file. Deliberately compact (~40 lines). Contains:
+The main agent directives file. Deliberately compact (~55 lines). Contains:
 - Development process reference (which skills to use)
 - Security rules (what to avoid)
 - Development commands (how to run tests, lint, format)
