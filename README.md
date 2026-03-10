@@ -1,6 +1,6 @@
 # Claude Code Python Template
 
-[![CI](https://github.com/stranma/claude-code-python-template/actions/workflows/tests.yml/badge.svg)](https://github.com/stranma/claude-code-python-template/actions/workflows/tests.yml)
+[![CI](https://github.com/stranma/claude-code-python-template/actions/workflows/template-integration.yml/badge.svg)](https://github.com/stranma/claude-code-python-template/actions/workflows/template-integration.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![uv](https://img.shields.io/badge/uv-workspace-blueviolet)](https://docs.astral.sh/uv/)
