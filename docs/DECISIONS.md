@@ -113,6 +113,16 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - `/sync` and `/done` have `disable-model-invocation: true` (side effects: git fetch, git commit/push, PR creation); `/design` is intentionally model-invocable so Claude can suggest it during brainstorming
 - QSP paths (Q/S/P) and their step descriptions preserved in DEVELOPMENT_PROCESS.md -- skills orchestrate the paths, they don't replace them
 
+## 2026-03-10: Post-merge /landed Skill
+
+**Request**: Close the post-merge gap in the sync-design-done workflow. After `/done` creates a PR and it merges, nothing verifies merge CI, checks deployments, cleans up branches, or identifies the next phase.
+
+**Decisions**:
+- New `/landed` skill (not command) -- follows same pattern as `/sync` and `/done` with `disable-model-invocation: true`
+- `/catchup` removed -- its context restoration overlaps with `/sync` which already covers pre-flight state
+- Optional deployment verification via `.claude/deploy.json` (gitignored) -- not all projects have deployments, so it's opt-in with an example file
+- Phase detection uses "Quick Status Summary" table in IMPLEMENTATION_PLAN.md, not `- [ ]` checkboxes -- matches actual file structure
+
 ## 2026-03-10: Template Integration CI Pipeline
 
 **Request**: Create a CI pipeline that applies the template in various settings to catch template bugs before merge.
