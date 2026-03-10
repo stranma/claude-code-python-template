@@ -8,12 +8,12 @@
 **An opinionated Python project template that makes Claude Code produce consistent, tested, well-structured code.**
 
 ```
-/sync                /design              /done
-  |                    |                    |
-  fetch remote         scope detection     lint + format
-  branch state         plan generation     tests + coverage
-  dirty files          decision check      code review
-                                           PR + changelog
+/sync                /design              /done                /landed
+  |                    |                    |                    |
+  fetch remote         scope detection     lint + format        verify merge CI
+  branch state         plan generation     tests + coverage     deploy check
+  dirty files          decision check      code review          branch cleanup
+                                           PR + changelog       next phase
 ```
 
 This is opinionated by design. It picks uv, ruff, pyright, pytest, and hatchling. It enforces TDD. It runs agents on every PR. It is designed for new Python projects -- not for retrofitting into existing repos. If that's what you want, you're in the right place.
@@ -38,22 +38,24 @@ This template is a good way to learn professional practices by doing. It enforce
 
 ## How It Works
 
-Three commands. That's the whole workflow:
+Four commands. That's the whole workflow:
 
 ```
-/sync   Preflight check. Fetches remote, reports branch state, dirty files.
-/design Turns brainstorming into a structured plan. Reads decision log,
-        auto-classifies scope, outputs actionable steps.
-/done   Ships your work. Auto-detects scope, validates (lint + test + review),
-        commits, creates PR, updates docs. One command.
+/sync    Preflight check. Fetches remote, reports branch state, dirty files.
+/design  Turns brainstorming into a structured plan. Reads decision log,
+         auto-classifies scope, outputs actionable steps.
+/done    Ships your work. Auto-detects scope, validates (lint + test + review),
+         commits, creates PR, updates docs. One command.
+/landed  Post-merge. Verifies CI on master, checks deployments, cleans up
+         branches, identifies next phase.
 ```
 
 Real workflows:
 
 ```
 Quick fix:     /sync -> fix the bug -> /done
-New feature:   /sync -> brainstorm with Claude -> /design -> "implement this" -> /done
-Multi-phase:   /sync -> brainstorm -> /design -> "implement phase 1" -> /done -> ... -> /done
+New feature:   /sync -> brainstorm with Claude -> /design -> "implement this" -> /done -> /landed
+Multi-phase:   /sync -> brainstorm -> /design -> "implement phase 1" -> /done -> /landed -> ... -> /landed
 Exploration:   just talk to Claude -- no commands needed
 ```
 

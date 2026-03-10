@@ -155,7 +155,9 @@ See [Devcontainer Permissions](docs/DEVCONTAINER_PERMISSIONS.md) for the full de
 - /sync -- preflight workspace check before starting work
 - /design -- crystallize brainstorming into a structured plan
 - /done -- validate, ship, and document in one command
-- /catchup -- restore context after session break or /clear
+- /landed -- post-merge lifecycle: verify CI, check deploys, clean branches
+- /cove -- Chain-of-Verification for high-stakes accuracy
+- /cove-isolated -- CoVe with isolated verification agent
 - /security-audit -- 6-phase security posture scan with A-F grading
 - /edit-permissions -- manage Claude Code permission rules
 
@@ -192,8 +194,8 @@ my-project/
 ├── .claude/                      # Claude Code config
 │   ├── settings.json
 │   ├── agents/                   # 12 agents
-│   ├── skills/                   # /sync, /design, /done, /edit-permissions
-│   ├── commands/                 # /catchup, /security-audit
+│   ├── skills/                   # /sync, /design, /done, /landed, /edit-permissions
+│   ├── commands/                 # /cove, /cove-isolated, /security-audit
 │   ├── hooks/                    # 5 hook scripts
 │   └── rules/                    # 4 review rules
 ├── .devcontainer/                # VS Code devcontainer

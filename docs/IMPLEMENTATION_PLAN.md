@@ -156,14 +156,14 @@
 **Goal:** Add 3 slash commands for context restoration, security auditing, and pre-deployment checks.
 
 **Acceptance Criteria:**
-- [x] `/catchup` command restores context after /clear
+- [x] ~~/catchup command restores context after /clear~~ (removed: overlaps with /sync)
 - [x] `/security-audit` command runs 6-phase security scan with A-F grading
 - [x] `/ship` command runs 3-tier pre-deployment checklist
 - [x] All commands have frontmatter with `allowed-tools` and `description`
 - [x] tests/test_commands.py passes
 
 **Tasks:**
-- [x] Create `.claude/commands/catchup.md`
+- [x] ~~Create `.claude/commands/catchup.md`~~ (removed: replaced by /landed skill)
 - [x] Create `.claude/commands/security-audit.md`
 - [x] Create `.claude/commands/ship.md`
 - [x] Create tests/test_commands.py
