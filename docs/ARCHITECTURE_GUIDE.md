@@ -10,7 +10,7 @@ For setup instructions, see [Getting Started](GETTING_STARTED.md). For the workf
 
 The template uses defense-in-depth: multiple independent layers that each catch different problems. No single layer is the whole story.
 
-```
+```text
 +-----------------------------------------------------------------------+
 |  Devcontainer (optional, recommended)                                 |
 |  +------------------------------------------------------------------+ |
@@ -45,7 +45,7 @@ The template uses defense-in-depth: multiple independent layers that each catch 
 
 ### What runs during a typical workflow
 
-```
+```text
 /sync           /design          write code          /done              /landed
   |                |                 |                  |                  |
   git fetch        read DECISIONS   [your work]        lint+format        verify merge CI
@@ -541,7 +541,7 @@ Keep CLAUDE.md small. Everything Claude reads costs tokens on every message.
 
 ### How Tiers Work Under the Hood
 
-```
+```text
 devcontainer.json
   containerEnv:
     PERMISSION_TIER: "${localEnv:PERMISSION_TIER:2}"   # default: 2
