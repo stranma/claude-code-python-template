@@ -212,6 +212,10 @@ Architecture, code quality, performance, and test quality -- applied automatical
 
 </details>
 
+## Understanding the Template
+
+Want to know why each hook, agent, and config file exists -- and what breaks if you remove it? See the [Architecture Deep Dive](docs/ARCHITECTURE_GUIDE.md).
+
 ## Project Structure
 
 ### Monorepo (default)

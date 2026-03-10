@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Architecture Deep Dive guide (`docs/ARCHITECTURE_GUIDE.md`) explains why each component exists, what it does under the hood, and what happens if you remove or modify it -- covers all hooks, agents, skills, rules, configuration files, devcontainer layers, and CI/CD workflows with a defense-in-depth diagram and customization guide
 - `/landed` skill for post-merge lifecycle -- verifies merge CI, optionally checks deployments (via `.claude/deploy.json`), cleans up feature branches, and identifies the next phase for P-scope work
 - `.claude/deploy.json.example` template for configuring deployment verification in `/landed`
 - Chain-of-Verification (CoVe) commands (`/cove`, `/cove-isolated`) for high-stakes accuracy -- 4-step self-verification process based on Meta's CoVe paper, with an isolated variant that runs verification in a separate agent to prevent confirmation bias
