@@ -11,6 +11,7 @@ ALL_SKILLS = [
     "sync",
     "design",
     "done",
+    "landed",
 ]
 
 
@@ -80,7 +81,7 @@ class TestSkillBody:
 class TestSkillSideEffects:
     """Verify side-effect declarations are correct."""
 
-    @pytest.mark.parametrize("skill_name", ["sync", "done"])
+    @pytest.mark.parametrize("skill_name", ["sync", "done", "landed"])
     def test_side_effect_skills_disable_model_invocation(self, skill_name: str) -> None:
         content = (SKILLS_DIR / skill_name / "SKILL.md").read_text(encoding="utf-8")
         parts = content.split("---", 2)
@@ -181,3 +182,28 @@ class TestSkillContent:
         assert "ship" in content.lower(), "done should describe Q=ship"
         assert "land" in content.lower(), "done should describe S=land"
         assert "deliver" in content.lower(), "done should describe P=deliver"
+
+    # /landed
+    def test_landed_detects_merged_pr(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "gh pr list" in content, "landed should detect merged PR"
+
+    def test_landed_verifies_ci(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "gh run" in content, "landed should verify CI runs"
+
+    def test_landed_cleans_branches(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "git branch -d" in content, "landed should clean up branches"
+
+    def test_landed_checks_deployment(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "deploy.json" in content, "landed should check deployment config"
+
+    def test_landed_checks_next_phase(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "IMPLEMENTATION_PLAN" in content, "landed should check for next phase"
+
+    def test_landed_produces_summary(self) -> None:
+        content = (SKILLS_DIR / "landed" / "SKILL.md").read_text(encoding="utf-8")
+        assert "# Landed" in content, "landed should produce a summary report"
