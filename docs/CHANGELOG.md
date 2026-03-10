@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added settings.json to enable uv run execution in Claude Code server environment
 - New `/edit-permissions` skill for managing Claude Code permission rules in settings.json -- invocable via slash command, includes pattern syntax reference, shell operator protection warnings, and safety guardrails
 
+### Fixed
+- CI badge in README now points to `template-integration.yml` (the actual CI) instead of `tests.yml` (template placeholder that never runs)
+
 ### Changed
 
 - Development workflow expanded from sync-design-done to sync-design-done-landed, closing the post-merge gap
