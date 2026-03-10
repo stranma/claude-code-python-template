@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `/landed` skill for post-merge lifecycle -- verifies merge CI, optionally checks deployments (via `.claude/deploy.json`), cleans up feature branches, and identifies the next phase for P-scope work
+- `.claude/deploy.json.example` template for configuring deployment verification in `/landed`
 - Chain-of-Verification (CoVe) commands (`/cove`, `/cove-isolated`) for high-stakes accuracy -- 4-step self-verification process based on Meta's CoVe paper, with an isolated variant that runs verification in a separate agent to prevent confirmation bias
 - Template sync workflow (`.github/workflows/template-sync.yml`) for downstream projects to auto-sync upstream template improvements -- runs weekly or on manual trigger, creates PRs with changed template-managed files while preserving project-specific code
 - Python-specific SOLID checklist in `refactoring-specialist` agent -- checks for mutable default arguments, ABC/Protocol misuse, missing dependency injection, god classes, `@property` overuse, and circular imports
@@ -18,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflow skill `/done` auto-detects scope (Q/S/P) and runs the full validate-ship-document pipeline, including the former `/ship` checklist
 - Three graduated permission tiers (Assisted, Autonomous, Full Trust) for devcontainer environments -- container isolation (firewall, non-root, hooks) enables safely expanding Claude Code permissions, reducing unnecessary prompts from dozens per session to zero in Tier 2/3 while blocking tool installation, package publishing, and container escape vectors via curated deny lists and a policy-enforcement hook
 - 5 hook scripts in `.claude/hooks/` run automatically during Claude Code sessions -- 3 security hooks block destructive commands, secret leaks, and invisible Unicode attacks in real time; 2 productivity hooks auto-format Python files and auto-run associated tests after every edit
-- 4 slash commands (`/catchup`, `/cove`, `/cove-isolated`, `/security-audit`) provide context restoration, chain-of-verification for accuracy, and a 6-phase security posture scan with A-F grading
+- 3 slash commands (`/cove`, `/cove-isolated`, `/security-audit`) provide chain-of-verification for accuracy and a 6-phase security posture scan with A-F grading
 - 3 new specialized agents: `security-auditor` (OWASP-based vulnerability analysis, read-only), `refactoring-specialist` (SOLID/code smell detection, read-only), `output-evaluator` (LLM-as-Judge quality scoring for automated pipelines)
 - 4 review rules in `.claude/rules/` auto-loaded as project context -- cover architecture, code quality, performance, and test quality concerns that linters cannot catch
 - AI-powered PR review via GitHub Actions (`claude-code-review.yml`) using `anthropics/claude-code-action@v1` -- automatically reviews PRs with read-only tools on open/sync/ready_for_review
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Development workflow expanded from sync-design-done to sync-design-done-landed, closing the post-merge gap
 - QSP scope classification is now auto-detected by `/done` based on branch, diff size, and IMPLEMENTATION_PLAN.md state -- users no longer classify manually before starting work
 - PCC shorthand now triggers `/done` instead of manually executing S.5-S.7
 - Setup script now makes `.claude/hooks/*.sh` files executable after placeholder substitution -- hook scripts work immediately after project setup without manual `chmod`
@@ -50,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `/catchup` command -- its context restoration role overlaps with `/sync`, which already covers pre-flight workspace state
 - `/ship` slash command -- its 3-tier validation checklist (Blockers, High Priority, Recommended) is preserved in `/done` Phase 2
 - Shell Command Style and Allowed Operations sections from CLAUDE.md -- absolute path preferences and read-only command lists are now handled by settings.json permission rules rather than prose instructions
 

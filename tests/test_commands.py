@@ -7,7 +7,6 @@ import pytest
 COMMANDS_DIR = Path(__file__).parent.parent / ".claude" / "commands"
 
 ALL_COMMANDS = [
-    "catchup.md",
     "cove.md",
     "cove-isolated.md",
     "security-audit.md",
@@ -70,18 +69,6 @@ class TestCommandStructure:
 
 class TestCommandContent:
     """Verify specific command content."""
-
-    def test_catchup_reads_implementation_plan(self) -> None:
-        content = (COMMANDS_DIR / "catchup.md").read_text(encoding="utf-8")
-        assert "IMPLEMENTATION_PLAN" in content, "catchup should reference IMPLEMENTATION_PLAN.md"
-
-    def test_catchup_reads_changelog(self) -> None:
-        content = (COMMANDS_DIR / "catchup.md").read_text(encoding="utf-8")
-        assert "CHANGELOG" in content, "catchup should reference CHANGELOG.md"
-
-    def test_catchup_checks_git(self) -> None:
-        content = (COMMANDS_DIR / "catchup.md").read_text(encoding="utf-8")
-        assert "git log" in content, "catchup should analyze git history"
 
     def test_security_audit_has_scoring(self) -> None:
         content = (COMMANDS_DIR / "security-audit.md").read_text(encoding="utf-8")

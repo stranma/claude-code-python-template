@@ -101,6 +101,14 @@ All agents use `subagent_type: "general-purpose"`. Do NOT use `feature-dev:code-
 
 ---
 
+## Post-merge
+
+Run `/landed` after a PR is merged. It verifies merge CI, optionally checks
+deployments (via `.claude/deploy.json`), cleans up branches, and identifies the
+next phase for P-scope work.
+
+---
+
 ## P. Project Path
 
 **P.1 Analyze**
@@ -161,11 +169,10 @@ All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
 
 ## Commands
 
-4 slash commands in `.claude/commands/`:
+3 slash commands in `.claude/commands/`:
 
 | Command | Purpose |
 |---------|---------|
-| `/catchup` | Context restoration after `/clear`. Reads IMPLEMENTATION_PLAN.md, CHANGELOG.md, git history; recommends next steps. |
 | `/cove` | Chain-of-Verification (CoVe) for high-stakes accuracy. 4-step process: generate baseline, plan verifications, verify from source, produce corrected response. |
 | `/cove-isolated` | Isolated CoVe variant. Verification step runs in a separate agent that cannot see the baseline response, preventing confirmation bias. |
 | `/security-audit` | 6-phase Python security scan (deps, secrets, code patterns, input validation, config, scoring). Outputs A-F grade. |
@@ -174,13 +181,14 @@ All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
 
 ## Skills
 
-4 skills in `.claude/skills/`:
+5 skills in `.claude/skills/`:
 
 | Skill | Purpose |
 |-------|---------|
 | `/sync` | Pre-flight workspace sync. Fetches remote, reports branch state, dirty files, ahead/behind, recent commits. |
 | `/design` | Crystallize brainstorming into a structured plan. Reads DECISIONS.md for conflicts, auto-classifies scope, outputs actionable plan. |
 | `/done` | Universal completion. Auto-detects scope (Q/S/P), validates (3-tier checklist), ships/lands/delivers, updates docs. Absorbs former `/ship`. |
+| `/landed` | Post-merge lifecycle. Verifies merge CI, optional deployment checks, cleans up branches, prepares next phase. |
 | `/edit-permissions` | Manage Claude Code permission rules in settings.json. Pattern syntax reference and safety guardrails. |
 
 ---
