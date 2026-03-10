@@ -10,14 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `/landed` skill for post-merge lifecycle -- verifies merge CI, optionally checks deployments (via `.claude/deploy.json`), cleans up feature branches, and identifies the next phase for P-scope work
 - `.claude/deploy.json.example` template for configuring deployment verification in `/landed`
-
-### Removed
-- `/catchup` command -- its context restoration role overlaps with `/sync`, which already covers pre-flight workspace state
-
-### Changed
-- Development workflow expanded from sync-design-done to sync-design-done-landed, closing the post-merge gap
-
-### Added
 - Chain-of-Verification (CoVe) commands (`/cove`, `/cove-isolated`) for high-stakes accuracy -- 4-step self-verification process based on Meta's CoVe paper, with an isolated variant that runs verification in a separate agent to prevent confirmation bias
 - Template sync workflow (`.github/workflows/template-sync.yml`) for downstream projects to auto-sync upstream template improvements -- runs weekly or on manual trigger, creates PRs with changed template-managed files while preserving project-specific code
 - Python-specific SOLID checklist in `refactoring-specialist` agent -- checks for mutable default arguments, ABC/Protocol misuse, missing dependency injection, god classes, `@property` overuse, and circular imports
@@ -46,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Development workflow expanded from sync-design-done to sync-design-done-landed, closing the post-merge gap
 - QSP scope classification is now auto-detected by `/done` based on branch, diff size, and IMPLEMENTATION_PLAN.md state -- users no longer classify manually before starting work
 - PCC shorthand now triggers `/done` instead of manually executing S.5-S.7
 - Setup script now makes `.claude/hooks/*.sh` files executable after placeholder substitution -- hook scripts work immediately after project setup without manual `chmod`
@@ -60,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `/catchup` command -- its context restoration role overlaps with `/sync`, which already covers pre-flight workspace state
 - `/ship` slash command -- its 3-tier validation checklist (Blockers, High Priority, Recommended) is preserved in `/done` Phase 2
 - Shell Command Style and Allowed Operations sections from CLAUDE.md -- absolute path preferences and read-only command lists are now handled by settings.json permission rules rather than prose instructions
 
