@@ -195,7 +195,7 @@ actual scope at completion based on workspace signals.
 - `/sync` -- preflight workspace check before starting work
 - `/design` -- crystallize brainstorming into a structured plan
 - `/done` -- validate, ship, and document in one command
-- `/catchup` -- restore context after session break or `/clear`
+- `/landed` -- post-merge lifecycle: verify CI, check deploys, clean branches
 - `/cove` -- Chain-of-Verification for high-stakes accuracy (4-step self-verification)
 - `/cove-isolated` -- CoVe with isolated verification agent (prevents confirmation bias)
 - `/security-audit` -- 6-phase security posture scan with A-F grading
@@ -234,8 +234,8 @@ my-project/
 ├── .claude/                      # Claude Code config
 │   ├── settings.json
 │   ├── agents/                   # 12 agents
-│   ├── skills/                   # /sync, /design, /done, /edit-permissions
-│   ├── commands/                 # /catchup, /cove, /cove-isolated, /security-audit
+│   ├── skills/                   # /sync, /design, /done, /landed, /edit-permissions
+│   ├── commands/                 # /cove, /cove-isolated, /security-audit
 │   ├── hooks/                    # 5 hook scripts
 │   └── rules/                    # 4 review rules
 ├── .devcontainer/                # VS Code devcontainer
