@@ -144,6 +144,7 @@ A Docker container configured for development. VS Code opens your project inside
 ## Next Steps
 
 - Read the [Development Process](DEVELOPMENT_PROCESS.md) to understand the full workflow
+- Read the [Architecture Deep Dive](ARCHITECTURE_GUIDE.md) to understand why each component exists and what happens if you remove it
 - Try the `/design` command to plan a small feature before implementing it
 - Run `/security-audit` to see how the security scanning works
 - Check [Devcontainer Permissions](DEVCONTAINER_PERMISSIONS.md) if you want to adjust Claude Code's autonomy level

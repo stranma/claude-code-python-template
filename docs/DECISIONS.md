@@ -123,6 +123,17 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Optional deployment verification via `.claude/deploy.json` (gitignored) -- not all projects have deployments, so it's opt-in with an example file
 - Phase detection uses "Quick Status Summary" table in IMPLEMENTATION_PLAN.md, not `- [ ]` checkboxes -- matches actual file structure
 
+## 2026-03-10: Architecture Deep Dive Guide
+
+**Request**: Add an onboarding guide for users who want to understand why each template component exists, what it does, and what happens if they modify or remove it.
+
+**Decisions**:
+- Single document (`docs/ARCHITECTURE_GUIDE.md`) rather than splitting into per-topic files (hooks-guide.md, agents-guide.md, etc.) -- one file supports both linear reading and ctrl-F searching without docs/ sprawl
+- Consistent 4-question structure per component: Why / What / What if removed / Connections -- makes the guide scannable and predictable
+- Collapsible `<details>` sections keep the document navigable at heading level despite ~700 lines
+- Cross-references existing docs (DEVELOPMENT_PROCESS.md for reference tables, DEVCONTAINER_PERMISSIONS.md for tier details) instead of duplicating content
+- Ends with a Customization Guide (Safe to Remove / Safe to Modify / Risky to Remove) as the practical payoff
+
 ## 2026-03-10: Template Integration CI Pipeline
 
 **Request**: Create a CI pipeline that applies the template in various settings to catch template bugs before merge.
