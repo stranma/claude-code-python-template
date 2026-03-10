@@ -18,9 +18,11 @@ Identify the PR that was just merged.
    - Check `git reflog --oneline -20` for the previous branch name
    - If no branch found, ask the user for the PR number or branch name
 3. Look up the merged PR:
-   ```
+
+   ```bash
    gh pr list --state merged --head <branch> --json number,title,mergeCommit -L 1
    ```
+
 4. If no PR found: ask the user for the PR number directly
 5. Display: PR number, title, merge commit SHA
 
@@ -31,14 +33,16 @@ Identify the PR that was just merged.
 Check that CI passed on the merge commit.
 
 1. List recent runs on master:
+
+   ```bash
+   gh run list --branch master -L 20 --json status,conclusion,databaseId,name,headSha
    ```
-   gh run list --branch master -L 5 --json status,conclusion,databaseId,name,headSha
-   ```
-2. Match by merge commit SHA if possible
-3. Based on status:
-   - **in_progress**: watch it with `gh run watch <id>`
-   - **success/completed with conclusion=success**: proceed
-   - **failure**: show details via `gh run view <id> --log-failed`
+
+2. Filter to runs whose `headSha` matches the merge commit SHA
+3. Evaluate all matched runs:
+   - **in_progress**: watch still-running run(s) with `gh run watch <id>`
+   - **success**: all matched runs must be `completed` with `conclusion=success` to proceed
+   - **failure**: show details via `gh run view <id> --log-failed` for each failing run
      - Ask: "Is this a recurring issue or specific to this PR?"
      - If recurring: suggest adding to `/done` validation or pre-merge CI
      - If specific: diagnose inline from the failed log output
@@ -51,7 +55,7 @@ Check for deployment status if configured.
 2. If it exists:
    - Read the file and iterate over configured environments
    - For each environment:
-     - Watch the deployment workflow: `gh run list --workflow <workflow> -L 1 --json status,conclusion,databaseId`
+     - Watch the deployment workflow: `gh run list --workflow <workflow> --commit <merge-commit-sha> --json status,conclusion,databaseId`
      - If `health_check` URL is configured, fetch it and verify a 200 response
    - Report per-environment status (success/failure/in_progress)
 3. If no config file:
@@ -87,7 +91,7 @@ Check if there is more planned work.
 
 Output a summary of everything that happened:
 
-```
+```text
 # Landed
 
 PR: #N "<title>" merged into master
