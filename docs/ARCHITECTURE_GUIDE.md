@@ -360,7 +360,7 @@ These run automatically as part of `/done` for Standard and Project scope tasks.
 
 **What.** Reads the diff and applies the review rules (architecture, code-quality, performance, test). Reports findings with severity levels. Read-only (`permissionMode: dontAsk`, `memory: project` for CLAUDE.md context).
 
-**Remove.** No pre-PR code review. The GitHub Actions `claude-code-review.yml` workflow still runs an AI review on the PR itself, so review is delayed but not eliminated.
+**Remove.** No pre-PR code review. Linters and type checkers still catch mechanical issues, but logic errors, security concerns, and design problems would only be caught during manual review.
 
 </details>
 
@@ -611,17 +611,6 @@ All workflows are in `.github/workflows/`. They use `{{base_branch}}` placeholde
 4. **typecheck** (pyright) -- runs after lint
 
 **Remove.** No automated quality checks. Code review and local validation are the only safety nets.
-
-</details>
-
-<details>
-<summary>claude-code-review.yml -- AI Code Review</summary>
-
-**Why.** Automated code review on PRs using Claude. Catches issues that linters cannot: logic errors, security concerns, design problems.
-
-**What.** Triggers on PR open/sync/ready. Uses `anthropics/claude-code-action@v1` with Sonnet. Reviews for correctness, security, performance, readability, and testing. Has read-only tools (Read, Glob, Grep -- no Bash). Posts findings as PR comments. 10-minute timeout.
-
-**Remove.** No AI review on PRs. The local `code-reviewer` agent (run by `/done`) still provides pre-PR review.
 
 </details>
 
