@@ -77,7 +77,7 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - output-evaluator uses haiku + dontAsk -- designed for automated pipeline integration, scoring is formulaic
 - Review rules have no `paths:` frontmatter (apply globally) and stay under 80 lines -- loaded into every context window
 - CLAUDE.md kept compact per ETH Zurich paper decision; detailed hooks/commands/rules tables added to DEVELOPMENT_PROCESS.md instead
-- CI review workflow uses claude-sonnet-4-6 with read-only tools (Read, Glob, Grep) -- security principle of least privilege
+- ~~CI review workflow~~ removed -- see 2026-03-13 decision below
 
 ## 2026-03-02: QSP Enforcement and Pre-flight Sync
 
@@ -172,3 +172,12 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 | GitHub API via curl (`curl -H "Authorization: ..." https://api.github.com/.../merge`) | Blocking curl to github.com is fragile and breaks legitimate web fetching. The hook already blocks commands containing `GH_TOKEN=` as a literal argument. | Use fine-grained PATs with minimal scopes. CLAUDE.md instructs Claude to use `gh` CLI, not raw API calls. Token scoping is the real control. |
 | Docker not present but deny rules exist | Docker is not installed in the current template container. Deny rules exist as defense-in-depth for users who add Docker-in-Docker later. | If Docker-in-Docker is added, the deny list should be revisited (add `-v` and `--mount` volume escape patterns). |
 | Whitelisted domains as exfil channels | `github.com` is whitelisted for git/gh operations. A compromised agent could theoretically exfiltrate via gist creation or issue comments. | Token scoping (no gist/issue create permission) + GH mutation deny rules in Tier 2. Tier 3 accepts this risk explicitly. |
+
+## 2026-03-13: Remove CI-Based Claude Code Review
+
+**Request**: Remove the `claude-code-review.yml` GitHub Actions workflow. The local `code-reviewer` agent (run by `/done` at step S.6.5) already provides equivalent pre-PR review coverage, making the CI workflow redundant.
+
+**Decisions**:
+- Delete `claude-code-review.yml` entirely -- the local code-reviewer agent provides the same review before PR creation, and the CI workflow required managing an `ANTHROPIC_API_KEY` secret in GitHub
+- Keep `dangerous-actions-blocker.sh` `ANTHROPIC_API_KEY=` pattern unchanged -- it blocks secrets in commands generally, not CI-specific
+- Keep `docs/IMPLEMENTATION_PLAN.md` unchanged -- historical record of completed work

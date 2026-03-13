@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 3 slash commands (`/cove`, `/cove-isolated`, `/security-audit`) provide chain-of-verification for accuracy and a 6-phase security posture scan with A-F grading
 - 3 new specialized agents: `security-auditor` (OWASP-based vulnerability analysis, read-only), `refactoring-specialist` (SOLID/code smell detection, read-only), `output-evaluator` (LLM-as-Judge quality scoring for automated pipelines)
 - 4 review rules in `.claude/rules/` auto-loaded as project context -- cover architecture, code quality, performance, and test quality concerns that linters cannot catch
-- AI-powered PR review via GitHub Actions (`claude-code-review.yml`) using `anthropics/claude-code-action@v1` -- automatically reviews PRs with read-only tools on open/sync/ready_for_review
 - Local config template (`.claude/settings.local.json.example`) for developer-specific hook overrides, extra permissions, and MCP server configuration
 - Tests for hooks (test_hooks.py), commands (test_commands.py), agents (test_agents.py), and rules (test_rules.py) validating existence, structure, frontmatter, and behavioral contracts
 - New `docs/DEVELOPMENT_PROCESS.md` contains the full Q/S/P development workflow, agent reference, failure protocol, changelog format, and PCC shorthand -- accessible on demand instead of always loaded into context
@@ -57,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- CI-based AI code review workflow (`claude-code-review.yml`) -- the local `code-reviewer` agent (run by `/done` at step S.6.5) already provides equivalent pre-PR review coverage, making the CI workflow redundant and removing the need to manage an `ANTHROPIC_API_KEY` secret in GitHub
 - `/catchup` command -- its context restoration role overlaps with `/sync`, which already covers pre-flight workspace state
 - `/ship` slash command -- its 3-tier validation checklist (Blockers, High Priority, Recommended) is preserved in `/done` Phase 2
 - Shell Command Style and Allowed Operations sections from CLAUDE.md -- absolute path preferences and read-only command lists are now handled by settings.json permission rules rather than prose instructions

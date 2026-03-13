@@ -163,7 +163,7 @@ actual scope at completion based on workspace signals.
 
 - **5 workflow agents** -- code quality, test coverage, PR writing, code review, docs updates
 - **3 security hooks** -- block destructive commands, scan for leaked secrets, catch Unicode injection
-- **CI/CD** -- GitHub Actions for lint + test + typecheck + publish + AI code review
+- **CI/CD** -- GitHub Actions for lint + test + typecheck + publish
 - **Tool stack** -- [uv](https://docs.astral.sh/uv/) workspaces, [ruff](https://docs.astral.sh/ruff/), [pyright](https://github.com/microsoft/pyright), [pytest](https://pytest.org/), [hatchling](https://hatch.pypa.io/)
 
 ### Optional specialists
