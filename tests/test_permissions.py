@@ -328,17 +328,21 @@ class TestSecurityInvariants:
     def test_workflow_run_requires_confirmation(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(gh workflow run deploy.yml)", settings) == "ask"
 
-    def test_git_reset_requires_confirmation(self, settings: dict[str, Any]) -> None:
-        assert evaluate("Bash(git reset --hard HEAD~1)", settings) == "ask"
-        assert evaluate("Bash(git reset HEAD file.py)", settings) == "ask"
+    def test_git_reset_is_allowed(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git reset --hard HEAD~1)", settings) == "allow"
+        assert evaluate("Bash(git reset HEAD file.py)", settings) == "allow"
 
-    def test_git_destructive_operations_require_confirmation(self, settings: dict[str, Any]) -> None:
-        for cmd in ["git init", "git clone https://github.com/repo", "git rm file.py", "git mv a.py b.py"]:
+    def test_git_init_clone_require_confirmation(self, settings: dict[str, Any]) -> None:
+        for cmd in ["git init", "git clone https://github.com/repo"]:
             assert evaluate(f"Bash({cmd})", settings) == "ask", f"{cmd} should require confirmation"
 
-    def test_git_restore_requires_confirmation(self, settings: dict[str, Any]) -> None:
-        assert evaluate("Bash(git restore file.py)", settings) == "ask"
-        assert evaluate("Bash(git restore --staged file.py)", settings) == "ask"
+    def test_git_rm_mv_are_allowed(self, settings: dict[str, Any]) -> None:
+        for cmd in ["git rm file.py", "git mv a.py b.py"]:
+            assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
+
+    def test_git_restore_is_allowed(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git restore file.py)", settings) == "allow"
+        assert evaluate("Bash(git restore --staged file.py)", settings) == "allow"
 
     def test_gh_issue_mutations_require_confirmation(self, settings: dict[str, Any]) -> None:
         for cmd in [
@@ -359,8 +363,8 @@ class TestSecurityInvariants:
         assert evaluate("Bash(gh workflow enable deploy.yml)", settings) == "ask"
         assert evaluate("Bash(gh workflow disable deploy.yml)", settings) == "ask"
 
-    def test_git_worktree_requires_confirmation(self, settings: dict[str, Any]) -> None:
-        assert evaluate("Bash(git worktree add ../feature)", settings) == "ask"
+    def test_git_worktree_is_allowed(self, settings: dict[str, Any]) -> None:
+        assert evaluate("Bash(git worktree add ../feature)", settings) == "allow"
 
     def test_uv_init_requires_confirmation(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(uv init my-project)", settings) == "ask"
