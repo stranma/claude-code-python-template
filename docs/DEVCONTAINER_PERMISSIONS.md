@@ -16,7 +16,7 @@ Set the tier via `PERMISSION_TIER` environment variable before building the devc
 
 Regardless of tier, these layers provide defense-in-depth:
 
-- **Firewall (iptables)**: All egress blocked except ~10 whitelisted domains
+- **Firewall (iptables)**: All egress blocked except whitelisted domains (built-in + WebFetch settings)
 - **Non-root user**: Cannot install system packages or modify system files
 - **dangerous-actions-blocker.sh**: Blocks rm -rf, sudo, force push, DROP DATABASE, secrets in args
 - **output-secrets-scanner.sh**: Warns on leaked credentials in command output
@@ -46,6 +46,23 @@ Regardless of tier, these layers provide defense-in-depth:
 | `curl ... \| bash` / `wget ... \| sh` | Do not pipe remote scripts. Add to Dockerfile instead. | Supply-chain attack vector |
 | `cd path && command` | Use absolute paths: `command /absolute/path` | Chained commands bypass glob-based permission checks |
 | `git remote add/set-url/remove/rename/set-head` | Ask the user to manage remotes | Prevents code exfiltration to unauthorized remotes |
+
+## Firewall Configuration
+
+The devcontainer firewall (`init-firewall.sh`) restricts all outbound traffic to a built-in allowlist plus domains from Claude Code permission settings.
+
+**Built-in domains** (always allowed): PyPI, GitHub (via API CIDR ranges), Anthropic/Claude, VS Code Marketplace, uv/Astral.
+
+**WebFetch domain auto-whitelisting**: The firewall scans `.claude/settings.json` and `.claude/settings.local.json` for `WebFetch(domain:...)` patterns in `allow` and `ask` lists. Matched domains are resolved via DNS and added to the ipset allowlist.
+
+| Pattern | Firewall behavior |
+|---------|-------------------|
+| `WebFetch(domain:algoenergy.cz)` | Resolved and whitelisted |
+| `WebFetch(domain:*.example.com)` | Skipped (wildcards cannot be resolved) |
+| `WebFetch` (bare) | Ignored (no domain to resolve) |
+| `WebFetch(domain:)` (empty) | Filtered out |
+
+Changes to WebFetch settings take effect on container rebuild (`devcontainer rebuild`).
 
 ## Tier Comparison
 
