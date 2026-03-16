@@ -24,7 +24,9 @@
       "Bash(*gh pr merge *)",
       "Bash(*gh workflow run *)", "Bash(*gh workflow enable *)", "Bash(*gh workflow disable *)",
       "Bash(*gh issue create *)", "Bash(*gh issue close *)", "Bash(*gh issue edit *)",
-      "Bash(*terraform *)"
+      "Bash(*terraform *)",
+      "Bash(*git remote add *)", "Bash(*git remote set-url *)", "Bash(*git remote remove *)",
+      "Bash(*git remote rename *)", "Bash(*git remote set-head *)"
     ]
   },
   "enabledPlugins": {
