@@ -200,5 +200,5 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Only `allow` and `ask` lists are scanned (not `deny`) -- denied domains should never be whitelisted
 - Bare `WebFetch` (no domain qualifier) is ignored -- it grants tool permission but has no domain to resolve
 - Wildcard domains (e.g., `*.example.com`) are skipped with a warning -- DNS cannot resolve wildcard patterns to IPs
-- Empty domain values filtered by `grep -v '^$'` -- defensive against `WebFetch(domain:)` edge case
-- Changes require container rebuild to take effect -- firewall runs once at startup, not dynamically
+- Empty domain values filtered by `sed '/^$/d'` instead of `grep -v '^$'` -- grep exits non-zero on empty input under `set -euo pipefail`
+- WebFetch settings changes take effect on container restart (`init-firewall.sh` runs from `postStartCommand`); permission tier changes require rebuild (`onCreateCommand` copies tier to `settings.local.json`)

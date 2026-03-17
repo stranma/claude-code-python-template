@@ -131,7 +131,7 @@ for settings_file in "$SETTINGS_DIR/settings.json" "$SETTINGS_DIR/settings.local
     fi
 done
 
-UNIQUE_DOMAINS=$(echo "$WEBFETCH_DOMAINS" | tr ' ' '\n' | sort -u | grep -v '^$')
+UNIQUE_DOMAINS=$(printf '%s\n' "$WEBFETCH_DOMAINS" | tr ' ' '\n' | sed '/^$/d' | sort -u)
 if [ -n "$UNIQUE_DOMAINS" ]; then
     while read -r domain; do
         if [[ "$domain" == \** ]]; then

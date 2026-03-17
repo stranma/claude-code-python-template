@@ -51,7 +51,7 @@ Regardless of tier, these layers provide defense-in-depth:
 
 The devcontainer firewall (`init-firewall.sh`) restricts all outbound traffic to a built-in allowlist plus domains from Claude Code permission settings.
 
-**Built-in domains** (always allowed): PyPI, GitHub (via API CIDR ranges), Anthropic/Claude, VS Code Marketplace, uv/Astral.
+**Built-in domains** (always allowed): PyPI, GitHub (via API CIDR ranges), Anthropic/Claude, VS Code Marketplace, uv/Astral, plus telemetry endpoints (`sentry.io`, `statsig.anthropic.com`, `statsig.com`).
 
 **WebFetch domain auto-whitelisting**: The firewall scans `.claude/settings.json` and `.claude/settings.local.json` for `WebFetch(domain:...)` patterns in `allow` and `ask` lists. Matched domains are resolved via DNS and added to the ipset allowlist.
 
@@ -62,7 +62,7 @@ The devcontainer firewall (`init-firewall.sh`) restricts all outbound traffic to
 | `WebFetch` (bare) | Ignored (no domain to resolve) |
 | `WebFetch(domain:)` (empty) | Filtered out |
 
-Changes to WebFetch settings take effect on container rebuild (`devcontainer rebuild`).
+Changes to WebFetch settings in `.claude/settings.json` or `.claude/settings.local.json` take effect on container restart. Changes to `.devcontainer/permissions/*.json` require a full rebuild (`devcontainer rebuild`).
 
 ## Tier Comparison
 
