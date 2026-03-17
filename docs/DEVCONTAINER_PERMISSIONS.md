@@ -45,6 +45,7 @@ Regardless of tier, these layers provide defense-in-depth:
 | `docker run --privileged` | Use `docker run` without `--privileged` | Container escape vector |
 | `curl ... \| bash` / `wget ... \| sh` | Do not pipe remote scripts. Add to Dockerfile instead. | Supply-chain attack vector |
 | `cd path && command` | Use absolute paths: `command /absolute/path` | Chained commands bypass glob-based permission checks |
+| `git remote add/set-url/remove/rename/set-head` | Ask the user to manage remotes | Prevents code exfiltration to unauthorized remotes |
 
 ## Tier Comparison
 
