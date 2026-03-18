@@ -8,22 +8,10 @@ import pytest
 
 HOOKS_DIR = Path(__file__).parent.parent / ".claude" / "hooks"
 
-SECURITY_HOOKS = [
+ALL_HOOKS = [
     "dangerous-actions-blocker.sh",
-    "output-secrets-scanner.sh",
-    "unicode-injection-scanner.sh",
-]
-
-PRODUCTIVITY_HOOKS = [
     "auto-format.sh",
-    "test-on-change.sh",
 ]
-
-DEVCONTAINER_HOOKS = [
-    "devcontainer-policy-blocker.sh",
-]
-
-ALL_HOOKS = SECURITY_HOOKS + PRODUCTIVITY_HOOKS + DEVCONTAINER_HOOKS
 
 
 class TestHookExistence:
@@ -60,9 +48,9 @@ class TestHookPermissions:
             cwd=repo_root,
         )
         if result.stdout:
-            assert result.stdout.startswith("100755"), (
-                f"{hook_name} is not tracked as executable by git (expected mode 100755)"
-            )
+            assert result.stdout.startswith(
+                "100755"
+            ), f"{hook_name} is not tracked as executable by git (expected mode 100755)"
         else:
             # Not in a git repo (e.g. integration test copy) -- fall back to filesystem
             mode = hook_path.stat().st_mode
@@ -117,91 +105,65 @@ class TestHookStructure:
         assert len(content) > 100, f"{hook_name} appears to be too short ({len(content)} bytes)"
 
 
-class TestSecurityHookBehavior:
-    """Verify security hooks have the correct blocking/warning patterns."""
+class TestExfiltrationGuardBehavior:
+    """Verify dangerous-actions-blocker blocks exfiltration patterns."""
 
-    def test_dangerous_actions_blocker_exits_2_for_blocks(self) -> None:
+    def test_exits_2_for_blocks(self) -> None:
         content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
         assert "exit 2" in content, "dangerous-actions-blocker must exit 2 to block actions"
 
-    def test_dangerous_actions_blocker_checks_bash_only(self) -> None:
+    def test_checks_bash_only(self) -> None:
         content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
         assert '"Bash"' in content, "dangerous-actions-blocker should only check Bash tool"
 
-    def test_dangerous_actions_blocker_has_blocked_patterns(self) -> None:
+    def test_blocks_gh_gist_create(self) -> None:
         content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
-        for pattern in ["rm -rf", "DROP DATABASE", "git push --force"]:
-            assert pattern in content, f"dangerous-actions-blocker missing pattern: {pattern}"
+        assert "gh gist create" in content, "dangerous-actions-blocker missing gh gist create pattern"
 
-    def test_dangerous_actions_blocker_checks_secrets(self) -> None:
+    def test_blocks_gh_issue_create_with_body(self) -> None:
         content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
-        for pattern in ["ANTHROPIC_API_KEY", "AWS_SECRET_ACCESS_KEY"]:
+        assert "gh issue create" in content, "dangerous-actions-blocker missing gh issue create pattern"
+        assert "--body" in content, "dangerous-actions-blocker missing --body check"
+
+    def test_blocks_publishing_commands(self) -> None:
+        content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
+        for pattern in ["twine upload", "npm publish", "uv publish"]:
+            assert pattern in content, f"dangerous-actions-blocker missing publishing pattern: {pattern}"
+
+    def test_checks_secrets(self) -> None:
+        content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
+        for pattern in ["ANTHROPIC_API_KEY", "AWS_SECRET_ACCESS_KEY", "AKIA", "sk-", "ghp_"]:
             assert pattern in content, f"dangerous-actions-blocker missing secret pattern: {pattern}"
 
-    def test_unicode_scanner_exits_2_for_blocks(self) -> None:
-        content = (HOOKS_DIR / "unicode-injection-scanner.sh").read_text(encoding="utf-8")
-        assert "exit 2" in content, "unicode-injection-scanner must exit 2 to block actions"
+    def test_does_not_block_local_destruction(self) -> None:
+        content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
+        # Extract only the block-list arrays (non-comment lines containing patterns)
+        non_comment_lines = [line for line in content.splitlines() if not line.strip().startswith("#")]
+        code_content = "\n".join(non_comment_lines)
+        for pattern in ["rm -rf /", "'sudo'", "DROP DATABASE", "git push --force"]:
+            assert (
+                pattern not in code_content
+            ), f"dangerous-actions-blocker should NOT block local destruction pattern: {pattern}"
 
-    def test_unicode_scanner_checks_edit_and_write(self) -> None:
-        content = (HOOKS_DIR / "unicode-injection-scanner.sh").read_text(encoding="utf-8")
-        assert '"Edit"' in content, "unicode-injection-scanner should check Edit tool"
-        assert '"Write"' in content, "unicode-injection-scanner should check Write tool"
-
-    def test_unicode_scanner_detects_zero_width_chars(self) -> None:
-        content = (HOOKS_DIR / "unicode-injection-scanner.sh").read_text(encoding="utf-8")
-        assert "200B" in content, "unicode-injection-scanner should detect zero-width space (U+200B)"
-
-    def test_unicode_scanner_detects_rtl_override(self) -> None:
-        content = (HOOKS_DIR / "unicode-injection-scanner.sh").read_text(encoding="utf-8")
-        assert "202A" in content or "202E" in content, "unicode-injection-scanner should detect RTL override"
-
-    def test_unicode_scanner_detects_ansi_escapes(self) -> None:
-        content = (HOOKS_DIR / "unicode-injection-scanner.sh").read_text(encoding="utf-8")
-        assert "ANSI" in content, "unicode-injection-scanner should detect ANSI escape sequences"
-
-    def test_output_secrets_scanner_never_blocks(self) -> None:
-        content = (HOOKS_DIR / "output-secrets-scanner.sh").read_text(encoding="utf-8")
-        assert "exit 2" not in content, "output-secrets-scanner (PostToolUse) must never exit 2"
-
-    def test_output_secrets_scanner_emits_system_message(self) -> None:
-        content = (HOOKS_DIR / "output-secrets-scanner.sh").read_text(encoding="utf-8")
-        assert "systemMessage" in content, "output-secrets-scanner should emit systemMessage for warnings"
-
-    def test_output_secrets_scanner_detects_key_patterns(self) -> None:
-        content = (HOOKS_DIR / "output-secrets-scanner.sh").read_text(encoding="utf-8")
-        for pattern in ["AKIA", "sk-ant-", "ghp_", "PRIVATE KEY"]:
-            assert pattern in content, f"output-secrets-scanner missing pattern: {pattern}"
+    def test_has_security_model_comment(self) -> None:
+        content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")
+        assert "Exfiltration guard" in content, "dangerous-actions-blocker missing security model comment"
+        assert "disposable" in content, "dangerous-actions-blocker missing disposable devcontainer note"
 
 
-class TestProductivityHookBehavior:
-    """Verify productivity hooks have correct patterns."""
+class TestAutoFormatBehavior:
+    """Verify auto-format hook has correct patterns."""
 
-    def test_auto_format_targets_python_files(self) -> None:
+    def test_targets_python_files(self) -> None:
         content = (HOOKS_DIR / "auto-format.sh").read_text(encoding="utf-8")
         assert "*.py" in content or ".py" in content, "auto-format should target Python files"
 
-    def test_auto_format_uses_ruff(self) -> None:
+    def test_uses_ruff(self) -> None:
         content = (HOOKS_DIR / "auto-format.sh").read_text(encoding="utf-8")
         assert "ruff format" in content, "auto-format should use ruff format"
         assert "ruff check --fix" in content, "auto-format should use ruff check --fix"
 
-    def test_auto_format_checks_edit_and_write(self) -> None:
+    def test_checks_edit_and_write(self) -> None:
         content = (HOOKS_DIR / "auto-format.sh").read_text(encoding="utf-8")
         assert '"Edit"' in content, "auto-format should check Edit tool"
         assert '"Write"' in content, "auto-format should check Write tool"
-
-    def test_test_on_change_discovers_test_files(self) -> None:
-        content = (HOOKS_DIR / "test-on-change.sh").read_text(encoding="utf-8")
-        assert "test_" in content, "test-on-change should discover test_ prefixed files"
-
-    def test_test_on_change_uses_pytest(self) -> None:
-        content = (HOOKS_DIR / "test-on-change.sh").read_text(encoding="utf-8")
-        assert "pytest" in content, "test-on-change should use pytest"
-
-    def test_test_on_change_never_blocks(self) -> None:
-        content = (HOOKS_DIR / "test-on-change.sh").read_text(encoding="utf-8")
-        assert "exit 2" not in content, "test-on-change should never block (informational only)"
-
-    def test_test_on_change_emits_system_message_on_failure(self) -> None:
-        content = (HOOKS_DIR / "test-on-change.sh").read_text(encoding="utf-8")
-        assert "systemMessage" in content, "test-on-change should emit systemMessage for test failures"

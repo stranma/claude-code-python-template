@@ -10,8 +10,7 @@ Detailed development workflow for this repository. Referenced from `CLAUDE.md`.
 
 1. Read `docs/IMPLEMENTATION_PLAN.md` for current progress
 2. Read `docs/CHANGELOG.md` for recent changes
-3. Read `docs/DECISIONS.md` for prior feature requests and user decisions
-4. Read any package-specific documentation relevant to the task
+3. Read any package-specific documentation relevant to the task
 
 This ensures continuity and prevents duplicated or missed work.
 
@@ -96,7 +95,6 @@ All agents use `subagent_type: "general-purpose"`. Do NOT use `feature-dev:code-
 | CI (S.6.3) fails on current code | Fix, push, re-run from S.6.3 |
 | CI fails on pre-existing issue | Document separately, do not block current work |
 | Code review flags architectural concern | Pause. Evaluate rework (back to S.4) vs. follow-up issue |
-| Acceptance criteria (P.3.2) reveals previous phase regression | File as separate issue. Fix in current phase only if it's a direct regression |
 | Multiple steps fail repeatedly | Stop. Reassess scope -- may need to split into smaller increments |
 
 ---
@@ -122,9 +120,8 @@ next phase for P-scope work.
 
 **P.3 Execute** (repeat per phase)
 1. Run Standard Path (S.1 through S.7) for the phase
-2. Verify acceptance criteria (use `.claude/agents/acceptance-criteria-validator.md`)
-3. Update `docs/IMPLEMENTATION_PLAN.md` (use `.claude/agents/implementation-tracker.md` or built-in `Plan` agent)
-4. Write phase handoff note (2-5 sentences: what completed, deviations, risks, dependencies, intentional debt)
+2. Update `docs/IMPLEMENTATION_PLAN.md` (use built-in `Plan` agent)
+3. Write phase handoff note (2-5 sentences: what completed, deviations, risks, dependencies, intentional debt)
 
 **P.4 Finalize** -- Merge. Version bump and changelog consolidation if applicable.
 
@@ -142,54 +139,32 @@ All custom agents are in `.claude/agents/` and use `subagent_type: "general-purp
 | S.6.4 | `review-responder.md` | Handle automated reviewer comments |
 | S.6.5 | `code-reviewer.md` | Independent code review |
 | S.7 | `docs-updater.md` | Verify and update documentation |
-| P.3.2 | `acceptance-criteria-validator.md` | Verify acceptance criteria |
-| P.3.3 | `implementation-tracker.md` | Verify plan matches reality |
-| -- | `agent-auditor.md` | Audit agent definitions against best practices |
-| -- | `security-auditor.md` | OWASP-based security analysis (read-only) |
-| -- | `refactoring-specialist.md` | SOLID/code smell analysis (read-only) |
-| -- | `output-evaluator.md` | LLM-as-Judge quality scoring |
 
 ---
 
 ## Hooks
 
-5 hook scripts in `.claude/hooks/` run automatically via settings.json:
+2 hook scripts in `.claude/hooks/` run automatically via settings.json:
 
 | Hook | Event | Matcher | Behavior |
 |------|-------|---------|----------|
-| `dangerous-actions-blocker.sh` | PreToolUse | Bash | Blocks `rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, secrets in args. Exit 2 = block. |
-| `unicode-injection-scanner.sh` | PreToolUse | Edit\|Write | Blocks zero-width chars, RTL overrides, ANSI escapes, null bytes, tag chars. Exit 2 = block. |
-| `output-secrets-scanner.sh` | PostToolUse | Bash | Scans output for AWS/Anthropic/OpenAI/GitHub keys, JWTs, private keys, DB URLs. Warns via systemMessage. |
+| `dangerous-actions-blocker.sh` | PreToolUse | Bash | Blocks exfiltration via trusted channels (gh gist, gh issue --body, publishing) and secrets in args. Exit 2 = block. |
 | `auto-format.sh` | PostToolUse | Edit\|Write | Runs `uv run ruff format` and `uv run ruff check --fix` on edited .py files. Synchronous. |
-| `test-on-change.sh` | PostToolUse | Edit\|Write | Discovers and runs associated test file. Informational (systemMessage on failure). |
 
 All hooks require `jq` for JSON parsing and degrade gracefully if jq is missing.
 
 ---
 
-## Commands
-
-3 slash commands in `.claude/commands/`:
-
-| Command | Purpose |
-|---------|---------|
-| `/cove` | Chain-of-Verification (CoVe) for high-stakes accuracy. 4-step process: generate baseline, plan verifications, verify from source, produce corrected response. |
-| `/cove-isolated` | Isolated CoVe variant. Verification step runs in a separate agent that cannot see the baseline response, preventing confirmation bias. |
-| `/security-audit` | 6-phase Python security scan (deps, secrets, code patterns, input validation, config, scoring). Outputs A-F grade. |
-
----
-
 ## Skills
 
-5 skills in `.claude/skills/`:
+4 skills in `.claude/skills/`:
 
 | Skill | Purpose |
 |-------|---------|
 | `/sync` | Pre-flight workspace sync. Fetches remote, reports branch state, dirty files, ahead/behind, recent commits. |
 | `/design` | Crystallize brainstorming into a structured plan. Reads DECISIONS.md for conflicts, auto-classifies scope, outputs actionable plan. |
-| `/done` | Universal completion. Auto-detects scope (Q/S/P), validates (3-tier checklist), ships/lands/delivers, updates docs. Absorbs former `/ship`. |
+| `/done` | Universal completion. Auto-detects scope (Q/S/P), validates (3-tier checklist), ships/lands/delivers, updates docs. |
 | `/landed` | Post-merge lifecycle. Verifies merge CI, optional deployment checks, cleans up branches, prepares next phase. |
-| `/edit-permissions` | Manage Claude Code permission rules in settings.json. Pattern syntax reference and safety guardrails. |
 
 ---
 

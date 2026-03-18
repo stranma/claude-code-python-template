@@ -7,25 +7,14 @@ import pytest
 
 AGENTS_DIR = Path(__file__).parent.parent / ".claude" / "agents"
 
-EXISTING_AGENTS = [
-    "acceptance-criteria-validator.md",
-    "agent-auditor.md",
+ALL_AGENTS = [
     "code-quality-validator.md",
     "code-reviewer.md",
     "docs-updater.md",
-    "implementation-tracker.md",
     "pr-writer.md",
     "review-responder.md",
     "test-coverage-validator.md",
 ]
-
-NEW_AGENTS = [
-    "security-auditor.md",
-    "refactoring-specialist.md",
-    "output-evaluator.md",
-]
-
-ALL_AGENTS = EXISTING_AGENTS + NEW_AGENTS
 
 VALID_MODELS = {"haiku", "sonnet", "opus"}
 VALID_PERMISSION_MODES = {"plan", "dontAsk", "acceptEdits"}
@@ -69,9 +58,7 @@ class TestAgentExistence:
 
     def test_total_agent_count(self) -> None:
         actual_agents = {f.name for f in AGENTS_DIR.iterdir() if f.is_file() and f.suffix == ".md"}
-        assert len(actual_agents) >= len(ALL_AGENTS), (
-            f"Expected at least {len(ALL_AGENTS)} agents, found {len(actual_agents)}"
-        )
+        assert actual_agents == set(ALL_AGENTS), f"Agent mismatch. Expected: {set(ALL_AGENTS)}, Got: {actual_agents}"
 
 
 class TestAgentFrontmatter:
@@ -115,9 +102,9 @@ class TestAgentFrontmatter:
     def test_agent_has_permission_mode(self, agent_name: str, agent_frontmatter: dict[str, dict[str, str]]) -> None:
         fm = agent_frontmatter.get(agent_name, {})
         assert "permissionMode" in fm, f"{agent_name} missing 'permissionMode' in frontmatter"
-        assert fm["permissionMode"] in VALID_PERMISSION_MODES, (
-            f"{agent_name} has invalid permissionMode: {fm['permissionMode']!r}"
-        )
+        assert (
+            fm["permissionMode"] in VALID_PERMISSION_MODES
+        ), f"{agent_name} has invalid permissionMode: {fm['permissionMode']!r}"
 
 
 class TestAgentBody:
@@ -138,31 +125,3 @@ class TestAgentBody:
         parts = content.split("---", 2)
         body = parts[2] if len(parts) >= 3 else ""
         assert re.search(r"^#+\s", body, re.MULTILINE), f"{agent_name} body missing markdown heading"
-
-
-class TestNewAgentSpecifics:
-    """Verify new agents have correct read-only/permission configurations."""
-
-    def test_security_auditor_is_read_only(self, agent_frontmatter: dict[str, dict[str, str]]) -> None:
-        fm = agent_frontmatter.get("security-auditor.md", {})
-        assert fm.get("permissionMode") == "plan", "security-auditor should be read-only (permissionMode: plan)"
-        tools = {t.strip() for t in fm.get("tools", "").split(",")}
-        assert "Bash" not in tools, "security-auditor should not have Bash access"
-        assert "Edit" not in tools, "security-auditor should not have Edit access"
-        assert "Write" not in tools, "security-auditor should not have Write access"
-
-    def test_refactoring_specialist_is_read_only(self, agent_frontmatter: dict[str, dict[str, str]]) -> None:
-        fm = agent_frontmatter.get("refactoring-specialist.md", {})
-        assert fm.get("permissionMode") == "plan", "refactoring-specialist should be read-only (permissionMode: plan)"
-        tools = {t.strip() for t in fm.get("tools", "").split(",")}
-        assert "Bash" not in tools, "refactoring-specialist should not have Bash access"
-
-    def test_output_evaluator_uses_dontask(self, agent_frontmatter: dict[str, dict[str, str]]) -> None:
-        fm = agent_frontmatter.get("output-evaluator.md", {})
-        assert fm.get("permissionMode") == "dontAsk", (
-            "output-evaluator should use dontAsk for automated pipeline integration"
-        )
-
-    def test_output_evaluator_uses_haiku(self, agent_frontmatter: dict[str, dict[str, str]]) -> None:
-        fm = agent_frontmatter.get("output-evaluator.md", {})
-        assert fm.get("model") == "haiku", "output-evaluator should use haiku model for efficiency"

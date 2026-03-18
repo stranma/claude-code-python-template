@@ -7,7 +7,6 @@ import pytest
 SKILLS_DIR = Path(__file__).parent.parent / ".claude" / "skills"
 
 ALL_SKILLS = [
-    "edit-permissions",
     "sync",
     "design",
     "done",
@@ -32,6 +31,12 @@ class TestSkillExistence:
     def test_skill_file_exists(self, skill_name: str) -> None:
         skill_path = SKILLS_DIR / skill_name / "SKILL.md"
         assert skill_path.exists(), f"SKILL.md missing for: {skill_name}"
+
+    def test_no_unexpected_skills(self) -> None:
+        actual_skills = {d.name for d in SKILLS_DIR.iterdir() if d.is_dir()}
+        expected_skills = set(ALL_SKILLS)
+        unexpected = actual_skills - expected_skills
+        assert not unexpected, f"Unexpected skill directories found: {unexpected}"
 
 
 class TestSkillFrontmatter:
@@ -86,17 +91,17 @@ class TestSkillSideEffects:
         content = (SKILLS_DIR / skill_name / "SKILL.md").read_text(encoding="utf-8")
         parts = content.split("---", 2)
         frontmatter = parts[1] if len(parts) >= 3 else ""
-        assert "disable-model-invocation: true" in frontmatter, (
-            f"{skill_name} should have disable-model-invocation: true (has side effects)"
-        )
+        assert (
+            "disable-model-invocation: true" in frontmatter
+        ), f"{skill_name} should have disable-model-invocation: true (has side effects)"
 
     def test_design_allows_model_invocation(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")
         parts = content.split("---", 2)
         frontmatter = parts[1] if len(parts) >= 3 else ""
-        assert "disable-model-invocation" not in frontmatter, (
-            "design should NOT have disable-model-invocation (intentionally model-invocable)"
-        )
+        assert (
+            "disable-model-invocation" not in frontmatter
+        ), "design should NOT have disable-model-invocation (intentionally model-invocable)"
 
 
 class TestSkillContent:
@@ -126,9 +131,9 @@ class TestSkillContent:
 
     def test_design_classifies_scope(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")
-        assert "**Q** (Quick)" in content and "**S** (Standard)" in content and "**P** (Project)" in content, (
-            "design should classify scope as Q/S/P with descriptive labels"
-        )
+        assert (
+            "**Q** (Quick)" in content and "**S** (Standard)" in content and "**P** (Project)" in content
+        ), "design should classify scope as Q/S/P with descriptive labels"
 
     def test_design_has_argument_hint(self) -> None:
         content = (SKILLS_DIR / "design" / "SKILL.md").read_text(encoding="utf-8")

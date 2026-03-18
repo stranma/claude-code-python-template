@@ -1,7 +1,9 @@
 #!/bin/bash
-# PreToolUse hook: Blocks dangerous shell commands before execution.
-# Exit 2 = block the action, Exit 0 = allow.
-# Requires jq for JSON parsing; degrades gracefully if missing.
+# Exfiltration guard for autonomous mode.
+# Primary defense: iptables firewall (network whitelist).
+# This hook catches exfiltration via TRUSTED channels (GitHub API, package registries)
+# and secrets leaked as command arguments.
+# Local destruction (rm -rf, sudo, etc.) is not blocked -- devcontainer is disposable.
 
 if ! command -v jq &>/dev/null; then
     echo "WARNING: jq not found, dangerous-actions-blocker hook disabled" >&2
@@ -21,82 +23,60 @@ if [ -z "$COMMAND" ]; then
     exit 0
 fi
 
-# Literal patterns that should be blocked outright (matched with grep -F for safety)
-BLOCKED_LITERAL_PATTERNS=(
-    'rm -rf /'
-    'rm -rf /*'
-    'rm -rf ~'
-    'rm -rf $HOME'
-    'sudo rm -rf'
-    'dd if=/dev/zero'
-    ':(){:|:&};:'
-    'chmod -R 777 /'
-    'chmod -R 777 /*'
-    '> /dev/sda'
-    'git push --force'
-    'git push -f '
-    'git push origin +master'
-    'git push origin +main'
-    'DROP DATABASE'
-    'DROP TABLE'
-    'TRUNCATE TABLE'
-    'shutdown'
-    'reboot'
-    'init 0'
-    'init 6'
-    'halt'
-    'poweroff'
+# --- Exfiltration via trusted channels (exit 2 = hard block) ---
+
+EXFIL_LITERAL_PATTERNS=(
+    'gh gist create'
+    'twine upload'
+    'npm publish'
+    'pip upload'
+    'uv publish'
 )
 
-# Regex patterns that require extended matching
-BLOCKED_REGEX_PATTERNS=(
-    'mkfs\.'
-    'DELETE FROM .* WHERE 1'
-)
-
-for pattern in "${BLOCKED_LITERAL_PATTERNS[@]}"; do
+for pattern in "${EXFIL_LITERAL_PATTERNS[@]}"; do
     if echo "$COMMAND" | grep -qiF "$pattern"; then
-        jq -n --arg reason "Blocked by dangerous-actions-blocker hook: command matches dangerous pattern '$pattern'" \
+        jq -n --arg reason "Blocked by dangerous-actions-blocker hook: exfiltration via trusted channel '$pattern'" \
             '{"decision":"block","reason":$reason}'
         exit 2
     fi
 done
 
-for pattern in "${BLOCKED_REGEX_PATTERNS[@]}"; do
-    if echo "$COMMAND" | grep -qiE "$pattern"; then
-        jq -n --arg reason "Blocked by dangerous-actions-blocker hook: command matches dangerous pattern '$pattern'" \
-            '{"decision":"block","reason":$reason}'
-        exit 2
-    fi
-done
+# gh issue create with --body or --body-file (data exfil via issue body)
+if echo "$COMMAND" | grep -qiF "gh issue create" && echo "$COMMAND" | grep -qiE '\-\-body(-file)?'; then
+    jq -n '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: exfiltration via gh issue create --body/--body-file"}'
+    exit 2
+fi
 
-# Block commands containing secrets/tokens passed as arguments
-# Literal key names use -F; patterns with wildcards use -E
+# --- Secrets as literal command arguments ---
+
+SECRET_REGEX_PATTERNS=(
+    'AKIA[0-9A-Z]{16}'
+    'sk-[a-zA-Z0-9_-]{20,}'
+    'ghp_[a-zA-Z0-9]{36}'
+    'gho_[a-zA-Z0-9]{36}'
+    'github_pat_[a-zA-Z0-9_]{22,}'
+    'Bearer [a-zA-Z0-9_./-]+'
+    'token=[a-zA-Z0-9_./-]+'
+)
+
 SECRET_LITERAL_PATTERNS=(
     'ANTHROPIC_API_KEY='
     'OPENAI_API_KEY='
     'AWS_SECRET_ACCESS_KEY='
     'GITHUB_TOKEN='
     'GH_TOKEN='
-    'password='
-    'passwd='
-    'secret='
-    'token='
-)
-
-SECRET_REGEX_PATTERNS=(
-    'DATABASE_URL=.*://.*:.*@'
+    'DATABASE_URL='
 )
 
 for pattern in "${SECRET_LITERAL_PATTERNS[@]}"; do
-    if echo "$COMMAND" | grep -qiF "$pattern"; then
+    if echo "$COMMAND" | grep -qF "$pattern"; then
         jq -n '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command appears to contain secrets or credentials. Use environment variables instead."}'
         exit 2
     fi
 done
 
 for pattern in "${SECRET_REGEX_PATTERNS[@]}"; do
-    if echo "$COMMAND" | grep -qiE "$pattern"; then
+    if echo "$COMMAND" | grep -qE "$pattern"; then
         jq -n '{"decision":"block","reason":"Blocked by dangerous-actions-blocker hook: command appears to contain secrets or credentials. Use environment variables instead."}'
         exit 2
     fi
