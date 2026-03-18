@@ -302,6 +302,20 @@ class TestSecurityInvariants:
     def test_uv_self_is_denied(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(uv self update)", settings) == "deny"
 
+    def test_git_push_force_is_denied(self, settings: dict[str, Any]) -> None:
+        """Force push affects the remote repo (not disposable) -- must be denied."""
+        assert evaluate("Bash(git push --force origin main)", settings) == "deny"
+        assert evaluate("Bash(git push -f origin main)", settings) == "deny"
+
+    def test_git_push_force_variants_require_confirmation(self, settings: dict[str, Any]) -> None:
+        """Force-push variants with different flag ordering hit ask (not deny).
+
+        --force-with-lease and -u -f don't match the deny prefix patterns,
+        but git push * is in ask so they still require user confirmation.
+        """
+        assert evaluate("Bash(git push --force-with-lease origin main)", settings) == "ask"
+        assert evaluate("Bash(git push -u -f origin main)", settings) == "ask"
+
     def test_rm_rf_is_not_allowed(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(rm -rf /)", settings) != "allow"
 
@@ -411,8 +425,12 @@ class TestEvaluationOrder:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
 
     def test_git_write_operations_are_allowed(self, settings: dict[str, Any]) -> None:
-        for cmd in ["git add .", 'git commit -m "msg"', "git push origin main"]:
+        for cmd in ["git add .", 'git commit -m "msg"']:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
+
+    def test_git_push_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        """git push affects remote state -- requires confirmation."""
+        assert evaluate("Bash(git push origin main)", settings) == "ask"
 
     def test_testing_commands_are_allowed(self, settings: dict[str, Any]) -> None:
         for cmd in ["pytest tests/", "uv run pytest -v"]:
@@ -440,8 +458,9 @@ class TestEvaluationOrder:
     def test_chained_commands_fall_through(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(cd /foo && ls)", settings) == "none"
 
-    def test_gh_api_is_allowed(self, settings: dict[str, Any]) -> None:
-        assert evaluate("Bash(gh api repos/owner/repo/pulls)", settings) == "allow"
+    def test_gh_api_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        """gh api can create gists/issues -- requires confirmation to prevent exfiltration."""
+        assert evaluate("Bash(gh api repos/owner/repo/pulls)", settings) == "ask"
 
     def test_gh_pr_review_operations_require_confirmation(self, settings: dict[str, Any]) -> None:
         """PR comment/review/ready are state-changing and have data exfiltration risk."""

@@ -6,14 +6,15 @@ Use `/sync` before starting work, `/design` to formalize a plan, `/done` when fi
 
 ## Security
 
-- **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, pickle deserialization, XSS, and os.system() usage
-- **Runtime hooks**: 3 base security hooks run automatically via `.claude/hooks/` (+ 1 devcontainer-only policy hook):
-  - `dangerous-actions-blocker.sh` (PreToolUse/Bash): blocks `rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, secrets in args
-  - `output-secrets-scanner.sh` (PostToolUse/Bash): warns if command output contains API keys, tokens, private keys, or DB URLs
-  - `unicode-injection-scanner.sh` (PreToolUse/Edit|Write): blocks zero-width chars, RTL overrides, ANSI escapes, null bytes
-  - `devcontainer-policy-blocker.sh` (PreToolUse/Bash, devcontainer only): blocks tool installation, publishing, supply-chain piping, and tier-dependent GH/infra commands
+Two-layer defense against data exfiltration:
+
+1. **Firewall** (primary): iptables whitelist in devcontainer blocks all non-approved network domains
+2. **Exfiltration guard** (hook): `dangerous-actions-blocker.sh` (PreToolUse/Bash) blocks exfiltration via trusted channels -- `gh gist create`, `gh issue create --body`, package publishing (`twine`/`npm`/`uv publish`), and secrets as literal command arguments
+
+Additional:
+- **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, deserialization, XSS, and unsafe system calls
 - **Secrets handling**: Never commit API keys, tokens, passwords, or private keys -- use environment variables or `.env` files (which are gitignored)
-- **Unsafe operations**: Avoid `eval`, `exec`, `pickle.loads`, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
+- **Unsafe operations**: Avoid `eval`, `exec`, unsafe deserialization, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
 - **Code review**: The code-reviewer agent checks for logic-level security issues (authorization bypass, TOCTOU, data exposure) that static pattern matching cannot catch
 
 ## Development Commands
@@ -34,13 +35,10 @@ uv run pyright                          # Type check
 
 Do not use unnecessary cd like `cd /path/to/cwd && git log`.
 
-## Devcontainer Rules
-
-When running in a devcontainer, some operations are denied by policy. Before attempting a command that might be blocked, check `docs/DEVCONTAINER_PERMISSIONS.md` for the approved alternative. Key rules:
+## Devcontainer
 
 - **Dependencies**: Use `uv add <package>`, never `pip install`
 - **System tools**: Add to `.devcontainer/Dockerfile`, do not install at runtime
-- **No chained cd**: Use absolute paths. `cd /path && command` bypasses permission checks.
 
 ## Code Style
 

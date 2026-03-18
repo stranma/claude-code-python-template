@@ -13,15 +13,6 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 **Decisions**:
 - Use `-name` pattern for package name replacements instead of bare name replacement (avoids false substring matches like "core" in "pyproject")
 
-## 2026-02-16: Permissions Modernization
-
-**Request**: Eliminate unnecessary permission prompts, migrate deprecated syntax, add permissions management skill.
-
-**Decisions**:
-- Absolute paths in CLAUDE.md instead of adding `Bash(cd *)` allow rule -- shell operator protection blocks chained commands regardless
-- `TaskOutput` tool instead of Read allow rule for temp dirs -- temp path is OS-specific and non-portable for a template
-- Custom `.claude/skills/` skill instead of community `@otrebu/claude-permissions` -- community skill is for claude.ai web (ZIP upload), not Claude Code CLI
-
 ## 2026-02-24: CLAUDE.md Three-Path Restructuring
 
 **Request**: Replace monolithic Phase Completion Checklist with complexity-aware development process.
@@ -34,16 +25,12 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 
 ## 2026-02-24: Devcontainer Setup
 
-**Request**: Add `.devcontainer/` with Claude Code CLI, network firewall, and docker-compose profiles for common service stacks (inspired by official Claude Code devcontainer and okruh project adaptation).
+**Request**: Add `.devcontainer/` with Claude Code CLI and network firewall.
 
 **Decisions**:
-- Python base image (`python:{{python_version}}-bookworm`) with Node.js 20 added for Claude Code CLI -- not Node base image, since this is a Python project
-- `vscode` user (UID 1000) with restricted sudoers (firewall-only) instead of `NOPASSWD:ALL` -- follows principle of least privilege from the official reference
+- Python base image (`python:{{python_version}}-bookworm`) with Claude Code native binary installer -- not Node base image, since this is a Python project
+- `vscode` user (UID 1000) with restricted sudoers (firewall-only) instead of `NOPASSWD:ALL` -- follows principle of least privilege
 - No docker-compose.yml by default (simple build) -- compose only generated when user selects a services profile during setup
-- Three compose profiles embedded as Python string constants in `setup_project.py` rather than separate template files -- keeps the repo clean, compose files only appear when needed
-- `zsh-in-docker` script instead of manual oh-my-zsh installation -- cleaner single-step setup, matches official Claude Code reference
-- Firewall uses `aggregate` tool for GitHub CIDR consolidation -- more robust than resolving individual domains, matches official reference
-- Non-critical domain resolution failures log WARNING and continue instead of exit 1 -- DNS blips should not prevent container startup
 
 ## 2026-02-26: Trim CLAUDE.md Based on "Evaluating AGENTS.md" Paper
 
@@ -55,29 +42,16 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Remove repository structure and testing sections entirely -- proven unhelpful by the paper, fully discoverable from project files
 - CLAUDE.md must contain a mandatory directive to classify every task as Q/S/P before starting work
 
-## 2026-02-24: Decision Log
+## 2026-03-01: Hooks, Commands, Agents, Rules
 
-**Request**: Create persistent decision log tracking every feature request and user decision.
-
-**Decisions**:
-- Dedicated `docs/DECISIONS.md` rather than only per-phase tables in IMPLEMENTATION_PLAN.md -- long-lived, cross-phase visibility
-- No status field; prune by deletion (git preserves history) -- simpler than Active/Superseded/Obsolete tracking
-- Integrated into S.2 (log), S.7 (update), P.1 (consistency check + prune) -- Quick path exempt
-
-## 2026-03-01: Hooks, Commands, Agents, Rules, CI
-
-**Request**: Add hooks (5), slash commands (3), agents (3), review rules (4), and AI-powered CI to bring the template to a comprehensive state.
+**Request**: Add hooks, agents, and review rules to bring the template to a comprehensive state.
 
 **Decisions**:
 - Hook scripts in `.claude/hooks/` using `$CLAUDE_PROJECT_DIR` for path resolution -- official Claude Code convention
 - jq required for JSON parsing in hooks with graceful degradation (exit 0 + stderr warning) if missing -- avoids blocking dev work
-- auto-format hook is synchronous (no systemMessage) so Claude sees formatted code; test-on-change is informational only
-- Commands in `.claude/commands/` not `.claude/skills/` -- simpler single-file format for instruction-set content
-- security-auditor and refactoring-specialist agents are read-only (permissionMode: plan) -- analyze, not modify
-- output-evaluator uses haiku + dontAsk -- designed for automated pipeline integration, scoring is formulaic
+- auto-format hook is synchronous (no systemMessage) so Claude sees formatted code
 - Review rules have no `paths:` frontmatter (apply globally) and stay under 80 lines -- loaded into every context window
-- CLAUDE.md kept compact per ETH Zurich paper decision; detailed hooks/commands/rules tables added to DEVELOPMENT_PROCESS.md instead
-- ~~CI review workflow~~ removed -- see 2026-03-13 decision below
+- CLAUDE.md kept compact per ETH Zurich paper decision; detailed tables in DEVELOPMENT_PROCESS.md
 
 ## 2026-03-02: QSP Enforcement and Pre-flight Sync
 
@@ -93,14 +67,11 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 **Request**: Port devcontainer fixes from Vizier repository -- migrate Claude Code CLI from npm to native binary installer, enforce LF line endings, and harden the iptables firewall script.
 
 **Decisions**:
-- Native binary installer for Claude Code CLI instead of npm + Node.js 20 -- Node.js added no value to a Python project; the official native installer is the recommended path and removes a large runtime dependency
-- .gitattributes enforcing LF line endings for shell scripts (`*.sh`), Dockerfiles, and `.devcontainer` files -- CRLF-corrupted shell scripts fail silently on Linux, and Windows developers check out these files by default with CRLF
-- iptables-legacy backend instead of the default nftables -- nftables is unreliable inside Docker due to missing kernel module support; iptables-legacy is stable and widely supported across host kernels
-- iptables pre-check with graceful degradation (log warning, skip firewall) instead of hard exit 1 -- a missing iptables binary should degrade to an open network rather than block container startup entirely
-- Suppress stderr on iptables -X (chain flush) -- Docker pre-populates chains (DOCKER, DOCKER-USER, etc.) that cannot be deleted; the errors are expected and misleading
-- Skip lines starting with `#` during DNS rule restoration -- comment lines in the allowlist were being passed to iptables as hostnames, causing spurious errors
-- DROP policies added after all ACCEPT rules -- reordering prevents a partial-failure scenario where DROP is installed before the ACCEPT rules complete, locking out the container
-- Replaced registry.npmjs.org with claude.ai in the firewall allowlist -- npmjs.org is no longer contacted now that the native installer is used; claude.ai is required for Claude Code authentication
+- Native binary installer for Claude Code CLI instead of npm + Node.js 20 -- Node.js added no value to a Python project
+- .gitattributes enforcing LF line endings for shell scripts (`*.sh`), Dockerfiles, and `.devcontainer` files -- CRLF-corrupted shell scripts fail silently on Linux
+- iptables-legacy backend instead of the default nftables -- nftables is unreliable inside Docker due to missing kernel module support
+- iptables pre-check with graceful degradation (log warning, skip firewall) instead of hard exit 1
+- DROP policies added after all ACCEPT rules -- prevents partial-failure lockout
 
 ## 2026-03-09: Workflow Skills (/sync, /design, /done)
 
@@ -123,74 +94,6 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Optional deployment verification via `.claude/deploy.json` (gitignored) -- not all projects have deployments, so it's opt-in with an example file
 - Phase detection uses "Quick Status Summary" table in IMPLEMENTATION_PLAN.md, not `- [ ]` checkboxes -- matches actual file structure
 
-## 2026-03-10: Architecture Deep Dive Guide
-
-**Request**: Add an onboarding guide for users who want to understand why each template component exists, what it does, and what happens if they modify or remove it.
-
-**Decisions**:
-- Single document (`docs/ARCHITECTURE_GUIDE.md`) rather than splitting into per-topic files (hooks-guide.md, agents-guide.md, etc.) -- one file supports both linear reading and ctrl-F searching without docs/ sprawl
-- Consistent 4-question structure per component: Why / What / What if removed / Connections -- makes the guide scannable and predictable
-- Collapsible `<details>` sections keep the document navigable at heading level despite ~700 lines
-- Cross-references existing docs (DEVELOPMENT_PROCESS.md for reference tables, DEVCONTAINER_PERMISSIONS.md for tier details) instead of duplicating content
-- Ends with a Customization Guide (Safe to Remove / Safe to Modify / Risky to Remove) as the practical payoff
-
-## 2026-03-10: Template Integration CI Pipeline
-
-**Request**: Create a CI pipeline that applies the template in various settings to catch template bugs before merge.
-
-**Decisions**:
-- New workflow `template-integration.yml` (not extending `tests.yml`) -- `tests.yml` has `{{base_branch}}` in its trigger and never fires on the raw template repo
-- GitHub Actions matrix (5 configs) + reusable shell script (`scripts/test_template_integration.sh`) -- matrix defines WHAT to test, script defines HOW to verify; script also runnable locally
-- Copy template to temp dir before applying -- `setup_project.py` modifies in-place, would destroy the checkout
-- 5 matrix configs cover all major code paths: default monorepo, package renaming, additional packages, single-package conversion, Docker Compose services
-- Unit tests gate job runs first -- fail fast if setup_project.py functions are broken before spending matrix resources
-- Placeholder check uses named pattern matching (`{{project_name}}` etc.) not generic `{{` -- avoids false positives from GitHub Actions `${{ }}` expressions
-- `test_setup_project.py` excluded from integration pytest runs -- tests setup script internals (already covered by unit-tests job), fails on single-package layout
-
-## 2026-03-04: Devcontainer Permission Tiers
-
-**Request**: Expand Claude Code permissions for devcontainer usage, taking advantage of container isolation (firewall, non-root user, hooks) to reduce unnecessary permission prompts.
-
-**Decisions**:
-- Three graduated tiers (Assisted, Autonomous, Full Trust) stored as JSON in `.devcontainer/permissions/` -- copied to `.claude/settings.local.json` at container creation via build arg
-- `settings.local.json` (gitignored) for devcontainer-specific expansions, NOT modifying shared `settings.json` -- base settings remain the universal bare-metal baseline
-- Tier 2 (Autonomous, recommended default) uses `Bash(*)` allow with curated deny list -- zero prompts for bash, denied commands fail immediately instead of prompting
-- Deny list targets three categories: shared external state (gh pr merge, workflow triggers, issue mutations), irreversible actions (package publishing to npm/PyPI), and container escape vectors (docker --privileged)
-- Tool installation comprehensively denied in Tier 2 (pip, npm -g, cargo, go, gem, uv tool, apt, snap, brew) -- toolchain defined by Dockerfile, project deps via `uv add`
-- Separate `devcontainer-policy-blocker.sh` hook (not modifying existing hooks) catches denied patterns in chained commands (`cd && pip install`) that bypass glob-based deny rules
-- Single hook script with `$PERMISSION_TIER` env var for tier awareness -- fail-closed (if unset, blocks everything)
-- Each tier file is fully self-contained (permissions + ALL hooks) to survive settings.local.json replace-not-merge semantics
-- Template guard in onCreateCommand: skips `uv sync` if pyproject.toml still has `{{project_name}}` placeholders
-- `docs/DEVCONTAINER_PERMISSIONS.md` maps every denied command to its approved alternative -- CLAUDE.md references this doc so Claude checks alternatives before attempting blocked commands
-- Full implementation recorded in `docs/IMPLEMENTATION_PLAN.md` Phase 9
-
-**Accepted Risks**:
-
-| Risk | Why accepted | Mitigation |
-|------|-------------|------------|
-| Grep-based hook bypass via obfuscation (`p\ip install`, `alias p=pip; p install`) | Grep hooks are a UX layer to prevent Claude from wasting turns on naive mistakes. They cannot stop deliberate bash obfuscation from prompt injection. | Actual security boundaries are non-root user (installs fail) + firewall (limits exfiltration). The hook catches the 99% case. |
-| GitHub API via curl (`curl -H "Authorization: ..." https://api.github.com/.../merge`) | Blocking curl to github.com is fragile and breaks legitimate web fetching. The hook already blocks commands containing `GH_TOKEN=` as a literal argument. | Use fine-grained PATs with minimal scopes. CLAUDE.md instructs Claude to use `gh` CLI, not raw API calls. Token scoping is the real control. |
-| Docker not present but deny rules exist | Docker is not installed in the current template container. Deny rules exist as defense-in-depth for users who add Docker-in-Docker later. | If Docker-in-Docker is added, the deny list should be revisited (add `-v` and `--mount` volume escape patterns). |
-| Whitelisted domains as exfil channels | `github.com` is whitelisted for git/gh operations. A compromised agent could theoretically exfiltrate via gist creation or issue comments. | Token scoping (no gist/issue create permission) + GH mutation deny rules in Tier 2. Tier 3 accepts this risk explicitly. |
-
-## 2026-03-13: Remove CI-Based Claude Code Review
-
-**Request**: Remove the `claude-code-review.yml` GitHub Actions workflow. The local `code-reviewer` agent (run by `/done` at step S.6.5) already provides equivalent pre-PR review coverage, making the CI workflow redundant.
-
-**Decisions**:
-- Delete `claude-code-review.yml` entirely -- the local code-reviewer agent provides the same review before PR creation, and the CI workflow required managing an `ANTHROPIC_API_KEY` secret in GitHub
-- Keep `dangerous-actions-blocker.sh` `ANTHROPIC_API_KEY=` pattern unchanged -- it blocks secrets in commands generally, not CI-specific
-- Keep `docs/IMPLEMENTATION_PLAN.md` unchanged -- historical record of completed work
-
-## 2026-03-16: Git Remote Mutation Deny Rules
-
-**Request**: Prevent code exfiltration by blocking `git remote add evil https://... && git push evil` attack pattern.
-
-**Decisions**:
-- Deny `git remote add`, `set-url`, `remove`, `rename`, `set-head` in settings.json and all tier files -- read-only `git remote -v` remains allowed via the existing `Bash(git remote *)` allow rule
-- Deny rules are absolute in Claude Code (cannot be overridden by allow), making this the correct control layer vs hooks
-- Tier files use wildcard prefix `Bash(*git remote add *)` to catch chained command variants
-
 ## 2026-03-16: WebFetch Firewall Integration
 
 **Request**: Connect the devcontainer iptables firewall to Claude Code's WebFetch permission settings so users don't need to manually edit the firewall script when working with external services.
@@ -200,5 +103,28 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Only `allow` and `ask` lists are scanned (not `deny`) -- denied domains should never be whitelisted
 - Bare `WebFetch` (no domain qualifier) is ignored -- it grants tool permission but has no domain to resolve
 - Wildcard domains (e.g., `*.example.com`) are skipped with a warning -- DNS cannot resolve wildcard patterns to IPs
-- Empty domain values filtered by `sed '/^$/d'` instead of `grep -v '^$'` -- grep exits non-zero on empty input under `set -euo pipefail`
-- WebFetch settings changes take effect on container restart (`init-firewall.sh` runs from `postStartCommand`); permission tier changes require rebuild (`onCreateCommand` copies tier to `settings.local.json`)
+- WebFetch settings changes take effect on container restart (`init-firewall.sh` runs from `postStartCommand`)
+
+## 2026-03-18: Subagent CLAUDE.md Limitation
+
+**Observation**: Spawned subagents (via the Agent tool) do not read CLAUDE.md or project instructions. They only follow what the parent agent includes in the prompt. This means directives like "use `uv run` for all commands" are silently ignored by subagents unless explicitly passed through.
+
+**Decisions**:
+- Known template limitation -- subagents must receive key directives in their spawn prompt
+- Agent `.md` files could include critical directives (e.g., "use `uv run`") but this duplicates CLAUDE.md and creates drift risk
+- For this template repo specifically, `uv run` fails due to `{{project_name}}` placeholders, so `python -m pytest` is the correct fallback
+- No code change for now; document as a known limitation
+
+## 2026-03-18: Security Model Simplification
+
+**Request**: Prune security infrastructure to essentials. Remove permission tiers,
+most hooks, commands, and niche agents. Refocus on exfiltration prevention.
+
+**Decisions**:
+- Two exfiltration channels: network (firewall) and trusted-channel abuse (hook)
+- Firewall is primary defense -- iptables whitelist blocks all non-approved domains
+- dangerous-actions-blocker.sh narrowed to: GitHub API exfil, publishing, secrets in args
+- Local destruction (rm -rf, sudo, etc.) not blocked -- devcontainer is disposable
+- output-secrets-scanner removed -- conversation leaks to Anthropic are accepted
+- Permission tiers removed -- single settings.json baseline for all environments
+- unicode-injection-scanner removed -- exotic threat, low practical risk

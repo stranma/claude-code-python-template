@@ -7,7 +7,6 @@ import pytest
 SKILLS_DIR = Path(__file__).parent.parent / ".claude" / "skills"
 
 ALL_SKILLS = [
-    "edit-permissions",
     "sync",
     "design",
     "done",
@@ -32,6 +31,12 @@ class TestSkillExistence:
     def test_skill_file_exists(self, skill_name: str) -> None:
         skill_path = SKILLS_DIR / skill_name / "SKILL.md"
         assert skill_path.exists(), f"SKILL.md missing for: {skill_name}"
+
+    def test_no_unexpected_skills(self) -> None:
+        actual_skills = {d.name for d in SKILLS_DIR.iterdir() if d.is_dir()}
+        expected_skills = set(ALL_SKILLS)
+        unexpected = actual_skills - expected_skills
+        assert not unexpected, f"Unexpected skill directories found: {unexpected}"
 
 
 class TestSkillFrontmatter:

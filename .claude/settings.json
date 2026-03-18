@@ -6,7 +6,7 @@
       "Bash(uv run pyright *)",
       "Bash(uv add *)", "Bash(uv pip *)", "Bash(uv venv *)",
       "Bash(uv lock *)", "Bash(uv tree *)", "Bash(uv export *)",
-      "Bash(git add *)", "Bash(git commit *)", "Bash(git push *)",
+      "Bash(git add *)", "Bash(git commit *)",
       "Bash(git fetch *)", "Bash(git pull *)", "Bash(git rebase *)",
       "Bash(git branch *)", "Bash(git checkout *)", "Bash(git status *)",
       "Bash(git diff *)", "Bash(git log *)", "Bash(git show *)",
@@ -19,7 +19,6 @@
       "Bash(git describe *)", "Bash(git shortlog *)", "Bash(git rev-list *)",
       "Bash(gh pr create *)", "Bash(gh pr view *)", "Bash(gh pr list *)",
       "Bash(gh pr checks *)", "Bash(gh pr diff *)", "Bash(gh pr edit *)",
-      "Bash(gh pr close *)", "Bash(gh api *)",
       "Bash(gh run list *)", "Bash(gh run view *)", "Bash(gh run watch *)",
       "Bash(gh issue list *)", "Bash(gh issue view *)",
       "Bash(gh repo view *)", "Bash(gh release list *)", "Bash(gh release view *)",
@@ -32,6 +31,7 @@
     ],
     "deny": [
       "Bash(gh secret *)", "Bash(gh auth *)", "Bash(gh ssh-key *)", "Bash(gh gpg-key *)",
+      "Bash(git push --force *)", "Bash(git push -f *)",
       "Bash(git clean *)", "Bash(git config *)",
       "Bash(*git remote add *)", "Bash(*git remote set-url *)", "Bash(*git remote remove *)",
       "Bash(*git remote rename *)", "Bash(*git remote set-head *)",
@@ -40,11 +40,13 @@
     "ask": [
       "Bash(python *)", "Bash(uv run python *)",
       "Bash(docker *)", "Bash(docker-compose *)", "Bash(terraform *)",
-      "Bash(gh pr merge *)", "Bash(gh pr reopen *)", "Bash(gh pr comment *)",
+      "Bash(gh pr merge *)", "Bash(gh pr reopen *)", "Bash(gh pr close *)", "Bash(gh pr comment *)",
       "Bash(gh pr review *)", "Bash(gh pr ready *)", "Bash(gh workflow run *)",
       "Bash(gh workflow enable *)", "Bash(gh workflow disable *)",
+      "Bash(gh api *)",
       "Bash(gh issue create *)", "Bash(gh issue comment *)",
       "Bash(gh issue close *)", "Bash(gh issue edit *)",
+      "Bash(git push *)",
       "Bash(git init *)", "Bash(git clone *)",
       "Bash(uv remove *)", "Bash(uv cache *)", "Bash(uv init *)",
       "WebFetch"
@@ -55,22 +57,13 @@
       {
         "matcher": "Bash",
         "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dangerous-actions-blocker.sh"}]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/unicode-injection-scanner.sh"}]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/output-secrets-scanner.sh"}]
-      },
-      {
         "matcher": "Edit|Write",
         "hooks": [
-          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-format.sh"},
-          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/test-on-change.sh"}
+          {"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-format.sh"}
         ]
       }
     ]
