@@ -105,6 +105,16 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Wildcard domains (e.g., `*.example.com`) are skipped with a warning -- DNS cannot resolve wildcard patterns to IPs
 - WebFetch settings changes take effect on container restart (`init-firewall.sh` runs from `postStartCommand`)
 
+## 2026-03-18: Subagent CLAUDE.md Limitation
+
+**Observation**: Spawned subagents (via the Agent tool) do not read CLAUDE.md or project instructions. They only follow what the parent agent includes in the prompt. This means directives like "use `uv run` for all commands" are silently ignored by subagents unless explicitly passed through.
+
+**Decisions**:
+- Known template limitation -- subagents must receive key directives in their spawn prompt
+- Agent `.md` files could include critical directives (e.g., "use `uv run`") but this duplicates CLAUDE.md and creates drift risk
+- For this template repo specifically, `uv run` fails due to `{{project_name}}` placeholders, so `python -m pytest` is the correct fallback
+- No code change for now; document as a known limitation
+
 ## 2026-03-18: Security Model Simplification
 
 **Request**: Prune security infrastructure to essentials. Remove permission tiers,

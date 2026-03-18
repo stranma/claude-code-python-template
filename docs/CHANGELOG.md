@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Security model simplified to 2-layer exfiltration defense: iptables firewall (primary) blocks non-approved network domains; `dangerous-actions-blocker.sh` (narrowed) blocks exfiltration via trusted channels (gh gist, gh issue --body, package publishing, secrets in args) -- local destruction (rm -rf, sudo, etc.) is no longer blocked since devcontainer is disposable
+- CLAUDE.md Security section rewritten to describe the 2-layer defense model instead of listing individual hooks
+- Devcontainer simplified: permission tiers removed, single settings.json baseline for all environments
+
+### Removed
+- Permission tier system (`.devcontainer/permissions/tier1-assisted.json`, `tier2-autonomous.json`, `tier3-full-trust.json`) and `PERMISSION_TIER` env var -- single settings.json baseline replaces graduated tiers
+- `devcontainer-policy-blocker.sh` hook -- tier-dependent policy enforcement no longer needed
+- `output-secrets-scanner.sh` hook -- conversation leaks to Anthropic are accepted risk
+- `unicode-injection-scanner.sh` hook -- exotic threat with low practical risk
+- `test-on-change.sh` hook -- informational-only hook that added latency without preventing issues
+- All slash commands (`/cove`, `/cove-isolated`, `/security-audit`) -- niche utilities that added complexity without proportional value
+- 6 agents: `agent-auditor`, `security-auditor`, `output-evaluator`, `acceptance-criteria-validator`, `implementation-tracker`, `refactoring-specialist` -- pruned to the 6 agents directly used by the QSP workflow
+- `/edit-permissions` skill -- permission tier system removed
+- `docs/ARCHITECTURE_GUIDE.md`, `docs/DEVCONTAINER_PERMISSIONS.md`, `docs/community/` -- supporting docs for removed features
+- Local destruction patterns from `dangerous-actions-blocker.sh` (`rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, etc.) -- devcontainer is disposable, these blocks added friction without security value
+
 ### Added
 - Architecture Deep Dive guide (`docs/ARCHITECTURE_GUIDE.md`) explains why each component exists, what it does under the hood, and what happens if you remove or modify it -- covers all hooks, agents, skills, rules, configuration files, devcontainer layers, and CI/CD workflows with a defense-in-depth diagram and customization guide
 - `/landed` skill for post-merge lifecycle -- verifies merge CI, optionally checks deployments (via `.claude/deploy.json`), cleans up feature branches, and identifies the next phase for P-scope work
