@@ -48,9 +48,9 @@ class TestHookPermissions:
             cwd=repo_root,
         )
         if result.stdout:
-            assert result.stdout.startswith(
-                "100755"
-            ), f"{hook_name} is not tracked as executable by git (expected mode 100755)"
+            assert result.stdout.startswith("100755"), (
+                f"{hook_name} is not tracked as executable by git (expected mode 100755)"
+            )
         else:
             # Not in a git repo (e.g. integration test copy) -- fall back to filesystem
             mode = hook_path.stat().st_mode
@@ -141,9 +141,9 @@ class TestExfiltrationGuardBehavior:
         non_comment_lines = [line for line in content.splitlines() if not line.strip().startswith("#")]
         code_content = "\n".join(non_comment_lines)
         for pattern in ["rm -rf /", "'sudo'", "DROP DATABASE", "git push --force"]:
-            assert (
-                pattern not in code_content
-            ), f"dangerous-actions-blocker should NOT block local destruction pattern: {pattern}"
+            assert pattern not in code_content, (
+                f"dangerous-actions-blocker should NOT block local destruction pattern: {pattern}"
+            )
 
     def test_has_security_model_comment(self) -> None:
         content = (HOOKS_DIR / "dangerous-actions-blocker.sh").read_text(encoding="utf-8")

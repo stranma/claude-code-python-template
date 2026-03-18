@@ -102,9 +102,9 @@ class TestAgentFrontmatter:
     def test_agent_has_permission_mode(self, agent_name: str, agent_frontmatter: dict[str, dict[str, str]]) -> None:
         fm = agent_frontmatter.get(agent_name, {})
         assert "permissionMode" in fm, f"{agent_name} missing 'permissionMode' in frontmatter"
-        assert (
-            fm["permissionMode"] in VALID_PERMISSION_MODES
-        ), f"{agent_name} has invalid permissionMode: {fm['permissionMode']!r}"
+        assert fm["permissionMode"] in VALID_PERMISSION_MODES, (
+            f"{agent_name} has invalid permissionMode: {fm['permissionMode']!r}"
+        )
 
 
 class TestAgentBody:

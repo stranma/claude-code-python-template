@@ -9,6 +9,6 @@ class TestCommandsRemoved:
     """Verify commands directory was removed (all commands pruned)."""
 
     def test_commands_directory_does_not_exist(self) -> None:
-        assert (
-            not COMMANDS_DIR.exists()
-        ), f"Commands directory should not exist after pruning, but found: {COMMANDS_DIR}"
+        assert not COMMANDS_DIR.exists(), (
+            f"Commands directory should not exist after pruning, but found: {COMMANDS_DIR}"
+        )
