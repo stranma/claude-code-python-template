@@ -120,7 +120,7 @@ next phase for P-scope work.
 
 **P.3 Execute** (repeat per phase)
 1. Run Standard Path (S.1 through S.7) for the phase
-2. Update `docs/IMPLEMENTATION_PLAN.md` (use built-in `Plan` agent)
+2. Update `docs/IMPLEMENTATION_PLAN.md`
 3. Write phase handoff note (2-5 sentences: what completed, deviations, risks, dependencies, intentional debt)
 
 **P.4 Finalize** -- Merge. Version bump and changelog consolidation if applicable.
