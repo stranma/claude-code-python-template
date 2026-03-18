@@ -416,8 +416,12 @@ class TestEvaluationOrder:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
 
     def test_git_write_operations_are_allowed(self, settings: dict[str, Any]) -> None:
-        for cmd in ["git add .", 'git commit -m "msg"', "git push origin main"]:
+        for cmd in ["git add .", 'git commit -m "msg"']:
             assert evaluate(f"Bash({cmd})", settings) == "allow", f"{cmd} should be allowed"
+
+    def test_git_push_requires_confirmation(self, settings: dict[str, Any]) -> None:
+        """git push affects remote state -- requires confirmation."""
+        assert evaluate("Bash(git push origin main)", settings) == "ask"
 
     def test_testing_commands_are_allowed(self, settings: dict[str, Any]) -> None:
         for cmd in ["pytest tests/", "uv run pytest -v"]:
