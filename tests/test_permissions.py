@@ -307,6 +307,15 @@ class TestSecurityInvariants:
         assert evaluate("Bash(git push --force origin main)", settings) == "deny"
         assert evaluate("Bash(git push -f origin main)", settings) == "deny"
 
+    def test_git_push_force_variants_require_confirmation(self, settings: dict[str, Any]) -> None:
+        """Force-push variants with different flag ordering hit ask (not deny).
+
+        --force-with-lease and -u -f don't match the deny prefix patterns,
+        but git push * is in ask so they still require user confirmation.
+        """
+        assert evaluate("Bash(git push --force-with-lease origin main)", settings) == "ask"
+        assert evaluate("Bash(git push -u -f origin main)", settings) == "ask"
+
     def test_rm_rf_is_not_allowed(self, settings: dict[str, Any]) -> None:
         assert evaluate("Bash(rm -rf /)", settings) != "allow"
 
