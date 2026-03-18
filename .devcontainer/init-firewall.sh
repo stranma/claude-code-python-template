@@ -3,7 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Network security firewall for devcontainer.
-# Restricts egress to: PyPI, GitHub, Anthropic/Claude, VS Code, uv/Astral.
+# Restricts egress to: PyPI, GitHub, Anthropic/Claude, VS Code, uv/Astral,
+# plus any domains from WebFetch(domain:...) permission patterns.
 # Uses ipset with aggregated CIDR ranges for reliable filtering.
 
 echo "iptables version: $(iptables --version)"
@@ -108,6 +109,50 @@ for domain in \
         ipset add allowed-domains "$ip" 2>/dev/null || true
     done < <(echo "$ips")
 done
+
+# --- Extract domains from WebFetch permission settings ---
+extract_webfetch_domains() {
+    local file="$1"
+    [ -f "$file" ] || return 0
+    jq -r '
+        [(.permissions.allow // []), (.permissions.ask // [])] | add
+        | .[]
+        | select(startswith("WebFetch(domain:"))
+        | sub("^WebFetch\\(domain:"; "") | sub("\\)$"; "")
+    ' "$file" 2>/dev/null || true
+}
+
+SETTINGS_DIR="/workspace/.claude"
+WEBFETCH_DOMAINS=""
+for settings_file in "$SETTINGS_DIR/settings.json" "$SETTINGS_DIR/settings.local.json"; do
+    if [ -f "$settings_file" ]; then
+        echo "Scanning $settings_file for WebFetch domains..."
+        WEBFETCH_DOMAINS="$WEBFETCH_DOMAINS $(extract_webfetch_domains "$settings_file")"
+    fi
+done
+
+UNIQUE_DOMAINS=$(printf '%s\n' "$WEBFETCH_DOMAINS" | tr ' ' '\n' | sed '/^$/d' | sort -u)
+if [ -n "$UNIQUE_DOMAINS" ]; then
+    while read -r domain; do
+        if [[ "$domain" == \** ]]; then
+            echo "WARNING: Wildcard domain '$domain' cannot be resolved to IPs (skipping)"
+            continue
+        fi
+        echo "Resolving WebFetch domain: $domain..."
+        ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
+        if [ -z "$ips" ]; then
+            echo "WARNING: Failed to resolve $domain (skipping)"
+            continue
+        fi
+        while read -r ip; do
+            if [[ ! "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                echo "WARNING: Invalid IP from DNS for $domain: $ip (skipping)"
+                continue
+            fi
+            ipset add allowed-domains "$ip" 2>/dev/null || true
+        done < <(echo "$ips")
+    done <<< "$UNIQUE_DOMAINS"
+fi
 
 # --- Host network detection ---
 HOST_IP=$(ip route | grep default | cut -d" " -f3)

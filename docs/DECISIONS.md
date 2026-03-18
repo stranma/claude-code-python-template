@@ -190,3 +190,15 @@ When a decision is superseded or obsolete, delete it (git history preserves the 
 - Deny `git remote add`, `set-url`, `remove`, `rename`, `set-head` in settings.json and all tier files -- read-only `git remote -v` remains allowed via the existing `Bash(git remote *)` allow rule
 - Deny rules are absolute in Claude Code (cannot be overridden by allow), making this the correct control layer vs hooks
 - Tier files use wildcard prefix `Bash(*git remote add *)` to catch chained command variants
+
+## 2026-03-16: WebFetch Firewall Integration
+
+**Request**: Connect the devcontainer iptables firewall to Claude Code's WebFetch permission settings so users don't need to manually edit the firewall script when working with external services.
+
+**Decisions**:
+- Firewall reads `WebFetch(domain:...)` patterns from settings.json and settings.local.json at container startup -- single source of truth for domain whitelisting
+- Only `allow` and `ask` lists are scanned (not `deny`) -- denied domains should never be whitelisted
+- Bare `WebFetch` (no domain qualifier) is ignored -- it grants tool permission but has no domain to resolve
+- Wildcard domains (e.g., `*.example.com`) are skipped with a warning -- DNS cannot resolve wildcard patterns to IPs
+- Empty domain values filtered by `sed '/^$/d'` instead of `grep -v '^$'` -- grep exits non-zero on empty input under `set -euo pipefail`
+- WebFetch settings changes take effect on container restart (`init-firewall.sh` runs from `postStartCommand`); permission tier changes require rebuild (`onCreateCommand` copies tier to `settings.local.json`)
