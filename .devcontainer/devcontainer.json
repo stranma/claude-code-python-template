@@ -46,7 +46,8 @@
   ],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
-    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
+    "FIREWALL_ALLOW_INBOUND": "${localEnv:FIREWALL_ALLOW_INBOUND:true}"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",

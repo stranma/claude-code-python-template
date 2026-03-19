@@ -167,3 +167,13 @@ class TestAutoFormatBehavior:
         content = (HOOKS_DIR / "auto-format.sh").read_text(encoding="utf-8")
         assert '"Edit"' in content, "auto-format should check Edit tool"
         assert '"Write"' in content, "auto-format should check Write tool"
+
+
+class TestFirewallDenyRules:
+    """Verify firewall tampering is denied in settings.json."""
+
+    def test_settings_denies_firewall_commands(self) -> None:
+        settings_path = Path(__file__).parent.parent / ".claude" / "settings.json"
+        content = settings_path.read_text(encoding="utf-8")
+        for pattern in ["iptables", "ip6tables", "ipset", "nft", "init-firewall"]:
+            assert pattern in content, f"settings.json missing firewall deny pattern: {pattern}"

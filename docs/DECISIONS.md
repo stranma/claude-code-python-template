@@ -128,3 +128,12 @@ most hooks, commands, and niche agents. Refocus on exfiltration prevention.
 - output-secrets-scanner removed -- conversation leaks to Anthropic are accepted
 - Permission tiers removed -- single settings.json baseline for all environments
 - unicode-injection-scanner removed -- exotic threat, low practical risk
+
+## 2026-03-15: Devcontainer Firewall Inbound Relaxation
+
+**Request**: Strict inbound filtering blocks legitimate dev server use cases unnecessarily.
+
+**Decisions**:
+- Default to permissive inbound (`FIREWALL_ALLOW_INBOUND=true`) -- the primary threat model is egress (data exfiltration), not inbound; Docker's network stack provides inbound isolation depending on port publishing and network mode
+- Opt-in strict inbound via `FIREWALL_ALLOW_INBOUND=false` preserves the original INPUT DROP behavior for users who need it
+- Firewall deny rules (iptables, ip6tables, ipset, nft, init-firewall) added to settings.json -- prevents Claude from tampering with the firewall, which is the primary security boundary

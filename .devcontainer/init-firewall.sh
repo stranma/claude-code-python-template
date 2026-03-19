@@ -6,6 +6,12 @@ IFS=$'\n\t'
 # Restricts egress to: PyPI, GitHub, Anthropic/Claude, VS Code, uv/Astral,
 # plus any domains from WebFetch(domain:...) permission patterns.
 # Uses ipset with aggregated CIDR ranges for reliable filtering.
+# FIREWALL_ALLOW_INBOUND (default: true) controls inbound filtering.
+# When true, INPUT chain is left permissive (Docker handles inbound isolation).
+# When false, strict INPUT DROP policy is applied.
+
+ALLOW_INBOUND="${FIREWALL_ALLOW_INBOUND:-true}"
+echo "Inbound firewall mode: $([ "$ALLOW_INBOUND" = "true" ] && echo "permissive (Docker handles isolation)" || echo "strict (INPUT DROP)")"
 
 echo "iptables version: $(iptables --version)"
 if iptables_path="$(command -v iptables 2>/dev/null)"; then
@@ -49,10 +55,14 @@ fi
 
 # Allow DNS and localhost before any restrictions
 iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
-iptables -A INPUT -p udp --sport 53 -j ACCEPT
+if [ "$ALLOW_INBOUND" != "true" ]; then
+    iptables -A INPUT -p udp --sport 53 -j ACCEPT
+fi
 iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
 iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
-iptables -A INPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+if [ "$ALLOW_INBOUND" != "true" ]; then
+    iptables -A INPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+fi
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
@@ -164,7 +174,9 @@ fi
 HOST_NETWORK=$(echo "$HOST_IP" | sed "s/\.[0-9]*$/.0\/24/")
 echo "Host network detected as: $HOST_NETWORK"
 
-iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
+if [ "$ALLOW_INBOUND" != "true" ]; then
+    iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
+fi
 iptables -A OUTPUT -d "$HOST_NETWORK" -j ACCEPT
 
 # Block all IPv6 traffic (firewall is IPv4-only)
@@ -175,7 +187,9 @@ ip6tables -A INPUT -i lo -j ACCEPT 2>/dev/null || true
 ip6tables -A OUTPUT -o lo -j ACCEPT 2>/dev/null || true
 
 # Allow established connections
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+if [ "$ALLOW_INBOUND" != "true" ]; then
+    iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+fi
 iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Allow traffic to whitelisted domains
@@ -185,11 +199,13 @@ iptables -A OUTPUT -m set --match-set allowed-domains dst -j ACCEPT
 iptables -A OUTPUT -j REJECT --reject-with icmp-admin-prohibited
 
 # Set default policies AFTER all ACCEPT rules (prevents lockout on partial failure)
-iptables -P INPUT DROP
+if [ "$ALLOW_INBOUND" != "true" ]; then
+    iptables -P INPUT DROP
+fi
 iptables -P FORWARD DROP
 iptables -P OUTPUT DROP
 
-echo "Firewall configuration complete"
+echo "Firewall configuration complete (inbound: $([ "$ALLOW_INBOUND" = "true" ] && echo "permissive" || echo "strict"))"
 
 # --- Verification ---
 echo "Verifying firewall rules..."
