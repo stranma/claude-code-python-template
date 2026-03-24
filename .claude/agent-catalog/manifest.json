@@ -1,0 +1,252 @@
+{
+  "categories": {
+    "academic": {
+      "label": "Academic (5 agents)",
+      "description": "Research, historical analysis, anthropology, psychology, narratology",
+      "count": 5,
+      "agents": [
+        "academic-anthropologist",
+        "academic-geographer",
+        "academic-historian",
+        "academic-narratologist",
+        "academic-psychologist"
+      ]
+    },
+    "design": {
+      "label": "Design (8 agents)",
+      "description": "UI/UX design, brand guardianship, visual storytelling, inclusive design",
+      "count": 8,
+      "agents": [
+        "design-brand-guardian",
+        "design-image-prompt-engineer",
+        "design-inclusive-visuals-specialist",
+        "design-ui-designer",
+        "design-ux-architect",
+        "design-ux-researcher",
+        "design-visual-storyteller",
+        "design-whimsy-injector"
+      ]
+    },
+    "engineering": {
+      "label": "Engineering (23 agents)",
+      "description": "Frontend, backend, DevOps, security, AI/ML, databases, cloud architecture",
+      "count": 23,
+      "agents": [
+        "engineering-ai-data-remediation-engineer",
+        "engineering-ai-engineer",
+        "engineering-autonomous-optimization-architect",
+        "engineering-backend-architect",
+        "engineering-code-reviewer",
+        "engineering-data-engineer",
+        "engineering-database-optimizer",
+        "engineering-devops-automator",
+        "engineering-embedded-firmware-engineer",
+        "engineering-feishu-integration-developer",
+        "engineering-frontend-developer",
+        "engineering-git-workflow-master",
+        "engineering-incident-response-commander",
+        "engineering-mobile-app-builder",
+        "engineering-rapid-prototyper",
+        "engineering-security-engineer",
+        "engineering-senior-developer",
+        "engineering-software-architect",
+        "engineering-solidity-smart-contract-engineer",
+        "engineering-sre",
+        "engineering-technical-writer",
+        "engineering-threat-detection-engineer",
+        "engineering-wechat-mini-program-developer"
+      ]
+    },
+    "game-development": {
+      "label": "Game Development (20 agents)",
+      "description": "Game design, narrative, mechanics, Godot, Unity, Unreal, Roblox, Blender",
+      "count": 20,
+      "agents": [
+        "game-development-blender-add-on-engineer",
+        "game-development-game-audio-engineer",
+        "game-development-game-designer",
+        "game-development-godot-gameplay-scripter",
+        "game-development-godot-multiplayer-engineer",
+        "game-development-godot-shader-developer",
+        "game-development-level-designer",
+        "game-development-narrative-designer",
+        "game-development-roblox-avatar-creator",
+        "game-development-roblox-experience-designer",
+        "game-development-roblox-systems-scripter",
+        "game-development-technical-artist",
+        "game-development-unity-architect",
+        "game-development-unity-editor-tool-developer",
+        "game-development-unity-multiplayer-engineer",
+        "game-development-unity-shader-graph-artist",
+        "game-development-unreal-multiplayer-architect",
+        "game-development-unreal-systems-engineer",
+        "game-development-unreal-technical-artist",
+        "game-development-unreal-world-builder"
+      ]
+    },
+    "marketing": {
+      "label": "Marketing (27 agents)",
+      "description": "Growth hacking, content creation, social media, SEO, influencer marketing",
+      "count": 27,
+      "agents": [
+        "marketing-ai-citation-strategist",
+        "marketing-app-store-optimizer",
+        "marketing-baidu-seo-specialist",
+        "marketing-bilibili-content-strategist",
+        "marketing-book-co-author",
+        "marketing-carousel-growth-engine",
+        "marketing-china-ecommerce-operator",
+        "marketing-content-creator",
+        "marketing-cross-border-ecommerce",
+        "marketing-douyin-strategist",
+        "marketing-growth-hacker",
+        "marketing-instagram-curator",
+        "marketing-kuaishou-strategist",
+        "marketing-linkedin-content-creator",
+        "marketing-livestream-commerce-coach",
+        "marketing-podcast-strategist",
+        "marketing-private-domain-operator",
+        "marketing-reddit-community-builder",
+        "marketing-seo-specialist",
+        "marketing-short-video-editing-coach",
+        "marketing-social-media-strategist",
+        "marketing-tiktok-strategist",
+        "marketing-twitter-engager",
+        "marketing-wechat-official-account",
+        "marketing-weibo-strategist",
+        "marketing-xiaohongshu-specialist",
+        "marketing-zhihu-strategist"
+      ]
+    },
+    "paid-media": {
+      "label": "Paid Media (7 agents)",
+      "description": "PPC, search query analysis, tracking, creative strategy, programmatic ads",
+      "count": 7,
+      "agents": [
+        "paid-media-auditor",
+        "paid-media-creative-strategist",
+        "paid-media-paid-social-strategist",
+        "paid-media-ppc-strategist",
+        "paid-media-programmatic-buyer",
+        "paid-media-search-query-analyst",
+        "paid-media-tracking-specialist"
+      ]
+    },
+    "product": {
+      "label": "Product (5 agents)",
+      "description": "Sprint planning, trend research, feedback synthesis, behavioral psychology",
+      "count": 5,
+      "agents": [
+        "product-behavioral-nudge-engine",
+        "product-feedback-synthesizer",
+        "product-manager",
+        "product-sprint-prioritizer",
+        "product-trend-researcher"
+      ]
+    },
+    "project-management": {
+      "label": "Project Management (6 agents)",
+      "description": "Studio production, project coordination, operations, experiment tracking",
+      "count": 6,
+      "agents": [
+        "project-management-experiment-tracker",
+        "project-management-jira-workflow-steward",
+        "project-management-project-shepherd",
+        "project-management-senior-project-manager",
+        "project-management-studio-operations",
+        "project-management-studio-producer"
+      ]
+    },
+    "sales": {
+      "label": "Sales (8 agents)",
+      "description": "Outbound prospecting, discovery, deal strategy, pipeline management",
+      "count": 8,
+      "agents": [
+        "sales-account-strategist",
+        "sales-coach",
+        "sales-deal-strategist",
+        "sales-discovery-coach",
+        "sales-engineer",
+        "sales-outbound-strategist",
+        "sales-pipeline-analyst",
+        "sales-proposal-strategist"
+      ]
+    },
+    "spatial-computing": {
+      "label": "Spatial Computing (6 agents)",
+      "description": "AR/VR/XR, spatial interfaces, 3D interaction, immersive experiences",
+      "count": 6,
+      "agents": [
+        "spatial-computing-macos-spatialmetal-engineer",
+        "spatial-computing-terminal-integration-specialist",
+        "spatial-computing-visionos-spatial-engineer",
+        "spatial-computing-xr-cockpit-interaction-specialist",
+        "spatial-computing-xr-immersive-developer",
+        "spatial-computing-xr-interface-architect"
+      ]
+    },
+    "specialized": {
+      "label": "Specialized (27 agents)",
+      "description": "Orchestration, governance, blockchain, compliance, memory systems",
+      "count": 27,
+      "agents": [
+        "specialized-accounts-payable-agent",
+        "specialized-agentic-identity-trust-architect",
+        "specialized-agents-orchestrator",
+        "specialized-automation-governance-architect",
+        "specialized-blockchain-security-auditor",
+        "specialized-compliance-auditor",
+        "specialized-corporate-training-designer",
+        "specialized-cultural-intelligence-strategist",
+        "specialized-data-consolidation-agent",
+        "specialized-developer-advocate",
+        "specialized-document-generator",
+        "specialized-french-consulting-market",
+        "specialized-government-digital-presales-consultant",
+        "specialized-healthcare-marketing-compliance-specialist",
+        "specialized-identity-graph-operator",
+        "specialized-korean-business-navigator",
+        "specialized-lspindex-engineer",
+        "specialized-mcp-builder",
+        "specialized-model-qa",
+        "specialized-recruitment-specialist",
+        "specialized-report-distribution-agent",
+        "specialized-sales-data-extraction-agent",
+        "specialized-salesforce-architect",
+        "specialized-study-abroad-advisor",
+        "specialized-supply-chain-strategist",
+        "specialized-workflow-architect",
+        "specialized-zk-steward"
+      ]
+    },
+    "support": {
+      "label": "Support (6 agents)",
+      "description": "Customer success, community management, onboarding, analytics",
+      "count": 6,
+      "agents": [
+        "support-analytics-reporter",
+        "support-executive-summary-generator",
+        "support-finance-tracker",
+        "support-infrastructure-maintainer",
+        "support-legal-compliance-checker",
+        "support-support-responder"
+      ]
+    },
+    "testing": {
+      "label": "Testing (8 agents)",
+      "description": "QA, test automation, performance testing, accessibility validation",
+      "count": 8,
+      "agents": [
+        "testing-accessibility-auditor",
+        "testing-api-tester",
+        "testing-evidence-collector",
+        "testing-performance-benchmarker",
+        "testing-reality-checker",
+        "testing-test-results-analyzer",
+        "testing-tool-evaluator",
+        "testing-workflow-optimizer"
+      ]
+    }
+  },
+  "total": 156
+}
