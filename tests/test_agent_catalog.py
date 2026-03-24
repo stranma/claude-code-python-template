@@ -1,6 +1,7 @@
-"""Tests for agent catalog conversion and validation scripts."""
+"""Tests for agent catalog conversion, validation, and setup integration."""
 
 import json
+import shutil
 import textwrap
 from pathlib import Path
 
@@ -26,6 +27,10 @@ from convert_agents import (
     transform_body,
 )
 from validate_agents import parse_frontmatter_simple, validate_agent
+
+# Also import setup functions
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from setup_project import cleanup_agent_catalog, install_agent_catalog, list_agent_categories
 
 
 # --- parse_frontmatter tests ---
@@ -361,3 +366,109 @@ class TestCatalogIntegration:
         manifest = json.loads((self.CATALOG_DIR / "manifest.json").read_text())
         actual_count = sum(1 for _ in self.CATALOG_DIR.rglob("*.md"))
         assert actual_count == manifest["total"]
+
+
+# --- install_agent_catalog tests ---
+
+
+class TestInstallAgentCatalog:
+    def _create_catalog(self, root: Path):
+        """Create a minimal test catalog structure."""
+        catalog = root / ".claude" / "agent-catalog"
+        agents_dir = root / ".claude" / "agents"
+        agents_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create engineering category with 2 agents
+        eng_dir = catalog / "engineering"
+        eng_dir.mkdir(parents=True)
+        (eng_dir / "engineering-frontend.md").write_text(
+            "---\nname: engineering-frontend\ndescription: t\nmodel: sonnet\n"
+            "tools: Read\npermissionMode: acceptEdits\ncolor: cyan\n---\nBody"
+        )
+        (eng_dir / "engineering-backend.md").write_text(
+            "---\nname: engineering-backend\ndescription: t\nmodel: sonnet\n"
+            "tools: Read\npermissionMode: acceptEdits\ncolor: blue\n---\nBody"
+        )
+
+        # Create testing category with 1 agent
+        test_dir = catalog / "testing"
+        test_dir.mkdir(parents=True)
+        (test_dir / "testing-qa.md").write_text(
+            "---\nname: testing-qa\ndescription: t\nmodel: sonnet\n"
+            "tools: Read\npermissionMode: dontAsk\ncolor: red\n---\nBody"
+        )
+
+        # Create manifest
+        manifest = {
+            "categories": {
+                "engineering": {"label": "Engineering (2 agents)", "description": "Dev", "count": 2, "agents": []},
+                "testing": {"label": "Testing (1 agent)", "description": "QA", "count": 1, "agents": []},
+            },
+            "total": 3,
+        }
+        (catalog / "manifest.json").write_text(json.dumps(manifest))
+
+        return root
+
+    def test_install_single_category(self, tmp_path):
+        root = self._create_catalog(tmp_path)
+        actions = install_agent_catalog(root, ["engineering"])
+        agents_dir = root / ".claude" / "agents"
+        assert (agents_dir / "engineering-frontend.md").exists()
+        assert (agents_dir / "engineering-backend.md").exists()
+        assert not (agents_dir / "testing-qa.md").exists()
+        assert any("2 agents" in a for a in actions)
+
+    def test_install_multiple_categories(self, tmp_path):
+        root = self._create_catalog(tmp_path)
+        actions = install_agent_catalog(root, ["engineering", "testing"])
+        agents_dir = root / ".claude" / "agents"
+        assert (agents_dir / "engineering-frontend.md").exists()
+        assert (agents_dir / "testing-qa.md").exists()
+        assert any("3 agents installed" in a for a in actions)
+
+    def test_missing_category_warning(self, tmp_path):
+        root = self._create_catalog(tmp_path)
+        actions = install_agent_catalog(root, ["nonexistent"])
+        assert any("Warning" in a for a in actions)
+
+    def test_no_catalog_directory(self, tmp_path):
+        actions = install_agent_catalog(tmp_path, ["engineering"])
+        assert any("not found" in a for a in actions)
+
+
+class TestCleanupAgentCatalog:
+    def test_cleanup_removes_directory(self, tmp_path):
+        catalog = tmp_path / ".claude" / "agent-catalog"
+        catalog.mkdir(parents=True)
+        (catalog / "test.md").write_text("test")
+
+        actions = cleanup_agent_catalog(tmp_path)
+        assert not catalog.exists()
+        assert len(actions) == 1
+
+    def test_cleanup_no_directory(self, tmp_path):
+        actions = cleanup_agent_catalog(tmp_path)
+        assert actions == []
+
+
+class TestListAgentCategories:
+    def test_lists_categories(self, tmp_path):
+        catalog = tmp_path / ".claude" / "agent-catalog"
+        catalog.mkdir(parents=True)
+        manifest = {
+            "categories": {
+                "engineering": {"description": "Dev agents", "count": 5},
+                "testing": {"description": "QA agents", "count": 3},
+            }
+        }
+        (catalog / "manifest.json").write_text(json.dumps(manifest))
+
+        result = list_agent_categories(tmp_path)
+        assert len(result) == 2
+        assert result[0][0] == "engineering"
+        assert result[0][2] == 5
+
+    def test_no_manifest(self, tmp_path):
+        result = list_agent_categories(tmp_path)
+        assert result == []

@@ -415,6 +415,76 @@ volumes:
 }
 
 
+def install_agent_catalog(root: Path, categories: list[str]) -> list[str]:
+    """Copy selected agent categories from the catalog to .claude/agents/.
+
+    :param root: project root directory
+    :param categories: list of category names to install
+    :return: list of action descriptions
+    """
+    actions = []
+    catalog_dir = root / ".claude" / "agent-catalog"
+    agents_dir = root / ".claude" / "agents"
+
+    if not catalog_dir.exists():
+        return ["  Agent catalog not found, skipping"]
+
+    manifest_path = catalog_dir / "manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = {"categories": {}}
+
+    agents_dir.mkdir(parents=True, exist_ok=True)
+    total_installed = 0
+
+    for category in categories:
+        cat_dir = catalog_dir / category
+        if not cat_dir.exists():
+            actions.append(f"  Warning: category '{category}' not found in catalog")
+            continue
+        count = 0
+        for agent_file in sorted(cat_dir.glob("*.md")):
+            shutil.copy2(str(agent_file), str(agents_dir / agent_file.name))
+            count += 1
+        total_installed += count
+        label = manifest.get("categories", {}).get(category, {}).get("label", category)
+        actions.append(f"  Installed {count} agents from {label}")
+
+    actions.append(f"  Total: {total_installed} agents installed to .claude/agents/")
+    return actions
+
+
+def cleanup_agent_catalog(root: Path) -> list[str]:
+    """Remove the agent catalog directory after installation.
+
+    :param root: project root directory
+    :return: list of action descriptions
+    """
+    catalog_dir = root / ".claude" / "agent-catalog"
+    if catalog_dir.exists():
+        shutil.rmtree(str(catalog_dir))
+        return ["  Removed .claude/agent-catalog/"]
+    return []
+
+
+def list_agent_categories(root: Path) -> list[tuple[str, str, int]]:
+    """List available agent categories from the catalog manifest.
+
+    :param root: project root directory
+    :return: list of (category_name, description, count) tuples
+    """
+    manifest_path = root / ".claude" / "agent-catalog" / "manifest.json"
+    if not manifest_path.exists():
+        return []
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    result = []
+    for cat_name, cat_info in sorted(manifest.get("categories", {}).items()):
+        result.append((cat_name, cat_info.get("description", ""), cat_info.get("count", 0)))
+    return result
+
+
 def configure_devcontainer_services(root: Path, services: str, replacements: dict[str, str]) -> list[str]:
     """Generate docker-compose.yml and update devcontainer.json for the chosen service profile.
 
@@ -510,6 +580,38 @@ def interactive_setup() -> dict[str, str]:
     svc_map = {"1": "none", "2": "postgres", "3": "postgres-redis", "4": "custom"}
     config["services"] = svc_map.get(svc_choice, "none")
 
+    # Agent catalog selection
+    categories = list_agent_categories(TEMPLATE_DIR)
+    if categories:
+        total = sum(c[2] for c in categories)
+        print(f"\nAgent catalog ({total} agents across {len(categories)} categories):")
+        print("  1. None (keep only the 6 built-in agents)")
+        print(f"  2. All categories ({total} agents)")
+        print("  3. Select specific categories")
+        agent_choice = get_input("Choose [1/2/3]", "1")
+
+        if agent_choice == "2":
+            config["agents"] = "all"
+        elif agent_choice == "3":
+            print()
+            for i, (cat_name, desc, count) in enumerate(categories, 1):
+                print(f"  {i:2d}. {cat_name} ({count}) -- {desc}")
+            selected = get_input("Enter numbers (comma-separated)")
+            selected_cats = []
+            for num in selected.split(","):
+                num = num.strip()
+                if num.isdigit():
+                    idx = int(num) - 1
+                    if 0 <= idx < len(categories):
+                        selected_cats.append(categories[idx][0])
+                elif num in {c[0] for c in categories}:
+                    selected_cats.append(num)
+            config["agents"] = ",".join(selected_cats) if selected_cats else "none"
+        else:
+            config["agents"] = "none"
+    else:
+        config["agents"] = "none"
+
     return config
 
 
@@ -531,6 +633,12 @@ def main() -> None:
         default="none",
         help="Docker Compose services profile for devcontainer (default: none)",
     )
+    parser.add_argument(
+        "--agents",
+        default="none",
+        help="Agent categories to install (comma-separated, 'all', or 'none'). Default: none",
+    )
+    parser.add_argument("--keep-catalog", action="store_true", help="Keep .claude/agent-catalog/ after installation")
     parser.add_argument("--git-init", action="store_true", help="Initialize git and make initial commit")
     parser.add_argument("--keep-setup", action="store_true", help="Don't delete this setup script after running")
 
@@ -551,6 +659,7 @@ def main() -> None:
             "type": args.type,
             "packages": args.packages,
             "services": args.services,
+            "agents": args.agents,
         }
 
     # Validate required fields
@@ -576,6 +685,7 @@ def main() -> None:
     print(f"  Type: {config.get('type', 'mono')}")
     print(f"  Base branch: {config.get('base_branch', 'master')}")
     print(f"  Devcontainer services: {config.get('services', 'none')}")
+    print(f"  Agent catalog: {config.get('agents', 'none')}")
 
     # Step 1: Rename {{namespace}} directories
     print("\nRenaming namespace directories...")
@@ -639,7 +749,30 @@ def main() -> None:
         )
         claude_md.write_text(content, encoding="utf-8")
 
-    # Step 5: Configure devcontainer services
+    # Step 5: Install agent catalog
+    agents_config = config.get("agents", "none")
+    if agents_config and agents_config != "none":
+        print("\nInstalling agent catalog...")
+        catalog_dir = TEMPLATE_DIR / ".claude" / "agent-catalog"
+        if agents_config == "all":
+            selected_categories = [
+                d.name for d in sorted(catalog_dir.iterdir()) if d.is_dir()
+            ] if catalog_dir.exists() else []
+        else:
+            selected_categories = [c.strip() for c in agents_config.split(",") if c.strip()]
+
+        if selected_categories:
+            actions = install_agent_catalog(TEMPLATE_DIR, selected_categories)
+            for a in actions:
+                print(a)
+
+    # Step 5b: Clean up agent catalog
+    if not getattr(args, "keep_catalog", False):
+        actions = cleanup_agent_catalog(TEMPLATE_DIR)
+        for a in actions:
+            print(a)
+
+    # Step 6: Configure devcontainer services
     services = config.get("services", "none")
     if services != "none":
         print(f"\nConfiguring devcontainer services ({services})...")
@@ -647,7 +780,7 @@ def main() -> None:
         for a in actions:
             print(a)
 
-    # Step 6: Git init if requested
+    # Step 7: Git init if requested
     if getattr(args, "git_init", False):
         print("\nInitializing git repository...")
         try:
@@ -664,7 +797,7 @@ def main() -> None:
         except subprocess.TimeoutExpired as e:
             print(f"  Warning: Git operation timed out after 30s: {' '.join(e.cmd)}")
 
-    # Step 7: Install Claude Code plugins
+    # Step 8: Install Claude Code plugins
     print("\nInstalling Claude Code plugins...")
     if shutil.which("claude"):
         try:
@@ -686,7 +819,7 @@ def main() -> None:
         print("  Claude CLI not found -- install plugins after installing Claude Code:")
         print("  claude plugin install security-guidance --scope project")
 
-    # Step 8: Self-delete unless --keep-setup
+    # Step 9: Self-delete unless --keep-setup
     if not getattr(args, "keep_setup", False):
         print(f"\nRemoving setup script ({Path(__file__).name})...")
         print("  Run: rm setup_project.py")

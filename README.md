@@ -283,9 +283,49 @@ my-tool/
 | `--base-branch` | "master" | Git base branch |
 | `--type` | "mono" | `mono` or `single` |
 | `--packages` | "core,server" | Comma-separated package names (mono only) |
+| `--agents` | "none" | Agent categories to install (`all`, `none`, or comma-separated) |
+| `--keep-catalog` | false | Keep `.claude/agent-catalog/` after setup |
 | `--git-init` | false | Init git + initial commit |
 
 Package naming: by default, the first package is a library (in `libs/`), the rest are applications (in `apps/`). Use prefixes to control placement: `--packages "lib:models,lib:utils,app:api,app:worker"`.
+
+## Agent Catalog
+
+The template ships with a catalog of **156 specialized AI agents** (sourced from [The Agency](https://github.com/webdevtodayjason/agency-agents)) across 14 categories. These are optional -- install them during setup to extend Claude Code with domain-specific expertise.
+
+```bash
+# Install all agents:
+python setup_project.py --name my-project --agents all
+
+# Install specific categories:
+python setup_project.py --name my-project --agents "engineering,testing,design"
+
+# Interactive mode prompts you to choose:
+python setup_project.py
+```
+
+<details>
+<summary>Available categories (156 agents)</summary>
+
+| Category | Count | Focus |
+|----------|-------|-------|
+| academic | 5 | Research, historical analysis, anthropology, psychology, narratology |
+| design | 8 | UI/UX design, brand guardianship, visual storytelling, inclusive design |
+| engineering | 23 | Frontend, backend, DevOps, security, AI/ML, databases, cloud architecture |
+| game-development | 20 | Game design, narrative, Godot, Unity, Unreal, Roblox, Blender |
+| marketing | 27 | Growth hacking, content creation, social media, SEO |
+| paid-media | 7 | PPC, search query analysis, tracking, creative strategy |
+| product | 5 | Sprint planning, trend research, feedback synthesis |
+| project-management | 6 | Studio production, project coordination, operations |
+| sales | 8 | Outbound prospecting, discovery, deal strategy, pipeline management |
+| spatial-computing | 6 | AR/VR/XR, spatial interfaces, 3D interaction |
+| specialized | 27 | Orchestration, governance, blockchain, compliance |
+| support | 6 | Customer success, community management, analytics |
+| testing | 8 | QA, test automation, performance testing, accessibility |
+
+</details>
+
+Selected agents are copied into `.claude/agents/` alongside the 6 built-in template agents. The catalog directory is removed after setup by default (use `--keep-catalog` to preserve it).
 
 ## Token Costs
 
