@@ -1,15 +1,40 @@
 ---
 name: design
-description: Crystallize brainstorming into a structured implementation plan. Reads DECISIONS.md for conflicts, auto-classifies scope (Q/S/P), and outputs an actionable plan.
-argument-hint: "[topic or summary of what to plan]"
+description: Crystallize brainstorming into a structured implementation plan. Reads DECISIONS.md for conflicts, auto-classifies scope (Q/S/P), and outputs an actionable plan. Optionally loads a specialist agent for domain expertise.
+argument-hint: "[topic] [using <agent-name>]"
 allowed-tools: Read, Glob, Grep, Bash, Edit
 ---
 
 # Design
 
-Crystallize brainstorming into a structured implementation plan. Use at the start or end of brainstorming to formalize an approach.
+Crystallize brainstorming into a structured implementation plan. Use at the start or end of brainstorming to formalize an approach. Optionally reference a specialist agent from the catalog for domain-specific expertise.
 
 ## Steps
+
+### 0. Load Specialist Agent (optional)
+
+Parse the user's input for a `using <agent-name>` pattern (e.g., `/design build login page using engineering-frontend-developer`).
+
+**If an agent name is provided:**
+
+1. Search for `<agent-name>.md` in `.claude/agents/` first (installed agents)
+2. If not found, search in `.claude/agent-catalog/**/` (catalog agents)
+3. Read the agent file and extract these sections as domain context:
+   - **Core Mission** -- what this specialist focuses on
+   - **Critical Rules** -- domain constraints to respect
+   - **Workflow Process** -- recommended approach for this domain
+4. Keep this context loaded for Steps 1-5 below
+
+**If no agent name is provided but `.claude/agent-catalog/manifest.json` exists:**
+
+1. Read the manifest to get available categories and agents
+2. Based on the topic keywords, suggest 1-3 relevant specialist agents. Examples:
+   - Frontend/UI/CSS/React -> `engineering-frontend-developer`, `design-ui-designer`
+   - Backend/API/database -> `engineering-backend-architect`, `engineering-database-optimizer`
+   - DevOps/CI/deploy -> `engineering-devops-automator`, `engineering-sre`
+   - Testing/QA -> `testing-api-tester`, `testing-performance-benchmarker`
+   - Security -> `engineering-security-engineer`, `specialized-blockchain-security-auditor`
+3. Present suggestions: "Specialist agents available for this topic: `<name>` -- <description>. Re-run with `using <name>` to load domain expertise, or proceed without."
 
 ### 1. Check for Conflicts
 
@@ -28,6 +53,12 @@ This is a planning-time estimate based on conversation context. `/done` will lat
 | **P** (Project) | Needs phased execution across sessions (multi-phase feature, architecture change) |
 
 ### 3. Output Structured Plan
+
+When a specialist agent was loaded in Step 0, incorporate its expertise:
+- Add a `**Specialist**: <agent-name>` line to the plan header
+- Use the agent's **Workflow Process** to inform the Approach steps
+- Include the agent's **Critical Rules** as items in the Risks section
+- Apply the agent's **Core Mission** priorities when ordering and scoping work
 
 The plan format varies by scope:
 
