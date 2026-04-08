@@ -425,6 +425,7 @@ def configure_devcontainer_services(root: Path, services: str, replacements: dic
     """
     actions = []
     devcontainer_dir = root / ".devcontainer"
+    devcontainer_dir.mkdir(exist_ok=True)
 
     # Write docker-compose.yml from template
     template = COMPOSE_TEMPLATES[services]
