@@ -8,26 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Security model simplified to 2-layer exfiltration defense: iptables firewall (primary) blocks non-approved network domains; `dangerous-actions-blocker.sh` (narrowed) blocks exfiltration via trusted channels (gh gist, gh issue --body, package publishing, secrets in args) -- local destruction (rm -rf, sudo, etc.) is no longer blocked since devcontainer is disposable
-- CLAUDE.md Security section rewritten to describe the 2-layer defense model instead of listing individual hooks
-- Devcontainer simplified: permission tiers removed, single settings.json baseline for all environments
+- Repository split into 3 independent repos: template (this), [pyclaude-forge](https://github.com/stranma/pyclaude-forge) (workflow), [claude-code-devcontainer](https://github.com/stranma/claude-code-devcontainer) (deprecated, use Trail of Bits)
+- `setup_project.py` gains `--devcontainer trailofbits` and `--egress-firewall` options to compose external components
+- README rewritten with composition diagram showing how the 3 external pieces plug in
+- GETTING_STARTED.md updated for the split architecture
+- `template-sync.yml` paths reduced to `.github/workflows/` and `scripts/` only
 
 ### Removed
-- Permission tier system (`.devcontainer/permissions/tier1-assisted.json`, `tier2-autonomous.json`, `tier3-full-trust.json`) and `PERMISSION_TIER` env var -- single settings.json baseline replaces graduated tiers
-- `devcontainer-policy-blocker.sh` hook -- tier-dependent policy enforcement no longer needed
-- `output-secrets-scanner.sh` hook -- conversation leaks to Anthropic are accepted risk
-- `unicode-injection-scanner.sh` hook -- exotic threat with low practical risk
-- `test-on-change.sh` hook -- informational-only hook that added latency without preventing issues
-- All slash commands (`/cove`, `/cove-isolated`, `/security-audit`) -- niche utilities that added complexity without proportional value
-- 6 agents: `agent-auditor`, `security-auditor`, `output-evaluator`, `acceptance-criteria-validator`, `implementation-tracker`, `refactoring-specialist` -- pruned to the 6 agents directly used by the QSP workflow
-- `/edit-permissions` skill -- permission tier system removed
-- `docs/ARCHITECTURE_GUIDE.md`, `docs/DEVCONTAINER_PERMISSIONS.md`, `docs/community/` -- supporting docs for removed features
-- Local destruction patterns from `dangerous-actions-blocker.sh` (`rm -rf`, `sudo`, `DROP DATABASE`, `git push --force`, etc.) -- devcontainer is disposable, these blocks added friction without security value
-
-### Added
-- Architecture Deep Dive guide (`docs/ARCHITECTURE_GUIDE.md`) explains why each component exists, what it does under the hood, and what happens if you remove or modify it -- covers all hooks, agents, skills, rules, configuration files, devcontainer layers, and CI/CD workflows with a defense-in-depth diagram and customization guide
-- `/landed` skill for post-merge lifecycle -- verifies merge CI, optionally checks deployments (via `.claude/deploy.json`), cleans up feature branches, and identifies the next phase for P-scope work
-- `.claude/deploy.json.example` template for configuring deployment verification in `/landed`
+- All `.claude/` content (moved to [pyclaude-forge](https://github.com/stranma/pyclaude-forge))
+- All `.devcontainer/` content (use [trailofbits/claude-code-devcontainer](https://github.com/trailofbits/claude-code-devcontainer) instead)
+- Permission tiers, security hooks, policy enforcement -- dropped from scope
+- Stale docs: PDF artifacts, IMPLEMENTATION_PLAN.md stub, .dockerignore
+- Broken doc references: ARCHITECTURE_GUIDE.md, DEVCONTAINER_PERMISSIONS.md
 - Chain-of-Verification (CoVe) commands (`/cove`, `/cove-isolated`) for high-stakes accuracy -- 4-step self-verification process based on Meta's CoVe paper, with an isolated variant that runs verification in a separate agent to prevent confirmation bias
 - Template sync workflow (`.github/workflows/template-sync.yml`) for downstream projects to auto-sync upstream template improvements -- runs weekly or on manual trigger, creates PRs with changed template-managed files while preserving project-specific code
 - Python-specific SOLID checklist in `refactoring-specialist` agent -- checks for mutable default arguments, ABC/Protocol misuse, missing dependency injection, god classes, `@property` overuse, and circular imports

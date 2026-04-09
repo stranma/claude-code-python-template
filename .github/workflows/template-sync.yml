@@ -59,7 +59,7 @@ jobs:
         run: |
           # Paths managed by the template (synced from upstream)
           # Defined once here; reused in the apply step via GITHUB_OUTPUT
-          TEMPLATE_PATHS=".claude/agents/ .claude/commands/ .claude/hooks/ .claude/rules/ .claude/skills/ .devcontainer/ .github/workflows/ docs/DEVELOPMENT_PROCESS.md"
+          TEMPLATE_PATHS=".github/workflows/ scripts/"
           echo "template_paths=${TEMPLATE_PATHS}" >> "$GITHUB_OUTPUT"
 
           # Get changed files between local and upstream
@@ -156,7 +156,8 @@ jobs:
 
           ### What to review
           - Check if any synced files conflict with project-specific customizations
-          - Template-managed paths: `.claude/`, `.devcontainer/`, `.github/workflows/`, `docs/DEVELOPMENT_PROCESS.md`
+          - Template-managed paths: `.github/workflows/`, `scripts/`
+          - `.claude/` is managed by `pyclaude-forge`, `.devcontainer/` by `claude-code-devcontainer`
           - Project-specific files (`apps/`, `libs/`, `tests/`, `pyproject.toml`, `README.md`) are NOT touched
 
           ### How to resolve conflicts

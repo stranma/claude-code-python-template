@@ -32,5 +32,6 @@ All packages maintain synchronized MAJOR.MINOR versions. Patch versions can diff
 ## Optional Integrations
 
 This template can be composed with:
-- **[claude-code-harness](../claude-code-harness)** -- Claude Code workflow (skills, agents, rules, hooks)
-- **[claude-code-devcontainer](../claude-code-devcontainer)** -- secure devcontainer with egress firewall
+- **[pyclaude-forge](https://github.com/stranma/pyclaude-forge)** -- Claude Code workflow (skills, agents, rules, hooks)
+- **[trailofbits/claude-code-devcontainer](https://github.com/trailofbits/claude-code-devcontainer)** -- secure devcontainer with Claude Code
+- **[Egress firewall](https://gist.github.com/stranma/f43d932bedc8335e24404c9784fcf190)** -- iptables whitelist preventing code exfiltration
