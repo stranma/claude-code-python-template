@@ -474,10 +474,7 @@ def get_input(prompt: str, default: str = "") -> str:
     return input(f"{prompt}: ").strip()
 
 
-FIREWALL_GIST_URL = (
-    "https://gist.githubusercontent.com/stranma/"
-    "f43d932bedc8335e24404c9784fcf190/raw/init-firewall.sh"
-)
+FIREWALL_GIST_URL = "https://gist.githubusercontent.com/stranma/f43d932bedc8335e24404c9784fcf190/raw/init-firewall.sh"
 
 TOB_REPO = "https://github.com/trailofbits/claude-code-devcontainer.git"
 
@@ -512,6 +509,7 @@ def setup_devcontainer(root: Path, *, devcontainer: str, egress_firewall: bool) 
                 def _remove_readonly(func, path, _):
                     os.chmod(path, 0o700)
                     func(path)
+
                 shutil.rmtree(git_dir, onerror=_remove_readonly)
             actions.append("  Cloned trailofbits/claude-code-devcontainer into .devcontainer/")
         except subprocess.CalledProcessError as e:
