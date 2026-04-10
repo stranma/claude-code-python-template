@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -425,6 +426,7 @@ def configure_devcontainer_services(root: Path, services: str, replacements: dic
     """
     actions = []
     devcontainer_dir = root / ".devcontainer"
+    devcontainer_dir.mkdir(exist_ok=True)
 
     # Write docker-compose.yml from template
     template = COMPOSE_TEMPLATES[services]
@@ -472,6 +474,76 @@ def get_input(prompt: str, default: str = "") -> str:
     return input(f"{prompt}: ").strip()
 
 
+FIREWALL_GIST_URL = "https://gist.githubusercontent.com/stranma/f43d932bedc8335e24404c9784fcf190/raw/init-firewall.sh"
+
+TOB_REPO = "https://github.com/trailofbits/claude-code-devcontainer.git"
+
+
+def setup_devcontainer(root: Path, *, devcontainer: str, egress_firewall: bool) -> list[str]:
+    """Set up devcontainer from Trail of Bits + optional egress firewall.
+
+    :param root: Project root directory.
+    :param devcontainer: Devcontainer type ("trailofbits" or "none").
+    :param egress_firewall: Whether to fetch the egress firewall script.
+    :returns: List of actions taken.
+    """
+    if devcontainer == "none":
+        return []
+
+    actions: list[str] = []
+    dc_dir = root / ".devcontainer"
+
+    if devcontainer == "trailofbits":
+        # Clone Trail of Bits devcontainer and extract template files
+        try:
+            subprocess.run(
+                ["git", "clone", "--depth", "1", TOB_REPO, str(dc_dir)],
+                check=True,
+                capture_output=True,
+                timeout=60,
+            )
+            # Remove .git from the clone (we don't want a submodule)
+            git_dir = dc_dir / ".git"
+            if git_dir.exists():
+                # Handle Windows read-only pack files
+                def _remove_readonly(func, path, _):
+                    os.chmod(path, 0o700)
+                    func(path)
+
+                shutil.rmtree(git_dir, onerror=_remove_readonly)
+            actions.append("  Cloned trailofbits/claude-code-devcontainer into .devcontainer/")
+        except subprocess.CalledProcessError as e:
+            actions.append(f"  WARNING: Failed to clone Trail of Bits devcontainer: {e}")
+            return actions
+        except subprocess.TimeoutExpired:
+            actions.append("  WARNING: Clone timed out after 60s")
+            return actions
+
+    if egress_firewall:
+        dc_dir.mkdir(exist_ok=True)
+        firewall_path = dc_dir / "init-firewall.sh"
+        try:
+            urllib.request.urlretrieve(FIREWALL_GIST_URL, firewall_path)
+            firewall_path.chmod(firewall_path.stat().st_mode | 0o755)
+            actions.append("  Fetched egress firewall (init-firewall.sh) from gist")
+
+            # Add postStartCommand to devcontainer.json if it exists
+            dc_json = dc_dir / "devcontainer.json"
+            if dc_json.exists():
+                raw = dc_json.read_text(encoding="utf-8")
+                try:
+                    config = json.loads(raw)
+                    config["postStartCommand"] = "sudo /usr/local/bin/init-firewall.sh"
+                    dc_json.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+                    actions.append("  Added postStartCommand for firewall to devcontainer.json")
+                except json.JSONDecodeError:
+                    actions.append("  WARNING: Could not parse devcontainer.json to add firewall command")
+        except Exception as e:
+            actions.append(f"  WARNING: Failed to fetch firewall script: {e}")
+
+    return actions
+
+
 def interactive_setup() -> dict[str, str]:
     """Collect configuration interactively."""
     print("\n=== Claude Code Python Template Setup ===\n")
@@ -510,6 +582,18 @@ def interactive_setup() -> dict[str, str]:
     svc_map = {"1": "none", "2": "postgres", "3": "postgres-redis", "4": "custom"}
     config["services"] = svc_map.get(svc_choice, "none")
 
+    print("\nDevcontainer setup:")
+    print("  1. None")
+    print("  2. Trail of Bits (recommended -- secure sandbox for Claude Code)")
+    dc_choice = get_input("Choose [1/2]", "1")
+    config["devcontainer"] = "trailofbits" if dc_choice == "2" else "none"
+
+    if config["devcontainer"] != "none":
+        fw_choice = get_input("Include egress firewall? (blocks code exfiltration) [y/n]", "y")
+        config["egress_firewall"] = fw_choice.lower() in ("y", "yes")
+    else:
+        config["egress_firewall"] = False
+
     return config
 
 
@@ -531,6 +615,17 @@ def main() -> None:
         default="none",
         help="Docker Compose services profile for devcontainer (default: none)",
     )
+    parser.add_argument(
+        "--devcontainer",
+        choices=["none", "trailofbits"],
+        default="none",
+        help="Devcontainer setup (default: none)",
+    )
+    parser.add_argument(
+        "--egress-firewall",
+        action="store_true",
+        help="Add egress firewall to devcontainer (blocks code exfiltration)",
+    )
     parser.add_argument("--git-init", action="store_true", help="Initialize git and make initial commit")
     parser.add_argument("--keep-setup", action="store_true", help="Don't delete this setup script after running")
 
@@ -551,6 +646,8 @@ def main() -> None:
             "type": args.type,
             "packages": args.packages,
             "services": args.services,
+            "devcontainer": args.devcontainer,
+            "egress_firewall": args.egress_firewall,
         }
 
     # Validate required fields
@@ -576,6 +673,9 @@ def main() -> None:
     print(f"  Type: {config.get('type', 'mono')}")
     print(f"  Base branch: {config.get('base_branch', 'master')}")
     print(f"  Devcontainer services: {config.get('services', 'none')}")
+    print(f"  Devcontainer: {config.get('devcontainer', 'none')}")
+    if config.get("egress_firewall"):
+        print("  Egress firewall: yes")
 
     # Step 1: Rename {{namespace}} directories
     print("\nRenaming namespace directories...")
@@ -644,6 +744,15 @@ def main() -> None:
     if services != "none":
         print(f"\nConfiguring devcontainer services ({services})...")
         actions = configure_devcontainer_services(TEMPLATE_DIR, services, replacements)
+        for a in actions:
+            print(a)
+
+    # Step 5b: Set up devcontainer
+    dc_type = config.get("devcontainer", "none")
+    if dc_type != "none":
+        print(f"\nSetting up devcontainer ({dc_type})...")
+        fw = config.get("egress_firewall", False)
+        actions = setup_devcontainer(TEMPLATE_DIR, devcontainer=dc_type, egress_firewall=fw)
         for a in actions:
             print(a)
 

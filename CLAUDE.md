@@ -1,22 +1,5 @@
 # CLAUDE.md
 
-## Development Process
-
-Use `/sync` before starting work, `/design` to formalize a plan, `/done` when finished, and `/landed` after the PR merges. `/design` estimates scope (Q/S/P) during planning; `/done` auto-detects actual scope at completion based on workspace signals. Before creating any plan, read `docs/DEVELOPMENT_PROCESS.md` first.
-
-## Security
-
-Two-layer defense against data exfiltration:
-
-1. **Firewall** (primary): iptables whitelist in devcontainer blocks all non-approved network domains
-2. **Exfiltration guard** (hook): `dangerous-actions-blocker.sh` (PreToolUse/Bash) blocks exfiltration via trusted channels -- `gh gist create`, `gh issue create --body`, package publishing (`twine`/`npm`/`uv publish`), and secrets as literal command arguments
-
-Additional:
-- **Real-time scanning**: The `security-guidance` plugin runs automatically during code editing, warning about command injection, eval/exec, deserialization, XSS, and unsafe system calls
-- **Secrets handling**: Never commit API keys, tokens, passwords, or private keys -- use environment variables or `.env` files (which are gitignored)
-- **Unsafe operations**: Avoid `eval`, `exec`, unsafe deserialization, `subprocess(shell=True)`, and `yaml.load` without SafeLoader in production code. If required, document the justification in a code comment
-- **Code review**: The code-reviewer agent checks for logic-level security issues (authorization bypass, TOCTOU, data exposure) that static pattern matching cannot catch
-
 ## Development Commands
 
 - Create virtual environment: `uv venv`
@@ -35,11 +18,6 @@ uv run pyright                          # Type check
 
 Do not use unnecessary cd like `cd /path/to/cwd && git log`.
 
-## Devcontainer
-
-- **Dependencies**: Use `uv add <package>`, never `pip install`
-- **System tools**: Add to `.devcontainer/Dockerfile`, do not install at runtime
-
 ## Code Style
 
 - **Docstrings**: reStructuredText format, PEP 257
@@ -50,3 +28,10 @@ Do not use unnecessary cd like `cd /path/to/cwd && git log`.
 ## Version Management
 
 All packages maintain synchronized MAJOR.MINOR versions. Patch versions can differ. Check with `python scripts/check_versions.py`.
+
+## Optional Integrations
+
+This template can be composed with:
+- **[pyclaude-forge](https://github.com/stranma/pyclaude-forge)** -- Claude Code workflow (skills, agents, rules, hooks)
+- **[trailofbits/claude-code-devcontainer](https://github.com/trailofbits/claude-code-devcontainer)** -- secure devcontainer with Claude Code
+- **[Egress firewall](https://gist.github.com/stranma/f43d932bedc8335e24404c9784fcf190)** -- iptables whitelist preventing code exfiltration
