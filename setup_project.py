@@ -508,7 +508,11 @@ def setup_devcontainer(root: Path, *, devcontainer: str, egress_firewall: bool) 
             # Remove .git from the clone (we don't want a submodule)
             git_dir = dc_dir / ".git"
             if git_dir.exists():
-                shutil.rmtree(git_dir)
+                # Handle Windows read-only pack files
+                def _remove_readonly(func, path, _):
+                    os.chmod(path, 0o700)
+                    func(path)
+                shutil.rmtree(git_dir, onerror=_remove_readonly)
             actions.append("  Cloned trailofbits/claude-code-devcontainer into .devcontainer/")
         except subprocess.CalledProcessError as e:
             actions.append(f"  WARNING: Failed to clone Trail of Bits devcontainer: {e}")
